@@ -7,8 +7,6 @@
 #include "c:\Workspace\Cpp\RealGame\RealGame\src\Renderer\Renderer.h"
 #include "Resources\TextureManager.h"
 
-#include "physx/PxPhysicsAPI.h"
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <glm/gtx/norm.hpp> 
