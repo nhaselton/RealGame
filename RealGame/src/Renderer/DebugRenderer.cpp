@@ -89,6 +89,9 @@ void DrawLineBatch( LineBatch* batch ) {
 	//lineShader->Use();
 	RenderSetShader( &renderer, renderer.shaders[SHADER_LINE_SHADER] );
 
+	//todo fix this. Maybe separate queues for depth & non depth
+	glEnable( GL_DEPTH_TEST );
+
 	if ( batch->numLines > 0 ) {
 		glLineWidth( batch->lineWidth );
 		glBindVertexArray( batch->vao );

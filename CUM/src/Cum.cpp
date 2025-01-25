@@ -23,7 +23,7 @@ static inline bool ThreePlaneIntersection( DPlane* a, DPlane* b, DPlane* c, dVec
 	return true;
 }
 
-static bool IsValid( dVec3 nonRoundedPoint, NPBrush* brush, std::vector<NPFace> faces ) {
+static bool IsValid( dVec3 nonRoundedPoint, NPBrush* brush, std::vector<NPFace>& faces ) {
 	for ( int j = 0; j < brush->numFaces; j++ ) {
 		NPFace* face = &faces[brush->firstPlane + j];
 		if ( glm::dot( nonRoundedPoint, face->n ) + face->d - FEPSILON > 0 ) {
@@ -33,10 +33,10 @@ static bool IsValid( dVec3 nonRoundedPoint, NPBrush* brush, std::vector<NPFace> 
 	return true;
 }
 
-static bool IsUnique( NPFace* face, const dVec3& check, const std::vector<DBrushVertex> vertices ) {
+static bool IsUnique( NPFace* face, const dVec3& check, const std::vector<DBrushVertex>& vertices ) {
 	for ( int i = 0; i < face->numVertices; i++ ) {
 		//Not sure if should do == or length2 < fepsilon
-		if ( glm::length( vertices[face->firstVertex + i].pos - check ) < .001f ) 
+		if ( glm::length( vertices[face->firstVertex + i].pos - check ) < .001f )
 			return false;
 
 		//if ( check == vertices[face->firstVertex + i].pos ) {
@@ -97,9 +97,9 @@ bool CloseEnough( const Vec3& a, const Vec3& b ) {
 	float dx = fabs( b.x - a.x );
 	float dy = fabs( b.y - a.y );
 	float dz = fabs( b.z - a.z );
-	return ( 
+	return (
 		dx < .001f &&
-		dy < .001f && 
+		dy < .001f &&
 		dz < .001f );
 }
 
@@ -197,16 +197,16 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 				texIndex = textures.size();
 				TexInfo info{};
 				memset( info.name, 0, NAME_BUF_LEN );
-				memcpy( info.name, texName, strlen(texName) );
+				memcpy( info.name, texName, strlen( texName ) );
 				info.size = IVec2( x, y );
 				textures.push_back( info );
 			}
 
 			face.textureIndex = texIndex;
-			
+
 			//U,V,Offsets
 			parser->ParseVec( &face.texU[0], 4, true );
- 			parser->ParseVec( &face.texV[0], 4, true );
+			parser->ParseVec( &face.texV[0], 4, true );
 			parser->ParseVec( &face.info[0], 3, false );
 
 			brush.numFaces++;
@@ -271,7 +271,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 					v /= scale;
 
 					vertex.uv = Vec2( u, v );
- 					vertex.normal = face->n;
+					vertex.normal = face->n;
 					vertices.push_back( vertex );
 
 					face->numVertices++;
@@ -398,12 +398,12 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 
 		std::vector<Vec3> points;
 
-		Vec3 centroid(0);
+		Vec3 centroid( 0 );
 		for ( int n = 0; n < face->numVertices; n++ ) {
 			points.push_back( vertices[face->firstVertex + n].pos );
 			centroid += vertices[face->firstVertex + n].pos;
 		}
-		
+
 
 		auto sort_predicate = [&centroid] ( const Vec3& a, const Vec3& b ) -> bool {
 			return atan2( a.x - centroid.x, a.y - centroid.y ) <
@@ -422,7 +422,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	for ( int b = 0; b < brushes.size(); b++ ) {
 		NPBrush* brush = &brushes[b];
 		brush->firstIndex = indices.size();
- 		brush->numIndices = 0;
+		brush->numIndices = 0;
 
 		for ( int i = 0; i < brush->numFaces; i++ ) {
 			NPFace* face = &faces[brush->firstPlane + i];
@@ -464,7 +464,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 			}
 			else if ( CloseEnough( thisNormal, -expectedNormal ) ) {
 				int t = indices[face->firstIndex + n];
-				indices[face->firstIndex + n] = indices[face->firstIndex + n +  2];
+				indices[face->firstIndex + n] = indices[face->firstIndex + n + 2];
 				indices[face->firstIndex + n + 2] = t;
 
 				Vec3 A = vertices[indices[face->firstIndex + n + 0]].pos;
@@ -481,7 +481,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 			}
 		}
 	}
-	
+
 	// ========
 	// MIN/MAX
 	// ========
@@ -503,7 +503,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		brush->bounds.min = min;
 		brush->bounds.max = max;
 	}
-	
+
 	u32 fileSize = 0;
 	//=======================
 	//       INIT RENDERER 
@@ -527,7 +527,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		rfaces[i].firstVertex = faces[i].firstVertex;
 		rfaces[i].numVertices = faces[i].numVertices;
 		rfaces[i].numIndices = faces[i].numIndices;
-		rfaces[i].texture = (Texture*) faces[i].textureIndex;
+		rfaces[i].texture = ( Texture* ) faces[i].textureIndex;
 	}
 
 	DrawVertex* drawVertices = ( DrawVertex* ) malloc( vertices.size() * sizeof( DrawVertex ) );
@@ -547,15 +547,15 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 
 	FILE* out = 0;
 	fopen_s( &out, output, "wb" );
-	
+
 	fwrite( &numVertices, sizeof( u32 ), 1, out );
 	fwrite( &numIndices, sizeof( u32 ), 1, out );
 	fwrite( &numFaces, sizeof( u32 ), 1, out );
 	fwrite( &numBrushes, sizeof( u32 ), 1, out );
 	fwrite( &numTextures, sizeof( u32 ), 1, out );
-	
-	fwrite( drawVertices, sizeof( DrawVertex )* vertices.size(), 1, out );
-	fwrite( indices.data(), sizeof(u32), indices.size(), out);
+
+	fwrite( drawVertices, sizeof( DrawVertex ) * vertices.size(), 1, out );
+	fwrite( indices.data(), sizeof( u32 ), indices.size(), out );
 	fwrite( rfaces, sizeof( RenderBrushFace ) * faces.size(), 1, out );
 	fwrite( rBrushes, sizeof( RenderBrush ) * brushes.size(), 1, out );
 
@@ -584,7 +584,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	physx::PxDefaultAllocator alloc;
 	physx::PxDefaultErrorCallback err;
 	physx::PxFoundation* foundation = PxCreateFoundation( PX_PHYSICS_VERSION, alloc, err );
-	physx::PxPhysics* physics = PxCreatePhysics( PX_PHYSICS_VERSION, *foundation, PxTolerancesScale( 1.0 ), false);
+	physx::PxPhysics* physics = PxCreatePhysics( PX_PHYSICS_VERSION, *foundation, PxTolerancesScale( 1.0 ), false );
 
 	for ( int i = 0; i < brushes.size(); i++ ) {
 		NPBrush* brush = &brushes[i];
@@ -604,7 +604,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 			return false;
 		}
 
-		
+
 		PxDefaultMemoryInputData input( buf.getData(), buf.getSize() );
 		PxConvexMesh* convexMesh = physics->createConvexMesh( input );
 
@@ -622,7 +622,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	scene->addCollection( *collection );
 
 	//Write it to file
-	
+
 	//physx::PxDefaultFileOutputStream outStream( path );
 	//physx::PxSerialization::complete( *collection, *registry );
 	//physx::PxSerialization::serializeCollectionToBinary( outStream, *collection, *registry );
@@ -633,7 +633,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	for ( int i = 0; i < 6; i++ ) {
 		tb.p[i].n = faces[i].n;
 		tb.p[i].d = -faces[i].d;
-		
+
 		for ( int n = 0; n < faces[i].numIndices; n++ )
 			tb.p[i].verts[n] = vertices[indices[faces[i].firstIndex + n]].pos;
 	}
@@ -641,7 +641,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	fwrite( &tb, sizeof( tb ), 1, out );
 #endif
 	u32 numTriangles = numIndices / 3;
-	
+
 	Vec3* outVertices = ( Vec3* ) malloc( sizeof( Vec3 ) * numVertices );
 	Brush* outBrushes = ( Brush* ) malloc( sizeof( Brush ) * numBrushes );
 	BrushTri* outTriangles = ( BrushTri* ) malloc( sizeof( BrushTri ) * numTriangles );
@@ -676,7 +676,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 
 		for ( int n = 0; n < brush->numPolygons; n++ ) {
 			Polygon* poly = &polygons[polyOffset + n];
-			
+
 			for ( int k = 0; k < 3; k++ ) {
 				poly->triangles[k].v[0] -= indexOffset;
 				poly->triangles[k].v[1] -= indexOffset;
@@ -704,7 +704,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		polygonOffset += outBrushes[i].numPolygons;
 	}
 
-	fwrite( &numBrushes,sizeof(u32),1,out );
+	fwrite( &numBrushes, sizeof( u32 ), 1, out );
 	fwrite( &numFaces, sizeof( u32 ), 1, out );
 	fwrite( &numBrushes, sizeof( u32 ), 1, out );
 	fwrite( &numTriangles, sizeof( u32 ), 1, out );
@@ -713,7 +713,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	fwrite( outBrushes, sizeof( Brush ) * numBrushes, 1, out );
 	fwrite( polygons, sizeof( Polygon ) * numFaces, 1, out );
 	fwrite( outTriangles, sizeof( BrushTri ) * numTriangles, 1, out );
-	fwrite( outVertices, sizeof( Vec3 )* numVertices, 1, out );
+	fwrite( outVertices, sizeof( Vec3 ) * numVertices, 1, out );
 
 	fclose( out );
 	printf( "Map Compiled\n" );
@@ -726,7 +726,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 }
 
 /*	File Format
-* 
+*
 *		Renderer
 * u32 NumVertices
 * u32 NumIndices
@@ -743,7 +743,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 * u32 numFaces
 * u32 numTriangles
 * u32 numVertices
-* 
+*
 * Brush brushes[numBrushes]
 * Polygon[numFaces]
 * Triangles[numTriangles]

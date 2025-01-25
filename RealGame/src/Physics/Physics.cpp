@@ -30,7 +30,7 @@ void PhysicsLoadLevel( Level* level, NFile* file ) {
 	for ( int i = 0; i < numFaces; i++ ) {
 		faces[i].triangles = triangles + ( int ) faces[i].triangles;
 	}
-
+	int a = 0;
 }
 
 bool PointInTriangle( const Vec3& q, Vec3 a, Vec3 b, Vec3 c ) {
@@ -412,95 +412,5 @@ bool CastSphere( Vec3 pos, float r, Vec3 velocity, HitInfo* outInfo ) {
 		}
 	}
 	return outInfo->didHit;
-}
-#endif
-
-#pragma once
-#if 0
-#include "Physics.h"
-#include "physx/PxPhysicsAPI.h"
-
-using namespace physx;
-
-static PxDefaultAllocator		gAllocator;
-static PxDefaultErrorCallback	gErrorCallback;
-
-Vec3 P3toV3( const physx::PxVec3& v ) {
-	return Vec3( v.x, v.y, v.z );
-}
-
-physx::PxVec3 V3toP3( const Vec3& v ) {
-	return physx::PxVec3( v.x, v.y, v.z );
-}
-
-physx::PxQuat QtoPQ( const Quat& v ) {
-	return physx::PxQuat( v.x, v.y, v.x, v.w );
-}
-
-Quat PQtoQ( const PxQuat& v ) {
-	return Quat( v.w, v.x, v.y, v.z );
-}
-
-void PhysicsInit() {
-	physics.foundation = PxCreateFoundation( PX_PHYSICS_VERSION, gAllocator, gErrorCallback );
-	if ( !physics.foundation ) {
-		printf( "[error] could not create physx foundation\n" );
-		assert( 0 );
-		return;
-	}
-
-	bool recordMemoryAllocations = true;
-
-	physics.pvd = PxCreatePvd( *physics.foundation );
-	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate( PVD_HOST, 5425, 10 );
-	physics.pvd->connect( *transport, PxPvdInstrumentationFlag::eALL );
-
-
-	physics.physics = PxCreatePhysics( PX_PHYSICS_VERSION, *physics.foundation, PxTolerancesScale(), recordMemoryAllocations, physics.pvd );
-	if ( !physics.physics ) {
-		printf( "Could not create physx physics" );
-		assert( 0 );
-		return;
-	}
-
-	PxSceneDesc sceneDesc( physics.physics->getTolerancesScale() );
-	sceneDesc.gravity = PxVec3( 0.0f, -100, 0.0f );
-	physics.dispatcher = PxDefaultCpuDispatcherCreate( 1 );
-	sceneDesc.cpuDispatcher = physics.dispatcher;
-	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-	physics.scene = physics.physics->createScene( sceneDesc );
-
-	//This will create the active actor list to update only active actors
-	physics.scene->setFlag( physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS, 1 );
-	//This will make sure we have full control over kinematic updates
-	physics.scene->setFlag( physx::PxSceneFlag::eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS, 1 );
-	physics.scene->setVisualizationParameter( physx::PxVisualizationParameter::eSCALE, 1 );
-	physics.scene->setVisualizationParameter( physx::PxVisualizationParameter::eCOLLISION_SHAPES, 1 );
-
-	if ( !physics.scene ) {
-		printf( "Could not create physx scene\n" );
-		assert( 0 );
-		return;
-	}
-
-	PxPvdSceneClient* pvdClient = physics.scene->getScenePvdClient();
-	if ( pvdClient ) {
-		pvdClient->setScenePvdFlag( PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true );
-		pvdClient->setScenePvdFlag( PxPvdSceneFlag::eTRANSMIT_CONTACTS, true );
-		pvdClient->setScenePvdFlag( PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true );
-	}
-
-	physics.material = physics.physics->createMaterial( 0.5f, 0.5f, 0.6f );
-
-	PxShapeFlags shapeFlags = PxShapeFlag::eVISUALIZATION | PxShapeFlag::eSCENE_QUERY_SHAPE | PxShapeFlag::eSIMULATION_SHAPE;
-	PxRigidDynamic* rigidDynamic = physics.physics->createRigidDynamic( PxTransform( PxVec3( 0.0f ) ) );
-
-	PxShape* shape = physics.physics->createShape( PxBoxGeometry( 2.f, 2.f, 2.f ), &physics.material, 1, true, shapeFlags );
-	rigidDynamic->attachShape( *shape );
-	//rigidDynamic->setRigidBodyFlag( PxRigidBodyFlag::eKINEMATIC, true );
-	rigidDynamic->setActorFlag( physx::PxActorFlag::eVISUALIZATION, true );
-	shape->release();
-
-	physics.scene->addActor( *rigidDynamic );
 }
 #endif

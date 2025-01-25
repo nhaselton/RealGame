@@ -22,13 +22,7 @@
 *		https://www.peroxide.dk/papers/collision/collision.pdf
 *		https://arxiv.org/pdf/1211.0059
 *		
-*		Reprojection Vector can be NaN
-*		Teleports (to Vertices?)
 *		
-*		
-*		
-	Fix too many vertices for renderer hull
-
 *	MVP
 *
 *	Guns For Player:
@@ -131,11 +125,6 @@ Vec3 MoveAndSlide( Vec3 pos, Vec3 velocity ) {
 		pos = point;
 		velocity = remaining;
 	}
-	if ( glm::length2( startVel ) > 0 ) {
-		float pLen = glm::length( pos - startPos );
-		float pVel = glm::length( startVel);
-		printf( "%.2f\n", pLen / pVel );
-	}
 
 	Vec3 finalPos = pos;//WorldFromEllipse( pos, Vec3( r ) );
 	return finalPos;
@@ -189,17 +178,16 @@ int main() {
 			for ( int k = 0; k < face->numTriangles; k++ ) {
 				u32* tri = face->triangles[k].v;
 				Vec3* verts = brush->vertices;
-				DebugDrawLine( verts[tri[0]], verts[tri[1]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
-				DebugDrawLine( verts[tri[1]], verts[tri[2]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
-				DebugDrawLine( verts[tri[2]], verts[tri[0]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
+				//DebugDrawLine( verts[tri[0]], verts[tri[1]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
+				//DebugDrawLine( verts[tri[1]], verts[tri[2]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
+				//DebugDrawLine( verts[tri[2]], verts[tri[0]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
 			}
 		}
 	}
 
 
-	WindowSetVsync( &window, 0 );
 	PrintAllocators( &globalArena );
-	WindowSetVsync( &window,1 );
+	WindowSetVsync( &window, 1 );
 	while ( !WindowShouldClose( &window ) ) {
 		//PROFILE( "Frame" );
 		WindowPollInput( &window );
@@ -232,8 +220,11 @@ int main() {
 		wantDir *= 20.0f * dt;
 		//wantDir.y = 0;
 		player.pos = MoveAndSlide( player.pos, wantDir );
-		//player.pos += wantDir ;
-		MoveAndSlide( renderer.camera.Position, renderer.camera.Front * 10.0f );
+
+		if ( KeyDown(KEY_SPACE) )
+			player.pos += wantDir ;
+		else
+			MoveAndSlide( renderer.camera.Position, renderer.camera.Front * 10.0f );
 		
 		//CastSphere( renderer.camera.Position, renderer.camera.Front * 100.0f, &info );
 

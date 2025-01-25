@@ -230,6 +230,12 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	NFileRead( file, verticesTemp, vertexSize );
 	NFileRead( file, indicesTemp, indexSize );
 
+	Vec3 v0 = verticesTemp[0].pos;
+	for ( int i = 0; i < 24; i++ )
+		if ( glm::length( verticesTemp[i].pos - v0 ) < .001f )
+			printf( "%d\n", i );
+			
+
 	CreateGLBuffer( &li->buffer, li->numVertices, li->numIndices, vertexSize, verticesTemp,
 		indexSize, indicesTemp, true, false );
 	GLBufferAddDefaultAttribs( &li->buffer );
@@ -266,10 +272,6 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 		//Index is stored in pointer loc
 		u32 index = (u32) li->faces[i].texture;
 		li->faces[i].texture = loadedTextures[index];
-	}
-
-	for ( int i = 0; i < li->numVertices; i++ ) {
-		printf( "{%f, %f, %f},\n", verticesTemp[i].pos.x, verticesTemp[i].pos.y, verticesTemp[i].pos.z );
 	}
 
 	//for ( int i = 0; i < li->numIndices; i++ )
