@@ -2,6 +2,8 @@
 #include "Entity.h"
 #include "Renderer\Renderer.h"
 #include "Resources\ModelManager.h"
+#include "Physics/Physics.h"
+#include "Renderer\DebugRenderer.h"
 
 Entity* CreateOgre( Vec3 pos, Entity* player ) {
 	Ogre* entity = ( Ogre* ) ScratchArenaAllocateZero( &globalArena, KB( 1 ) );
@@ -18,6 +20,11 @@ Entity* CreateOgre( Vec3 pos, Entity* player ) {
 	entity->renderModel->pose->globalPose = ( Mat4* ) ScratchArenaAllocateZero( &globalArena, entity->renderModel->model->skeleton->numNodes * sizeof( Mat4 ) );
 	entity->renderModel->pose->pose = ( JointPose* ) ScratchArenaAllocateZero( &globalArena, entity->renderModel->model->skeleton->numNodes * sizeof( JointPose ) );
 	entity->renderModel->pose->skeleton = entity->renderModel->model->skeleton;
+
+	entity->bounds.offset = pos;
+	entity->bounds.bounds.center = Vec3( 0,4,0 );
+	entity->bounds.bounds.width = Vec3( 3 );
+	
 
 	//entity->bounds = PhysicsCreateDynamicBody( entity, Vec3( 0, 3.5, 0 ), Vec3( 3.5 ) );
 	//entity->bounds = ( BoundsHalfWidth* ) ScratchArenaAllocate( &globalArena, sizeof( BoundsHalfWidth ) );
@@ -49,7 +56,8 @@ void OgreMove( Entity* entity, Vec3 target ) {
 	float speed = 1.5f;
 	dist = glm::min( dist, speed );
 	
-	entity->pos += dir * dist * dt;
+	//entity->pos += dir * dist * dt;
+	MoveAndSlide( &entity->bounds, dir * dist * dt );
 	entity->rotation = glm::quatLookAt( -dir, Vec3( 0, 1, 0 ) );
 }
 
@@ -60,17 +68,21 @@ void OgreTaunt( Entity* entity ) {
 }
 
 void OgreUpdate( Entity* entity ) {
+	//Apply Gravity
+	entity->pos = MoveAndSlide( &entity->bounds, Vec3( 0, -10 * dt, 0 ), 0 );
+
 	switch ( ( ogreState_t ) entity->state ) {
-	case OGRE_CHASE: OgreChase( entity ); break;
-	case OGRE_DIE: break;
-	case OGRE_SWIPE: OgreSwipe( entity ); break;
-	case OGRE_TAUNT: OgreTaunt( entity ); break;
-	case OGRE_THROW: OgreThrow( entity ); break;
+		case OGRE_CHASE: OgreChase( entity ); break;
+		case OGRE_DIE: break;
+		case OGRE_SWIPE: OgreSwipe( entity ); break;
+		case OGRE_TAUNT: OgreTaunt( entity ); break;
+		case OGRE_THROW: OgreThrow( entity ); break;
 	default:
 		LOG_ASSERT( LGS_GAME, "Bad ogre state\n" );
 	}
 
 	EntityAnimationUpdate( entity, dt );
+	//DebugDrawCharacterCollider( &entity->bounds );
 }
 
 void OgreStartChase( Entity* entity ) {

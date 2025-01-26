@@ -10,6 +10,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <glm/gtx/norm.hpp> 
+
+BVHTree ConstructBVH( std::vector<NPBrush>& brushes );
+
 static inline bool ThreePlaneIntersection( DPlane* a, DPlane* b, DPlane* c, dVec3* out ) {
 	double	denom;
 	denom = glm::dot( c->n, glm::cross( a->n, b->n ) );
@@ -667,31 +670,6 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		triangleOffset += polygons[i].numTriangles;
 	}
 
-#if 0
-	int indexOffset = 0;
-	int polyOffset = 0;
-	for ( int i = 0; i < numBrushes; i++ ) {
-		Brush* brush = &outBrushes[i];
-		int brushTris = 0;
-
-		for ( int n = 0; n < brush->numPolygons; n++ ) {
-			Polygon* poly = &polygons[polyOffset + n];
-
-			for ( int k = 0; k < 3; k++ ) {
-				poly->triangles[k].v[0] -= indexOffset;
-				poly->triangles[k].v[1] -= indexOffset;
-				poly->triangles[k].v[2] -= indexOffset;
-			}
-
-			brushTris += poly->numTriangles * 3;
-		}
-		indexOffset += brushTris;
-		polyOffset += brush->numPolygons;
-	}
-#endif
-
-
-
 	int vertexOffset = 0;
 	int polygonOffset = 0;
 	for ( int i = 0; i < numBrushes; i++ ) {
@@ -704,6 +682,8 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		polygonOffset += outBrushes[i].numPolygons;
 	}
 
+	BVHTree tree = ConstructBVH( brushes );
+
 	fwrite( &numBrushes, sizeof( u32 ), 1, out );
 	fwrite( &numFaces, sizeof( u32 ), 1, out );
 	fwrite( &numBrushes, sizeof( u32 ), 1, out );
@@ -715,6 +695,9 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	fwrite( outTriangles, sizeof( BrushTri ) * numTriangles, 1, out );
 	fwrite( outVertices, sizeof( Vec3 ) * numVertices, 1, out );
 
+	fwrite( &tree, sizeof( BVHTree ), 1, out );
+	fwrite( tree.nodes, sizeof( BVHNode )* tree.numNodes, 1, out );
+
 	fclose( out );
 	printf( "Map Compiled\n" );
 	printf( "-----Stats--------\n" );
@@ -722,6 +705,8 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	printf( "Num Faces: %u\n", numFaces );
 	printf( "Num Vertices: %u\n", numVertices );
 	printf( "Num Indices: %u\n", numIndices );
+	printf( "BVHNodes %u\n", tree.numNodes );
+
 	return true;
 }
 
@@ -748,4 +733,132 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 * Polygon[numFaces]
 * Triangles[numTriangles]
 * Vec3 vertices[numVertices]
+* 
+* BVHTree	tree
+* BVHNode	numNodes[tree.numNodes]
 */
+
+float BoundsArea( const BoundsMinMax& A ) {
+	Vec3 d = A.max - A.min;
+	return 2.0f * ( d.x * d.y + d.y * d.z + d.z * d.x );
+}
+
+BoundsMinMax BoundsUnion( const BoundsMinMax& a, const BoundsMinMax& b ) {
+	BoundsMinMax mm;
+	mm.max = glm::max( a.max, b.max );
+	mm.min = glm::min( a.min, b.min );
+	return mm;
+}
+
+//THIS IS SO BAD LOL
+void BVHRemove( BVHNode** arr, int* size, int index1, int index2 ) {
+	if ( index1 > index2 ) {
+		int temp = index1;
+		index1 = index2;
+		index2 = temp;
+	}
+
+	for ( int i = index1; i < *size - 1; i++ ) {
+		arr[i] = arr[i + 1];
+	}
+
+	for ( int i = index2 - 1; i < *size - 2; i++ ) {
+		arr[i] = arr[i + 1];
+	}
+
+	*size -= 2;
+}
+
+BVHTree ConstructBVH( std::vector<NPBrush>& brushes ) {
+	printf( "Constructing BVH...\n" );
+	BVHTree tree{};
+	tree.numNodes = 2 * brushes.size();
+	tree.nodes = ( BVHNode* ) malloc( tree.numNodes * sizeof( BVHNode ) );
+	BVHNode** workingSet = ( BVHNode** ) malloc( tree.numNodes * sizeof( BVHNode* ) );
+	int nodesCreated = 0;
+	int numWorkingSet = 0;
+	int numTops = 0;
+
+	//Create a working set of all leaf nodes
+	for ( int i = 0; i < brushes.size(); i++ ) {
+		BVHNode* node = &tree.nodes[i];
+		node->bounds = brushes[i].bounds;
+		node->isLeaf = true;
+		node->object = i;
+		node->child1 = -1;
+		node->child2 = -1;
+		node->nodeIndex = i;
+		node->parent = -1;
+
+		workingSet[numWorkingSet++] = node;
+	}
+	nodesCreated = numWorkingSet;
+
+	//Find the closest AABBS
+	//For determining what should be grouped,
+	//It will take the sum of the starting surface area of the two boxes
+	//and the surface area of the union of the boxes and pick the one with the lowest amount
+	//It will go through all the leaf nodes, then all the 2nd level nodes, then all the 3rd level nodes etc.
+	//The remainders of each level (if any) are then grouped with the next highest node level
+	while ( numWorkingSet > 1 ) {
+		int bestA = -1, bestB = -1;
+		int lowestDiffInSurfaceArea = 9999999.0f;
+		//Find the best Bounds
+		for ( int i = 0; i < numWorkingSet - 1; i++ ) {
+			float surfaceAreaA = BoundsArea( workingSet[i]->bounds );
+			for ( int n = i + 1; n < numWorkingSet; n++ ) {
+				BoundsMinMax boxUnion = BoundsUnion( workingSet[i]->bounds, workingSet[n]->bounds );
+
+				float surfaceAreaB = BoundsArea( workingSet[n]->bounds );
+				float surfaceArenaUnion = BoundsArea( boxUnion );
+
+				float diff = surfaceArenaUnion - ( surfaceAreaA + surfaceAreaB );
+				if ( surfaceArenaUnion < lowestDiffInSurfaceArea ) {
+					lowestDiffInSurfaceArea = diff;
+					bestA = i;
+					bestB = n;
+				}
+			}
+		}
+
+		//Remove the two root nodes and add a new Node
+		assert( bestA != -1 );
+		assert( bestB != -1 );
+		BVHNode* node = &tree.nodes[nodesCreated];
+		node->nodeIndex = nodesCreated++;
+		node->bounds = BoundsUnion( workingSet[bestA]->bounds, workingSet[bestB]->bounds );//todo Faster to recalc or not?
+		node->child1 = workingSet[bestA]->nodeIndex;
+		node->child2 = workingSet[bestB]->nodeIndex;
+		node->parent = -1;
+
+		workingSet[bestA]->parent = node->nodeIndex;
+		workingSet[bestB]->parent = node->nodeIndex;
+
+		if ( bestA > bestB ) {
+			int temp = bestA;
+			bestA = bestB;
+			bestB = temp;
+		}
+
+		//TODO Do Something faster
+		BVHRemove( workingSet, &numWorkingSet, bestA, bestB );
+
+		//Add the higher level node onto the end, we dont want to use it in this loop
+		workingSet[tree.numNodes - 1 - numTops] = node;
+		numTops++;
+
+		//If the loop is going to break, we should move the topnodes back
+		if ( numWorkingSet > 1 ) continue;
+
+		//Copy them to start of array (TODO just memcpy)
+		for ( int n = 0; n < numTops; n++ ) {
+			workingSet[numWorkingSet++] = workingSet[tree.numNodes - numTops + n];
+		}
+		numTops = 0;
+	}
+
+	tree.root = workingSet[0]->nodeIndex;
+	free( workingSet );
+	return tree;
+}
+

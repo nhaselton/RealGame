@@ -22,9 +22,27 @@ struct Brush {
 	u32 numPolygons;
 };
 
+struct BVHNode {
+	BoundsMinMax bounds;
+	int nodeIndex;
+	//if leaf node: index into physics.brushes[]
+	int object;
+	int parent;
+	int child1;
+	int child2;
+	bool isLeaf;
+};
+
+struct BVHTree {
+	BVHNode* nodes;
+	int numNodes;
+	int root;
+};
+
 struct Physics {
 	Brush* brushes;
 	int numBrushes;
+	BVHTree staticBVH;
 };
 extern Physics physics;
 
@@ -62,13 +80,23 @@ struct HitInfo {
 
 
 
+
 void PhysicsInit();
 void PhysicsLoadLevel( struct Level* level, struct NFile* file );
 
-//
+bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo* bestSweep );
 bool BruteCastSphere( Vec3 pos, Vec3 velocity, Vec3 r, SweepInfo* outInfo );
 bool CastSphere( Vec3 pos, Vec3 velocity, Brush* brush, Vec3 r, SweepInfo* outInfo );
-Vec3 MoveAndSlide( CharacterCollider* characterController, Vec3 velocity, int bounces = 3 );
+//Should the characterController offset be moved to the new position
+//Returns where the entity.position/offset should be no matter what
+Vec3 MoveAndSlide( CharacterCollider* characterController, Vec3 velocity, int bounces = 3, bool adjustCharacterController = false );
 
 Vec3 EllipseFromWorld( const Vec3& point, const Vec3& radius );
 Vec3 WorldFromEllipse( const Vec3& point, const Vec3& radius );
+
+inline bool FastAABB( const BoundsMinMax& a, const BoundsMinMax& b ) {
+	return
+		( a.min.x < b.max.x && a.max.x > b.min.x &&
+			a.min.y < b.max.y && a.max.y > b.min.y &&
+			a.min.z < b.max.z && a.max.z > b.min.z );
+}

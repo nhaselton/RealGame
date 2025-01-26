@@ -22,6 +22,10 @@
 *		EntityColliders to be able to detect if they intersect each other
 *		Im fine if they clip each i think, i can have a collision resolve stage?
 *		
+*	
+*	BVH For triangles rather than hulls
+*	
+* 
 *	MVP
 *
 *	Guns For Player:
@@ -91,15 +95,11 @@ int main() {
 	player.bounds.offset = player.pos;
 	player.bounds.bounds.center = Vec3( 0 );
 	player.bounds.bounds.width = Vec3( 1, 2, 1 );
-	//player.bounds = PhysicsCreateDynamicBody( &player, Vec3( 0 ), Vec3( .5f, 1.0f, .5f ) );
-	//player.bounds = ( BoundsHalfWidth* ) ScratchArenaAllocate( &globalArena, sizeof( BoundsHalfWidth ) );
-	//player.bounds->center = Vec3( 0 );
-	//player.bounds->width = Vec3( .5f,1.0f,.5f );
 	player.renderModel = 0;
 
 	//Model
 	Entity* ogre;
-	ogre = CreateOgre( Vec3( 13, -5, -20 ), &player );
+	ogre = CreateOgre( Vec3( -22, -3, 6 ), &player );
 
 	//Revolver
 	Model* revolver = ModelManagerAllocate( &modelManager, "res/models/revolver.glb" );
@@ -113,13 +113,12 @@ int main() {
 			for ( int k = 0; k < face->numTriangles; k++ ) {
 				u32* tri = face->triangles[k].v;
 				Vec3* verts = brush->vertices;
-				DebugDrawLine( verts[tri[0]], verts[tri[1]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
-				DebugDrawLine( verts[tri[1]], verts[tri[2]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
-				DebugDrawLine( verts[tri[2]], verts[tri[0]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
+				//DebugDrawLine( verts[tri[0]], verts[tri[1]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
+				//DebugDrawLine( verts[tri[1]], verts[tri[2]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
+				//DebugDrawLine( verts[tri[2]], verts[tri[0]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
 			}
 		}
 	}
-
 
 	PrintAllocators( &globalArena );
 	WindowSetVsync( &window, 0 );
@@ -153,6 +152,7 @@ int main() {
 		wantDir *= 20.0f * dt;
 		
 		EntityMove( &player, wantDir );
+		MoveAndSlide( &player.bounds, renderer.camera.Front * 100.0f, 0, 0 );
 		renderer.camera.Position = player.pos + Vec3( 0, 1, 0 );
 
 		RenderStartFrame( &renderer );
@@ -168,9 +168,7 @@ int main() {
 			RenderDrawModel( &renderer, revolver, model );
 		}
 
-
 		RenderEndFrame( &renderer );
-
 		WindowSwapBuffers( &window );
 	}
 }

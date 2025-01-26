@@ -324,6 +324,6 @@ void DebugDrawEllipse( Vec3 center, Vec3 radius, Vec3 color, bool wireframe, boo
 }
 
 void DebugDrawCharacterCollider( CharacterCollider* collider, Vec3 color , bool wireframe , bool depthTest , float duration ) {
-	DebugDrawAABB( collider->offset + collider->bounds.center, collider->bounds.width, duration, color, wireframe, 1, depthTest );;
+	DebugDrawAABB( collider->offset + collider->bounds.center, collider->bounds.width , duration, color, wireframe, 1, depthTest );;
 	DebugDrawEllipse( collider->offset + collider->bounds.center, collider->bounds.width, color, wireframe, depthTest, duration );;
 }

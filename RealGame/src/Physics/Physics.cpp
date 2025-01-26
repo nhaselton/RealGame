@@ -32,6 +32,10 @@ void PhysicsLoadLevel( Level* level, NFile* file ) {
 	for ( int i = 0; i < numFaces; i++ ) {
 		faces[i].triangles = triangles + ( int ) faces[i].triangles;
 	}
+
+	NFileRead( file, &physics.staticBVH, sizeof( BVHTree ) );
+	physics.staticBVH.nodes = ( BVHNode* ) ScratchArenaAllocate( &level->arena, physics.staticBVH.numNodes * sizeof( BVHNode ) );
+	NFileRead( file, physics.staticBVH.nodes, sizeof( BVHNode ) * physics.staticBVH.numNodes );
 }
 
 inline Vec3 ProjectOnPlane( const Vec3& planeNormal, const Vec3& vector ) {
@@ -51,8 +55,8 @@ inline Vec3 ProjectOnPlane( const Vec3& planeNormal, const Vec3& vector ) {
 //https://www.peroxide.dk/papers/collision/collision.pdf
 //https ://arxiv.org/pdf/1211.0059
 //https://www.youtube.com/watch?v=YR6Q7dUz2uk&t=425s
-#define VERY_SMALL_DISTANCE .0005f
-Vec3 MoveAndSlide( CharacterCollider* characterController , Vec3 velocity, int maxBounces ) {
+#define VERY_SMALL_DISTANCE .0000005f //Increasing this will break high fps
+Vec3 MoveAndSlide( CharacterCollider* characterController , Vec3 velocity, int maxBounces, bool adjustCharacterController ) {
 	Vec3 startPos = characterController->bounds.center + characterController->offset;
 	Vec3 startVel = velocity;
 
@@ -69,14 +73,18 @@ Vec3 MoveAndSlide( CharacterCollider* characterController , Vec3 velocity, int m
 	do {
 		SweepInfo info{};
 
-		if ( !BruteCastSphere( pos, velocity, characterController->bounds.width, &info ) ) {
+		//if ( !BruteCastSphere( pos, velocity, characterController->bounds.width, &info ) ) {
+		if ( !PhysicsQuerySweepStatic( 
+			pos + characterController->bounds.center, 
+			velocity, characterController->bounds.width, 
+			&info ) ) {
 			pos += velocity;
 			break;
 		}
 
 		Vec3 point = info.r3Position + info.r3Velocity * info.t;
-		if ( glm::length( velocity ) < .01f )
-			break;
+		//if ( glm::length( velocity ) < .01f )
+		//	break;
 
 
 		Vec3 slidePlaneOrigin = WorldFromEllipse( info.eSpaceIntersection, info.radius );
@@ -91,14 +99,16 @@ Vec3 MoveAndSlide( CharacterCollider* characterController , Vec3 velocity, int m
 		pos = point;
 
 		float mag = glm::length( remaining );
+		//Note: Can probably use info.r3Norm as the plane
 		remaining = ProjectOnPlane( slidePlaneNormal, remaining );
 
-		if ( glm::length2( remaining ) < VERY_SMALL_DISTANCE * VERY_SMALL_DISTANCE )
+
+		if ( glm::length2( remaining ) == 0.0f )
 			break;
 		remaining = glm::normalize( remaining ) * mag;
 
 
-		assert( !glm::any( glm::isnan( remaining ) ) );
+		//assert( !glm::any( glm::isnan( remaining ) ) );
 		pos = point;
 		velocity = remaining;
 	} while ( bounces++ < maxBounces );
@@ -107,7 +117,11 @@ Vec3 MoveAndSlide( CharacterCollider* characterController , Vec3 velocity, int m
 	pos -= characterController->bounds.center;
 	Vec3 finalPos = pos;
 
-	characterController->offset = finalPos;
+	DebugDrawAABB( pos, Vec3(1,2,1),0,GREEN );
+	//DebugDrawCharacterCollider( characterController, GREEN );
+	
+	if ( adjustCharacterController )
+		characterController->offset = finalPos;
 	return finalPos;
 }
 
@@ -351,4 +365,94 @@ bool CastSphere( Vec3 pos, Vec3 velocity, Brush* brush, Vec3 r, SweepInfo* outIn
 	}
 	outInfo->r3Point = WorldFromEllipse( outInfo->eSpaceIntersection, Vec3( r ) );
 	return outInfo->foundCollision;
+}
+
+bool AABBSweep( const BoundsMinMax& a, const BoundsMinMax& b, Vec3 velocity ) {
+	BoundsMinMax ac = a;
+	BoundsMinMax bc = b;
+	//DebugDrawBoundsMinMax( &ac );
+	//DebugDrawBoundsMinMax( &bc );
+
+	if ( FastAABB( a, b ) ) return true;
+	velocity = -velocity;
+	float tMin = 0;
+	float tMax = 1.0;
+
+	for ( int i = 0; i < 3; i++ ) {
+		if ( velocity[i] < 0.0f ) {
+			if ( b.max[i] < a.min[i] ) return false;
+			if ( a.max[i] < b.min[i] )
+				tMin = glm::max( ( a.max[i] - b.min[i] ) / velocity[i], tMin );
+			if ( b.max[i] > a.min[i] )
+				tMax = glm::min( ( a.min[i] - b.max[i] ) / velocity[i], tMax );
+		}
+		if ( velocity[i] > 0.0f ) {
+			if ( b.min[i] > a.max[i] ) return false;
+			if ( b.max[i] < a.min[i] )
+				tMin = glm::max( ( a.min[i] - b.max[i] ) / velocity[i], tMin );
+			if ( a.max[i] > b.min[i] )
+				tMax = glm::min( ( a.max[i] - b.min[i] ) / velocity[i], tMax );
+		}
+		if ( tMin > tMax ) 
+			return false;
+	}
+	return true;
+}
+
+bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo* bestSweep ) {
+	TEMP_ARENA_SET;
+	memset( bestSweep, 0, sizeof( *bestSweep) );
+	int aabbChecks = 0;
+
+	int polyChecks = 0;
+
+	BVHNode** stack = ( BVHNode** ) TEMP_ALLOC( sizeof( void* ) * physics.staticBVH.numNodes );
+	int numStack = 1;
+	stack[0] = &physics.staticBVH.nodes[physics.staticBVH.root];
+
+	BoundsMinMax fastBounds{
+		start - radius,
+		start + radius
+	};
+
+	BoundsMinMax AABB2 {
+		start - radius,
+		start + velocity + radius
+	};
+
+	while ( numStack > 0 ) {
+		BVHNode* node = stack[--numStack];
+		aabbChecks++;
+
+		//Note: Seems to be faster to just just quick AABB test rather than sweep and test
+		// This means extra triangles but it seems to be fine
+		//In the future I should look into
+		//if ( !AABBSweep( fastBounds, node->bounds, velocity )  )
+		if ( !FastAABB( AABB2, node->bounds ) )
+			continue;
+
+		//If leaf then get the actual object
+		if ( node->isLeaf ) {
+			//Collide with the map geometry (Already done if it's a leaf aabb)
+			if ( node->object >= 0 ) {
+				SweepInfo info{};
+				polyChecks += physics.brushes[node->object].numPolygons;
+				if ( CastSphere( start, velocity, &physics.brushes[node->object], radius, &info ) ) {
+					if ( info.t < bestSweep->t || !bestSweep->foundCollision ) {
+						*bestSweep = info;
+					}
+				}
+			}
+			else {
+				assert( 0 );
+			}
+		}
+
+		//If not just add children
+		if ( node->child1 != -1 )
+			stack[numStack++] = &physics.staticBVH.nodes[node->child1];
+		if ( node->child2 != -1 )
+			stack[numStack++] = &physics.staticBVH.nodes[node->child2];
+	}
+	return bestSweep->foundCollision;
 }

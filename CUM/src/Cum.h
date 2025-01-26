@@ -29,7 +29,6 @@ struct NPBrush {
 	BoundsMinMax bounds;
 };
 
-
 extern double scale;
 extern bool fixNormals;
 bool Compile( const char* input, const char* output);
