@@ -36,9 +36,6 @@
 *
 *	Ogre
 *		AI
-*			Find Player
-*			Walk Around
-*
 *		Shootable
 *		Killable (Sphere per bone?)
 */
@@ -96,6 +93,8 @@ int main() {
 	player.bounds.bounds.center = Vec3( 0 );
 	player.bounds.bounds.width = Vec3( 1, 2, 1 );
 	player.renderModel = 0;
+	renderer.camera.Yaw = 180.0;
+	renderer.camera.GetViewMatrix();
 
 	//Model
 	Entity* ogre;
@@ -146,7 +145,7 @@ int main() {
 		if ( wantDir != Vec3( 0 ) ) 
 			wantDir = glm::normalize( wantDir );
 
-		//OgreUpdate( ogre );
+		OgreUpdate( ogre );
 		//PlayerMovement( &player, wantDir * 20.0f * dt);
 		HitInfo info{};
 		wantDir *= 20.0f * dt;

@@ -22,7 +22,7 @@ Entity* CreateOgre( Vec3 pos, Entity* player ) {
 	entity->renderModel->pose->skeleton = entity->renderModel->model->skeleton;
 
 	entity->bounds.offset = pos;
-	entity->bounds.bounds.center = Vec3( 0,4,0 );
+	entity->bounds.bounds.center = Vec3( 0, 3, 0 );
 	entity->bounds.bounds.width = Vec3( 3 );
 	
 
@@ -57,7 +57,7 @@ void OgreMove( Entity* entity, Vec3 target ) {
 	dist = glm::min( dist, speed );
 	
 	//entity->pos += dir * dist * dt;
-	MoveAndSlide( &entity->bounds, dir * dist * dt );
+	entity->pos = MoveAndSlide( &entity->bounds, dir * dist * dt, 1, true );
 	entity->rotation = glm::quatLookAt( -dir, Vec3( 0, 1, 0 ) );
 }
 
@@ -69,7 +69,7 @@ void OgreTaunt( Entity* entity ) {
 
 void OgreUpdate( Entity* entity ) {
 	//Apply Gravity
-	entity->pos = MoveAndSlide( &entity->bounds, Vec3( 0, -10 * dt, 0 ), 0 );
+	entity->pos = MoveAndSlide( &entity->bounds, Vec3( 0, -10 * dt, 0 ), 1, true );
 
 	switch ( ( ogreState_t ) entity->state ) {
 		case OGRE_CHASE: OgreChase( entity ); break;
@@ -82,7 +82,7 @@ void OgreUpdate( Entity* entity ) {
 	}
 
 	EntityAnimationUpdate( entity, dt );
-	//DebugDrawCharacterCollider( &entity->bounds );
+	DebugDrawCharacterCollider( &entity->bounds );
 }
 
 void OgreStartChase( Entity* entity ) {

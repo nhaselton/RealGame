@@ -56,8 +56,8 @@ inline Vec3 ProjectOnPlane( const Vec3& planeNormal, const Vec3& vector ) {
 //https ://arxiv.org/pdf/1211.0059
 //https://www.youtube.com/watch?v=YR6Q7dUz2uk&t=425s
 #define VERY_SMALL_DISTANCE .0000005f //Increasing this will break high fps
-Vec3 MoveAndSlide( CharacterCollider* characterController , Vec3 velocity, int maxBounces, bool adjustCharacterController ) {
-	Vec3 startPos = characterController->bounds.center + characterController->offset;
+Vec3 MoveAndSlide( CharacterCollider* cc , Vec3 velocity, int maxBounces, bool adjustCharacterController ) {
+	Vec3 startPos = cc->bounds.center + cc->offset;
 	Vec3 startVel = velocity;
 
 	Vec3 pos = startPos;
@@ -66,7 +66,7 @@ Vec3 MoveAndSlide( CharacterCollider* characterController , Vec3 velocity, int m
 
 	//Slight Epslion to keep from penetrating walls due to fp error
 	float skinWidth = .015f;
-	Vec3 r = characterController->bounds.width - skinWidth;
+	Vec3 r = cc->bounds.width - skinWidth;
 	//float r = 1.0f + ( -skinWidth );
 
 	int bounces = 0;
@@ -74,10 +74,7 @@ Vec3 MoveAndSlide( CharacterCollider* characterController , Vec3 velocity, int m
 		SweepInfo info{};
 
 		//if ( !BruteCastSphere( pos, velocity, characterController->bounds.width, &info ) ) {
-		if ( !PhysicsQuerySweepStatic( 
-			pos + characterController->bounds.center, 
-			velocity, characterController->bounds.width, 
-			&info ) ) {
+		if ( !PhysicsQuerySweepStatic( pos, velocity, cc->bounds.width, &info ) ) {
 			pos += velocity;
 			break;
 		}
@@ -114,14 +111,15 @@ Vec3 MoveAndSlide( CharacterCollider* characterController , Vec3 velocity, int m
 	} while ( bounces++ < maxBounces );
 
 	//We only want to update the offset, not the local position of the bounds
-	pos -= characterController->bounds.center;
+	pos -= cc->bounds.center;
 	Vec3 finalPos = pos;
 
 	DebugDrawAABB( pos, Vec3(1,2,1),0,GREEN );
 	//DebugDrawCharacterCollider( characterController, GREEN );
 	
 	if ( adjustCharacterController )
-		characterController->offset = finalPos;
+		cc->offset = finalPos;
+
 	return finalPos;
 }
 

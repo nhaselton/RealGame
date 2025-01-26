@@ -28,11 +28,9 @@ void EntityAnimationUpdate( Entity* entity, float dt ) {
 }
 
 void EntityMove( Entity* entity, Vec3 velocity ) {
-	PROFILE( "MOVE" );
-
 	Vec3 gravity( 0,  -10.0f * dt , 0 );
 	velocity.y = 0;
 
 	entity->pos = MoveAndSlide( &entity->bounds, velocity, 3, true );
-	entity->pos = MoveAndSlide( &entity->bounds, gravity, 1, true );
+	entity->pos = MoveAndSlide( &entity->bounds, gravity, 0, true );
 }
