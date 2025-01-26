@@ -14,14 +14,19 @@ struct RenderModel {
 	Vec3 scale;
 };
 
+//For ray casts / entity entity collisions they use their AABB
+//For Collision with static geometry it uses a Ellipse with the size of bounds.halfWidth
+struct CharacterCollider {
+	Vec3 offset;
+	BoundsHalfWidth bounds;
+};
+
 class Entity {
 public:
 	Vec3 pos;
 	Quat rotation;
 
-	//Bounds center should be an offset of the Entity position.
-	//Call Entity Query To generate correct bounds?
-	BoundsHalfWidth* bounds;
+	CharacterCollider bounds;
 	RenderModel* renderModel;
 
 	struct AnimationClip* currentAnimation;
@@ -33,3 +38,5 @@ public:
 
 void EntityStartAnimation( Entity* entity, int index );
 void EntityAnimationUpdate( Entity* entity, float dt );
+
+void EntityMove( Entity* entity, Vec3 velocity );

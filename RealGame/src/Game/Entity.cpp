@@ -1,4 +1,5 @@
 #include "Entity.h"
+#include "Physics\Physics.h"
 #include "Resources/ModelManager.h"
 
 void EntityStartAnimation( Entity* entity, int index ) {
@@ -26,3 +27,10 @@ void EntityAnimationUpdate( Entity* entity, float dt ) {
 	UpdatePose( entity->renderModel->model->skeleton->root, Mat4( 1.0 ), entity->renderModel->pose );
 }
 
+void EntityMove( Entity* entity, Vec3 velocity ) {
+	Vec3 gravity( 0, velocity.y - ( 10.0f * dt ), 0 );
+	velocity.y = 0;
+
+	entity->pos = MoveAndSlide( &entity->bounds, velocity, 3 );
+	entity->pos = MoveAndSlide( &entity->bounds, gravity, 0 );
+}

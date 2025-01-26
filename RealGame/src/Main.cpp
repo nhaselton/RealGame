@@ -88,6 +88,9 @@ int main() {
 
 	Entity player;
 	player.pos = Vec3( 0 );
+	player.bounds.offset = player.pos;
+	player.bounds.bounds.center = Vec3( 0 );
+	player.bounds.bounds.width = Vec3( 1, 2, 1 );
 	//player.bounds = PhysicsCreateDynamicBody( &player, Vec3( 0 ), Vec3( .5f, 1.0f, .5f ) );
 	//player.bounds = ( BoundsHalfWidth* ) ScratchArenaAllocate( &globalArena, sizeof( BoundsHalfWidth ) );
 	//player.bounds->center = Vec3( 0 );
@@ -119,7 +122,7 @@ int main() {
 
 
 	PrintAllocators( &globalArena );
-	WindowSetVsync( &window, 1 );
+	WindowSetVsync( &window, 0 );
 	while ( !WindowShouldClose( &window ) ) {
 		PROFILE( "Frame" );
 		WindowPollInput( &window );
@@ -147,19 +150,11 @@ int main() {
 		//OgreUpdate( ogre );
 		//PlayerMovement( &player, wantDir * 20.0f * dt);
 		HitInfo info{};
-
-		//for ( int i = 0; i < 1000; i++ )
 		wantDir *= 20.0f * dt;
-		//wantDir.y = 0;
-		Vec3 r( .5, 1, .5f );
-		player.pos = MoveAndSlide( player.pos, wantDir, r);
-
-		if ( KeyDown(KEY_SPACE) )
-			player.pos += wantDir ;
-		else
-			MoveAndSlide( renderer.camera.Position, renderer.camera.Front * 10.0f, r );
 		
+		EntityMove( &player, wantDir );
 		renderer.camera.Position = player.pos + Vec3( 0, 1, 0 );
+
 		RenderStartFrame( &renderer );
 		RenderDrawFrame( &renderer, dt );
 		RenderDrawEntity( ogre );

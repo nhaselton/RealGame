@@ -10,6 +10,7 @@
 #include "DebugRenderer.h"
 #include "core/Window.h"
 #include "Physics\Physics.h"
+#include "Game/Entity.h"
 
 struct LineBatch {
 	struct DebugLine* lines;

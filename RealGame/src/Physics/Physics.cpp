@@ -1,6 +1,8 @@
 ﻿#include "Physics.h"
 #include "Resources\Level.h"
 #include "Renderer/DebugRenderer.h"
+#include "game/Entity.h"
+
 void PhysicsInit() {
 
 }
@@ -48,21 +50,26 @@ inline Vec3 ProjectOnPlane( const Vec3& planeNormal, const Vec3& vector ) {
 
 //https://www.peroxide.dk/papers/collision/collision.pdf
 //https ://arxiv.org/pdf/1211.0059
+//https://www.youtube.com/watch?v=YR6Q7dUz2uk&t=425s
 #define VERY_SMALL_DISTANCE .0005f
-Vec3 MoveAndSlide( Vec3 pos, Vec3 velocity, Vec3 radius ) {
-	Vec3 startPos = pos;//debug
+Vec3 MoveAndSlide( CharacterCollider* characterController , Vec3 velocity, int maxBounces ) {
+	Vec3 startPos = characterController->bounds.center + characterController->offset;
 	Vec3 startVel = velocity;
+
+	Vec3 pos = startPos;
+
 	if ( glm::length2( velocity ) < VERY_SMALL_DISTANCE ) return pos;
 
 	//Slight Epslion to keep from penetrating walls due to fp error
 	float skinWidth = .015f;
-	Vec3 r = radius - skinWidth;
+	Vec3 r = characterController->bounds.width - skinWidth;
 	//float r = 1.0f + ( -skinWidth );
 
-	for ( int i = 0; i < 3; i++ ) {
+	int bounces = 0;
+	do {
 		SweepInfo info{};
 
-		if ( !BruteCastSphere( pos, velocity, radius, &info ) ) {
+		if ( !BruteCastSphere( pos, velocity, characterController->bounds.width, &info ) ) {
 			pos += velocity;
 			break;
 		}
@@ -76,20 +83,12 @@ Vec3 MoveAndSlide( Vec3 pos, Vec3 velocity, Vec3 radius ) {
 		Vec3 slidePlaneNormal = glm::normalize( point - slidePlaneOrigin );
 		float slidePlaneDist = glm::dot( slidePlaneNormal, slidePlaneOrigin );
 
-		float r3Dist = info.eSpaceNearestDist * radius.x; //TODO Work on this now! was just info.dist*r
-		float r3Dist2 = glm::length( point - pos );
-		r3Dist = r3Dist2;
-
-		printf( "%f\n", r3Dist2 - r3Dist );
-		//float r3Dist2 = glm::length(velocity) * info.t;
-		Vec3 velToSurface = glm::normalize( velocity ) * ( r3Dist - skinWidth );
+		Vec3 velToSurface = glm::normalize( velocity ) * ( glm::length( point - pos ) - skinWidth );
 		Vec3 remaining = velocity - velToSurface;
 
 		point = pos + velToSurface;
 		assert( !glm::any( glm::isnan( point ) ) );
 		pos = point;
-
-		DebugDrawEllipse( pos, radius, Vec3( 0, 0, 1 ) );
 
 		float mag = glm::length( remaining );
 		remaining = ProjectOnPlane( slidePlaneNormal, remaining );
@@ -102,13 +101,15 @@ Vec3 MoveAndSlide( Vec3 pos, Vec3 velocity, Vec3 radius ) {
 		assert( !glm::any( glm::isnan( remaining ) ) );
 		pos = point;
 		velocity = remaining;
-	}
+	} while ( bounces++ < maxBounces );
 
-	Vec3 finalPos = pos;//WorldFromEllipse( pos, Vec3( r ) );
-	DebugDrawEllipse( finalPos, radius, RED );
+	//We only want to update the offset, not the local position of the bounds
+	pos -= characterController->bounds.center;
+	Vec3 finalPos = pos;
+
+	characterController->offset = finalPos;
 	return finalPos;
 }
-
 
 bool PointInTriangle( const Vec3& q, Vec3 a, Vec3 b, Vec3 c ) {
 	//Translate Triangle so point is in center

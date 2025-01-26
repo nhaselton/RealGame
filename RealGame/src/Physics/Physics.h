@@ -1,6 +1,8 @@
 #pragma once
 #include "def.h"
 
+struct CharacterCollider;
+
 struct BrushTri {
 	u32 v[3];
 };
@@ -58,12 +60,7 @@ struct HitInfo {
 	float dist;
 };
 
-//For ray casts / entity entity collisions they use their AABB
-//For Collision with static geometry it uses a Ellipse with the size of bounds.halfWidth
-struct CharacterCollider {
-	Vec3 offset;
-	BoundsHalfWidth bounds;
-};
+
 
 void PhysicsInit();
 void PhysicsLoadLevel( struct Level* level, struct NFile* file );
@@ -71,7 +68,7 @@ void PhysicsLoadLevel( struct Level* level, struct NFile* file );
 //
 bool BruteCastSphere( Vec3 pos, Vec3 velocity, Vec3 r, SweepInfo* outInfo );
 bool CastSphere( Vec3 pos, Vec3 velocity, Brush* brush, Vec3 r, SweepInfo* outInfo );
-Vec3 MoveAndSlide( Vec3 pos, Vec3 velocity, Vec3 radius );
+Vec3 MoveAndSlide( CharacterCollider* characterController, Vec3 velocity, int bounces = 3 );
 
 Vec3 EllipseFromWorld( const Vec3& point, const Vec3& radius );
 Vec3 WorldFromEllipse( const Vec3& point, const Vec3& radius );
