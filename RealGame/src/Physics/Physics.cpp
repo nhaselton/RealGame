@@ -30,8 +30,85 @@ void PhysicsLoadLevel( Level* level, NFile* file ) {
 	for ( int i = 0; i < numFaces; i++ ) {
 		faces[i].triangles = triangles + ( int ) faces[i].triangles;
 	}
-	int a = 0;
 }
+
+inline Vec3 ProjectOnPlane( const Vec3& planeNormal, const Vec3& vector ) {
+	// Normalize the plane normal
+	float normalLength = glm::length( planeNormal );
+	Vec3 normalizedNormal = planeNormal * ( 1.0f / normalLength );
+
+	// Calculate the projection of the vector onto the plane normal
+	float projectionLength = glm::dot( vector, normalizedNormal );
+	Vec3 projection = normalizedNormal * projectionLength;
+	
+// Subtract the projection from the original vector to get the projection on the plane
+	return vector - projection;
+
+}
+
+//https://www.peroxide.dk/papers/collision/collision.pdf
+//https ://arxiv.org/pdf/1211.0059
+#define VERY_SMALL_DISTANCE .0005f
+Vec3 MoveAndSlide( Vec3 pos, Vec3 velocity, Vec3 radius ) {
+	Vec3 startPos = pos;//debug
+	Vec3 startVel = velocity;
+	if ( glm::length2( velocity ) < VERY_SMALL_DISTANCE ) return pos;
+
+	//Slight Epslion to keep from penetrating walls due to fp error
+	float skinWidth = .015f;
+	Vec3 r = radius - skinWidth;
+	//float r = 1.0f + ( -skinWidth );
+
+	for ( int i = 0; i < 3; i++ ) {
+		SweepInfo info{};
+
+		if ( !BruteCastSphere( pos, velocity, radius, &info ) ) {
+			pos += velocity;
+			break;
+		}
+
+		Vec3 point = info.r3Position + info.r3Velocity * info.t;
+		if ( glm::length( velocity ) < .01f )
+			break;
+
+
+		Vec3 slidePlaneOrigin = WorldFromEllipse( info.eSpaceIntersection, info.radius );
+		Vec3 slidePlaneNormal = glm::normalize( point - slidePlaneOrigin );
+		float slidePlaneDist = glm::dot( slidePlaneNormal, slidePlaneOrigin );
+
+		float r3Dist = info.eSpaceNearestDist * radius.x; //TODO Work on this now! was just info.dist*r
+		float r3Dist2 = glm::length( point - pos );
+		r3Dist = r3Dist2;
+
+		printf( "%f\n", r3Dist2 - r3Dist );
+		//float r3Dist2 = glm::length(velocity) * info.t;
+		Vec3 velToSurface = glm::normalize( velocity ) * ( r3Dist - skinWidth );
+		Vec3 remaining = velocity - velToSurface;
+
+		point = pos + velToSurface;
+		assert( !glm::any( glm::isnan( point ) ) );
+		pos = point;
+
+		DebugDrawEllipse( pos, radius, Vec3( 0, 0, 1 ) );
+
+		float mag = glm::length( remaining );
+		remaining = ProjectOnPlane( slidePlaneNormal, remaining );
+
+		if ( glm::length2( remaining ) < VERY_SMALL_DISTANCE * VERY_SMALL_DISTANCE )
+			break;
+		remaining = glm::normalize( remaining ) * mag;
+
+
+		assert( !glm::any( glm::isnan( remaining ) ) );
+		pos = point;
+		velocity = remaining;
+	}
+
+	Vec3 finalPos = pos;//WorldFromEllipse( pos, Vec3( r ) );
+	DebugDrawEllipse( finalPos, radius, RED );
+	return finalPos;
+}
+
 
 bool PointInTriangle( const Vec3& q, Vec3 a, Vec3 b, Vec3 c ) {
 	//Translate Triangle so point is in center
@@ -217,7 +294,7 @@ bool TestTriangleEllipse( SweepInfo* sInfo, Vec3 a, Vec3 b, Vec3 c ) {
 	return sInfo->foundCollision;
 }
 
-bool BruteCastSphere( Vec3 pos, Vec3 velocity, float r, SweepInfo* outInfo ) {
+bool BruteCastSphere( Vec3 pos, Vec3 velocity, Vec3 r, SweepInfo* outInfo ) {
 	SweepInfo bestHit{};
 	
 	for ( int i = 0; i < physics.numBrushes; i++ ) {
@@ -236,11 +313,11 @@ bool BruteCastSphere( Vec3 pos, Vec3 velocity, float r, SweepInfo* outInfo ) {
 		return false;
 }
 
-bool CastSphere( Vec3 pos, Vec3 velocity, Brush* brush, float r, SweepInfo* outInfo ) {
+bool CastSphere( Vec3 pos, Vec3 velocity, Brush* brush, Vec3 r, SweepInfo* outInfo ) {
 	memset( outInfo, 0, sizeof( *outInfo ) );
 	outInfo->r3Position = pos;
 	outInfo->r3Velocity = velocity;
-	outInfo->radius = Vec3( r );
+	outInfo->radius = r;
 	outInfo->basePoint = EllipseFromWorld( pos, outInfo->radius );
 	outInfo->velocity = EllipseFromWorld( outInfo->r3Velocity, outInfo->radius );
 	outInfo->velocityNormalized = glm::normalize( outInfo->velocity );
@@ -274,143 +351,3 @@ bool CastSphere( Vec3 pos, Vec3 velocity, Brush* brush, float r, SweepInfo* outI
 	outInfo->r3Point = WorldFromEllipse( outInfo->eSpaceIntersection, Vec3( r ) );
 	return outInfo->foundCollision;
 }
-
-#if 0
-
-float signedDistance = glm::dot( polygon->n, pos ) - polygon->d;
-float NdotV = glm::dot( velocity, polygon->n );
-
-float t0 = ( 1 - signedDistance ) / NdotV;
-float t1 = ( -1 - signedDistance ) / NdotV;
-
-bool embed = false;
-if ( NdotV == 0.0f ) {
-	if ( fabs( signedDistance ) >= r )
-		return 0;
-	embed = true;
-	t0 = 0;
-	t1 = 1;
-}
-
-if ( t0 > t1 ) {
-	float t = t0;
-	t0 = t1;
-	t1 = t;
-}
-//We never touch
-if ( t0 > 1.0f || t1 < 0.0f )
-	return false;
-
-//Clamp
-if ( t0 < 0.0f ) t0 = 0.0f;
-if ( t1 > 1.0f ) t1 = 1.0f;
-
-//Check if we're on the inside of a triangle
-if ( !embed ) {
-	Vec3 planeIntersection = pos - polygon->n + t0 * velocity;
-	if ( PointInTriangle( planeIntersection, a, b, c ) ) {
-		info->didHit = true;
-		info->dist = t0;
-		info->point = pos + velocity * t0;
-		info->normal = polygon->n;
-		return true;
-	}
-}
-//Sweeping
-return false;
-//Vertices
-Vec3 vertices[3] = { a,b,c };
-
-for ( int i = 0; i < 3; i++ ) {
-	float a = glm::dot( velocity, velocity );
-	float b = 2 * glm::dot( velocity, pos - vertices[i] );
-	float c = glm::length2( vertices[i] - pos ) - 1;
-
-	float x1 = 0;
-	if ( SolveQuadratic( a, b, c, &x1 ) ) {
-		float dist = x1;
-		if ( !info->didHit || dist < info->dist ) {
-			//This Might be wrong. It should probably be veritces[i] - normal * Radius becuase right now its center is the same spot as the vertex
-			info->didHit = true;
-			info->dist = dist;
-			info->normal = pos - vertices[i];
-			info->point = pos + velocity * info->dist;//vertices[i];
-		}
-	}
-}
-//Edges
-Vec3 edges[3] = {
-	b - a,
-	c - b,
-	a - c };
-for ( int i = 0; i < 3; i++ ) {
-	Vec3 edge = edges[i];
-	Vec3 baseToVertex = vertices[i] - pos;
-	float edgeSquaredLength = glm::length2( edge );
-	float edgeDotVelocity = glm::dot( edge, velocity );
-	float edgeDotBaseToVertex = glm::dot( edge, baseToVertex );
-	float velocitySquaredLength = glm::length2( velocity );
-	float baseToVertexSquared = glm::length2( baseToVertex );
-	// Calculate parameters for equation
-	float a = edgeSquaredLength * -velocitySquaredLength +
-		edgeDotVelocity * edgeDotVelocity;
-	float b = edgeSquaredLength * ( 2 * glm::dot( velocity, baseToVertex ) ) -
-		2.0 * edgeDotVelocity * edgeDotBaseToVertex;
-	float c = edgeSquaredLength * ( 1.0f - baseToVertexSquared ) +
-		edgeDotBaseToVertex * edgeDotBaseToVertex;
-
-
-	float x1 = 0;
-	if ( !SolveQuadratic( a, b, c, &x1 ) ) {
-		//Will not intersect with the infinite line
-		continue;
-	}
-
-	float f0 = ( ( edgeDotVelocity * x1 ) - ( edgeDotBaseToVertex ) ) / edgeSquaredLength;
-	if ( f0 >= 0.0f && f0 <= 1.0f ) {
-		if ( !info->didHit || x1 < info->dist ) {
-			info->dist = x1;
-			info->point = pos + velocity * x1;//vertices[i] + f0 * edges[i];
-			//Note: Maybe do perpendicular to edge? Probably safter to just do poly normal
-			info->normal = polygon->n;
-			info->didHit = true;
-		}
-	}
-	}
-
-return info->didHit;
-}
-
-bool CastSphere( Vec3 pos, float r, Vec3 velocity, HitInfo* outInfo ) {
-	memset( outInfo, 0, sizeof( *outInfo ) );
-
-	for ( int i = 0; i < 6; i++ ) {
-		Polygon* pg = &physics.brush.p[i];
-		for ( int n = 0; n < 6; n += 3 ) {
-			HitInfo info{};
-
-			Vec3 a = pg->verts[n + 0];
-			Vec3 b = pg->verts[n + 1];
-			Vec3 c = pg->verts[n + 2];
-
-			//DebugDrawSphere( a );
-			//DebugDrawSphere( b );
-			//DebugDrawSphere( c );
-
-			//Only hit the front 
-			if ( glm::dot( velocity, pg->n ) > 0 )
-				continue;
-
-
-			if ( TestTriangle( pos, r, velocity, pg, a, b, c, &info ) ) {
-				if ( !outInfo->didHit || info.dist < outInfo->dist ) {
-					*outInfo = info;
-				}
-				DebugDrawSphere( info.point, 1, Vec3( 0, 0, 1 ) );
-				//DebugDrawLine( info.point, info.point + info.normal * 1.2f);
-			}
-		}
-	}
-	return outInfo->didHit;
-}
-#endif

@@ -15,13 +15,12 @@
 #include "Physics\Physics.h"
 
 #include "Game\Entity.h"
-#include "Game/Movement.h"
 #include "Game\Ogre.h"
 /*
 *	Physics:
-*		https://www.peroxide.dk/papers/collision/collision.pdf
-*		https://arxiv.org/pdf/1211.0059
-*		
+*		Entities with EntityColliders
+*		EntityColliders to be able to detect if they intersect each other
+*		Im fine if they clip each i think, i can have a collision resolve stage?
 *		
 *	MVP
 *
@@ -63,73 +62,6 @@ Level level;
 float dt;
 float gameTime = 0;
 
-inline Vec3 ProjectOnPlane(const Vec3& planeNormal, const Vec3& vector) {
-	// Normalize the plane normal
-	float normalLength = glm::length( planeNormal );
-	Vec3 normalizedNormal = planeNormal * ( 1.0f / normalLength );
-
-	// Calculate the projection of the vector onto the plane normal
-	float projectionLength = glm::dot( vector, normalizedNormal );
-	Vec3 projection = normalizedNormal * projectionLength;
-
-	// Subtract the projection from the original vector to get the projection on the plane
-	return vector - projection;
-
-}
-
-#define VERY_SMALL_DISTANCE .0005f
-Vec3 MoveAndSlide( Vec3 pos, Vec3 velocity ) {
-	Vec3 startPos = pos;//debug
-	Vec3 startVel = velocity;
-	if ( glm::length2( velocity ) < VERY_SMALL_DISTANCE ) return pos;
-
-	//Slight Epslion to keep from penetrating walls due to fp error
-	float skinWidth = .015f ;
-	float r = 1.0f + ( -skinWidth );
-
-	for ( int i = 0; i < 3; i++ ) {
-		SweepInfo info{};
-
-		if ( !BruteCastSphere( pos, velocity, r, &info ) ) {
-			pos += velocity;
-			break;
-		}
-
-		Vec3 point = info.r3Position + info.r3Velocity * info.t;
-		float r3Dist = info.eSpaceNearestDist * r;
-
-		if ( glm::length( velocity ) < .01f )
-			break;
-
-		Vec3 velToSurface = glm::normalize( velocity ) * ( r3Dist - skinWidth );
-		Vec3 remaining = velocity - velToSurface;
-
-		Vec3 slidePlaneOrigin = WorldFromEllipse( info.eSpaceIntersection, info.radius );
-		Vec3 slidePlaneNormal = glm::normalize( point - slidePlaneOrigin );
-		float slidePlaneDist = glm::dot( slidePlaneNormal, slidePlaneOrigin );
-
-
-		point = pos + velToSurface;
-		assert( !glm::any( glm::isnan( point ) ) );
-		pos = point;
-
-		float mag = glm::length( remaining );
-		remaining = ProjectOnPlane( slidePlaneNormal, remaining );
-
-		if ( glm::length2( remaining ) < VERY_SMALL_DISTANCE * VERY_SMALL_DISTANCE )
-			break;
-		remaining = glm::normalize( remaining ) * mag;
-
-
-		assert( !glm::any( glm::isnan( remaining) ) );
-		pos = point;
-		velocity = remaining;
-	}
-
-	Vec3 finalPos = pos;//WorldFromEllipse( pos, Vec3( r ) );
-	return finalPos;
-}
-
 int main() {
 	CreateScratchArena( &globalArena, TOTAL_MEMORY, malloc( TOTAL_MEMORY ), NULL, "Global Arena" );
 	CreateStackArena( &tempArena, TEMP_MEMORY, ScratchArenaAllocate( &globalArena, TEMP_MEMORY ), &globalArena, "Temp Arena" );
@@ -151,7 +83,7 @@ int main() {
 	PhysicsInit();
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
-	LoadLevel( &level, "res/maps/blank.cum" );
+	LoadLevel( &level, "res/maps/map.cum" );
 	Timer timer;
 
 	Entity player;
@@ -178,9 +110,9 @@ int main() {
 			for ( int k = 0; k < face->numTriangles; k++ ) {
 				u32* tri = face->triangles[k].v;
 				Vec3* verts = brush->vertices;
-				//DebugDrawLine( verts[tri[0]], verts[tri[1]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
-				//DebugDrawLine( verts[tri[1]], verts[tri[2]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
-				//DebugDrawLine( verts[tri[2]], verts[tri[0]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
+				DebugDrawLine( verts[tri[0]], verts[tri[1]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
+				DebugDrawLine( verts[tri[1]], verts[tri[2]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
+				DebugDrawLine( verts[tri[2]], verts[tri[0]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
 			}
 		}
 	}
@@ -189,7 +121,7 @@ int main() {
 	PrintAllocators( &globalArena );
 	WindowSetVsync( &window, 1 );
 	while ( !WindowShouldClose( &window ) ) {
-		//PROFILE( "Frame" );
+		PROFILE( "Frame" );
 		WindowPollInput( &window );
 		timer.Tick();
 		dt = timer.GetTimeSeconds();
@@ -219,15 +151,14 @@ int main() {
 		//for ( int i = 0; i < 1000; i++ )
 		wantDir *= 20.0f * dt;
 		//wantDir.y = 0;
-		player.pos = MoveAndSlide( player.pos, wantDir );
+		Vec3 r( .5, 1, .5f );
+		player.pos = MoveAndSlide( player.pos, wantDir, r);
 
 		if ( KeyDown(KEY_SPACE) )
 			player.pos += wantDir ;
 		else
-			MoveAndSlide( renderer.camera.Position, renderer.camera.Front * 10.0f );
+			MoveAndSlide( renderer.camera.Position, renderer.camera.Front * 10.0f, r );
 		
-		//CastSphere( renderer.camera.Position, renderer.camera.Front * 100.0f, &info );
-
 		renderer.camera.Position = player.pos + Vec3( 0, 1, 0 );
 		RenderStartFrame( &renderer );
 		RenderDrawFrame( &renderer, dt );

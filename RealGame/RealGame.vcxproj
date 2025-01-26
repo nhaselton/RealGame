@@ -151,7 +151,6 @@
     <ClCompile Include="src\Core\Timer.cpp" />
     <ClCompile Include="src\Core\Window.cpp" />
     <ClCompile Include="src\Game\Entity.cpp" />
-    <ClCompile Include="src\Game\Movement.cpp" />
     <ClCompile Include="src\Game\Ogre.cpp" />
     <ClCompile Include="src\glad.cpp" />
     <ClCompile Include="src\Main.cpp" />
@@ -178,7 +177,6 @@
     <ClInclude Include="src\Core\Log.h" />
     <ClInclude Include="src\Core\NMemory.h" />
     <ClInclude Include="src\Game\Entity.h" />
-    <ClInclude Include="src\Game\Movement.h" />
     <ClInclude Include="src\Game\Ogre.h" />
     <ClInclude Include="src\Physics\Physics.h" />
     <ClInclude Include="src\Renderer\Camera.h" />

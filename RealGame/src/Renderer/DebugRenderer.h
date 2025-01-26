@@ -25,7 +25,7 @@ struct DebugPrim {
 
 	struct Sphere {
 		Vec3 center;
-		float radius;
+		Vec3 radius; //V3 For Ellipse
 	};
 
 	struct Line {
@@ -78,3 +78,5 @@ void DebugDrawAABB( Vec3 center = Vec3( 0 ), Vec3 bounds = Vec3( 1 ), float dura
 void DebugDrawBoundsMinMax( struct BoundsMinMax* bounds, Vec3 color = Vec3( 0, 1, 0 ), float duration = 0.0f, bool wireframe = true, float linewidth = 1, bool depthTest = true );
 void DebugDrawBoundsHalfWidth( struct BoundsHalfWidth* bounds, Vec3 color = Vec3( 0, 1, 0 ), float duration = 0.0f, bool wireframe = true, float linewidth = 1, bool depthTest = true );
 void DebugDrawLine( Vec3 a = Vec3( 0 ), Vec3 b = Vec3( 1 ), Vec3 color = Vec3( 0, 1, 0 ), float linewidth = 1, bool depthTest = true, bool screenSpace = false, float duration = 0.0f );
+void DebugDrawEllipse( Vec3 center, Vec3 radius = Vec3(1), Vec3 color = Vec3(0, 1, 0), bool wireframe = true, bool depthTest = true, bool screenSpace = false, float duration = 0.0f);
+void DebugDrawCharacterCollider( struct CharacterCollider* collider, Vec3 color = Vec3( 0, 1, 0 ), bool wireframe = true, bool depthTest = true, float duration = 0.0f );

@@ -53,3 +53,7 @@ extern ScratchArena globalArena;
 extern StackArena tempArena;
 extern float dt;
 extern float gameTime;
+
+#define RED		Vec3( 1, 0, 0 ) 
+#define GREEN	Vec3( 0, 1, 0 ) 
+#define BLUE	Vec3( 0, 0, 1 ) 

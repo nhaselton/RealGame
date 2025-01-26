@@ -9,6 +9,7 @@
 #include "resources/Shader.h"
 #include "DebugRenderer.h"
 #include "core/Window.h"
+#include "Physics\Physics.h"
 
 struct LineBatch {
 	struct DebugLine* lines;
@@ -265,7 +266,7 @@ void DebugDrawSphere( Vec3 center, float radius, Vec3 color, bool wireframe, flo
 
 	prim->type = DP_SPHERE;
 	prim->data.sphere.center = center;
-	prim->data.sphere.radius = radius;
+	prim->data.sphere.radius = Vec3(radius);
 	prim->color = color;
 	prim->lineWidth = linewidth / .1f;
 	if ( wireframe ) BIT_SET( prim->flags, 0 );
@@ -300,4 +301,28 @@ void DebugDrawLine( Vec3 a, Vec3 b, Vec3 color, float linewidth, bool depthTest,
 
 void DebugDrawBoundsHalfWidth( BoundsHalfWidth* bounds, Vec3 color, float duration, bool wireframe, float linewidth, bool depthTest ) {
 	DebugDrawAABB( bounds->center, bounds->width, duration, color, wireframe, linewidth, depthTest );
+}
+
+void DebugDrawEllipse( Vec3 center, Vec3 radius, Vec3 color, bool wireframe, bool depthTest, bool screenSpace, float duration ) {
+	DebugPrim* prim = ( DebugPrim* ) PoolArenaAllocateZero( &drenderer.primPool );
+	if ( !prim ) return;
+
+	prim->type = DP_SPHERE;
+	prim->data.sphere.center = center;
+	prim->data.sphere.radius = radius;
+	prim->color = color;
+	if ( depthTest ) BIT_SET( prim->flags, 1 );
+	if ( wireframe ) BIT_SET( prim->flags, 0 );
+	prim->duration = duration;
+	if ( prim == NULL ) {
+		printf( "out of debug prims\n" );
+		return;
+	}
+
+	CreatePrim( prim );
+}
+
+void DebugDrawCharacterCollider( CharacterCollider* collider, Vec3 color , bool wireframe , bool depthTest , float duration ) {
+	DebugDrawAABB( collider->offset + collider->bounds.center, collider->bounds.width, duration, color, wireframe, 1, depthTest );;
+	DebugDrawEllipse( collider->offset + collider->bounds.center, collider->bounds.width, color, wireframe, depthTest, duration );;
 }
