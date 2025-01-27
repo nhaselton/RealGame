@@ -118,4 +118,5 @@ Projectile* NewProjectile() {
 	}
 
 	LOG_ASSERT( LGS_GAME, "UNREACHABLE END OF NewProjectile()" );
+	return 0;
 }

@@ -139,10 +139,11 @@ void RevolverUpdate( Player* player ) {
 }
 
 void PlayerOnHit( EntityHitInfo info ) {
+	printf( "ouch!" );
+
 	info.victim->health--;
 	if ( info.victim->health < 0 )
 		exit( 0 );
 
-	printf( "ouch!" );
 	return;
 }

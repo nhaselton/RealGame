@@ -49,14 +49,15 @@ Entity* CreateOgre( Vec3 pos, Entity* player ) {
 	entity->OnHit = OgreOnHit;
 
 	entity->nextAttack = gameTime + 1.0f;
-	entity->health = 6;
-	entity->maxHealth = 6;
+	entity->health = 12;
+	entity->maxHealth = 12;
 	entity->hasThrownRock = false;
+	entity->hasSwiped = false;
 
 	OgreMove( entity, Vec3(0) ); //(BUG) Ogre animation bugs out without this. Look into it
-	//entity->state = ( ogreState_t ) OGRE_TAUNT;
-	//EntityStartAnimation( entity, OGRE_ANIM_ROARING );
-	OgreStartChase( entity );
+	entity->state = ( ogreState_t ) OGRE_TAUNT;
+	EntityStartAnimation( entity, OGRE_ANIM_ROARING );
+	//OgreStartChase( entity );
 	return entity;
 }
 
@@ -170,10 +171,31 @@ void OgreThrow( Entity* entity ) {
 }
 
 void OgreSwipe( Entity* entity ) {
+	Ogre* ogre = ( Ogre* ) entity;
 	if ( entity->currentAnimationPercent == 1.0f ) {
-		Ogre* ogre = ( Ogre* ) entity;
 		ogre->nextAttack = gameTime + ogre->attackCooldown;
+		ogre->hasSwiped = true;
 		OgreStartChase( entity );
+	}
+
+	if ( ogre->currentAnimationPercent >= 0.5f && !ogre->hasSwiped ) {
+		ogre->hasSwiped = true;
+
+		Vec3 delta = ogre->player->pos - ogre->pos;
+		delta.y = 0;
+
+		float dist = glm::length( delta );
+		if ( dist < 10 ) {
+			EntityHitInfo info{};
+			info.attacker = entity;
+			info.victim = ogre->player;
+			info.projectile = 0;
+			info.damage = 1;
+
+			ogre->player->OnHit( info );
+		}
+
+
 	}
 }
 

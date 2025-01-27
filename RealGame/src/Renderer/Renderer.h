@@ -92,6 +92,6 @@ void RenderDrawEntity( class Entity* entity );
 
 void RenderDrawHealthBar( Vec2 pos, Vec2 size, int hp, int maxHp );
 void RenderDrawQuadColored( Vec2 pos, Vec2 size, Vec3 color ); 
-void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture );
+void RenderDrawQuadTextured( Vec2 pos, Vec2 size, struct Texture* texture );
 
 void RenderLoadLevel( class Level* level, class NFile* file );

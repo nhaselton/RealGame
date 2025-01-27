@@ -25,6 +25,7 @@ public:
 	float nextAttack;
 	float attackCooldown;
 	bool hasThrownRock;
+	bool hasSwiped;
 	Entity* player;
 };
 

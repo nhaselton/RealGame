@@ -21,23 +21,11 @@
 #include "Game\Player.h"
 /*
 	=============MVP===================
-	Immediate:
-	Swipe attack
-
-	Player HP
-	Player Ammo Counter
-
-	Rock Hurts Player
-	Swipe Hurts Player
-	Pistol Hurts Rockerfeller
-
 	Fix Animated models Normals for lighting
-
-*	Physics:
-*		EntityColliders to be able to detect if they intersect each other
-*		Im fine if they clip each i think, i can have a collision resolve stage?
-* 
+	MouseMovement
 *	============Future==================
+*	Font Rendering
+* 
 *	Animation Events		
 *		Should be able to add a new channel for events
 *		This may mean it is time to add the decl format.
@@ -50,6 +38,10 @@
 
 	Actual Revolver Spread
 *		Look into exponational decay rate, linear to slow
+
+*	Physics:
+*		EntityColliders to be able to detect if they intersect each other
+*		Im fine if they clip each i think, i can have a collision resolve stage?
 */
 
 //Eventually
@@ -128,10 +120,10 @@ int main() {
 	PrintAllocators( &globalArena );
 	WindowSetVsync( &window, 1 );
 
-	bool start = true;
+	bool start = false;
 
 	while ( !WindowShouldClose( &window ) ) {
-		//PROFILE( "Frame" );
+		PROFILE( "Frame" );
 		KeysUpdate();
 		WindowPollInput( &window );
 
@@ -181,12 +173,19 @@ int main() {
 			RenderDrawModel( &renderer, entityManager.player->revolver.renderModel->model, model, entityManager.player->revolver.renderModel->pose );
 		}
 
+		//Draw Boss Healthbar
 		RenderDrawHealthBar( Vec2( 400, 50 ), Vec2( 500, 75 ), ogre->health, ogre->maxHealth );
 
+		//Draw Crosshair
 		if ( player->revolver.state != REVOLVER_RELOADING ) {
 			Vec2 spreadSize(16 * player->revolver.spread);
 			RenderDrawQuadTextured( Vec2( 640, 360 ) - spreadSize / 2.0f, spreadSize, renderer.crosshair );
 		}
+
+		//DrawAmmo
+		for ( int i = 0; i < player->revolver.ammo; i++ )
+			RenderDrawQuadColored( Vec2( 20 * i + 20, 640 ), Vec2( 10, 20 ), Vec3( 1, .97, .86 ) );
+		RenderDrawHealthBar( Vec2( 20, 680 ), Vec2( 120, 30 ), player->health, player->maxHealth );
 
 		RenderEndFrame( &renderer );
 		WindowSwapBuffers( &window );
