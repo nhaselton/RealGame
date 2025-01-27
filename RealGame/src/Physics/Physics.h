@@ -14,6 +14,11 @@ struct Polygon {
 	u32 numTriangles;
 };
 
+struct EntityCollisonQuery {
+	Entity* entity;
+	bool didHit;
+};
+
 struct Brush {
 	Vec3* vertices;
 	Polygon* polygons;
@@ -91,6 +96,8 @@ void PhysicsLoadLevel( struct Level* level, struct NFile* file );
 
 bool PhysicsQueryRaycast( Vec3 start, Vec3 velocity, HitInfo* best );
 bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo* bestSweep );
+bool PhysicsQueryIntersectEntities( CharacterCollider* cc, EntityCollisonQuery* outQuery );
+
 bool PhysicsRaycastDynamic( Vec3 start, Vec3 velocity, HitInfo* info );
 bool BruteCastSphere( Vec3 pos, Vec3 velocity, Vec3 r, SweepInfo* outInfo );
 bool CastSphere( Vec3 pos, Vec3 velocity, Brush* brush, Vec3 r, SweepInfo* outInfo );

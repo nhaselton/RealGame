@@ -574,3 +574,33 @@ bool PhysicsRaycastDynamic( Vec3 start, Vec3 velocity, HitInfo* out ) {
 	*out = best;
 	return best.didHit;
 }
+
+bool PhysicsQueryIntersectEntities( CharacterCollider* cc, EntityCollisonQuery* outQuery ) {
+	memset( outQuery, 0, sizeof( outQuery ) );
+		
+	for ( int i = 0; i < physics.numActiveColliders; i++ ) {
+		//Never Query self
+		if ( cc->owner == physics.activeColliders[i]->owner ) {
+			continue;
+		}
+
+		CharacterCollider* b = physics.activeColliders[i];
+
+		BoundsMinMax boxA = { 
+			cc->offset + cc->bounds.center - cc->bounds.width, 
+			cc->offset + cc->bounds.center + cc->bounds.width 
+		};
+
+		BoundsMinMax boxB = {
+			b->offset + b->bounds.center - b->bounds.width,
+			b->offset + b->bounds.center + b->bounds.width
+		};
+
+		if ( FastAABB( boxA,boxB ) ) {
+			outQuery->didHit = true;
+			outQuery->entity = b->owner;
+			return true;
+		}
+	}
+	return false;
+}

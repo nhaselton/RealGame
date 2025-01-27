@@ -24,7 +24,7 @@ public:
 	int lastProjectileIndex; //How far into the array would it possibly have to go.
 
 	//Quick access to player
-	Entity* player;
+	class Player* player;
 };
 extern EntityManager entityManager;
 

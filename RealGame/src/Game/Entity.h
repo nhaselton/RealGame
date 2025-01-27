@@ -14,7 +14,6 @@ struct RenderModel {
 	Quat rotation;
 	Vec3 scale;
 };
-
 //Projectiles are completely separated from entities becuase they share no functionality besides the charactercollider
 //In ray casts, shape casts, etc. the projectile is never queried against 
 // (TODO how to handle few exceptions)
@@ -27,7 +26,7 @@ public:
 	class Entity* owner;
 
 	CharacterCollider collider;
-	void ( *OnCollision ) ( class Entity* entity, float damage );
+	void ( *OnCollision ) ( Projectile* projectile, Entity* entity );
 
 	RenderModel model;
 
@@ -51,8 +50,11 @@ public:
 
 	u32 state;
 
+	int health;
+	int maxHealth;
+
 	void ( *Update ) ( class Entity* entity );
-	void ( *OnHit ) ( class Entity* entity, float damage );
+	void ( *OnHit ) ( struct EntityHitInfo info );
 };
 
 void EntityStartAnimation( Entity* entity, int index );

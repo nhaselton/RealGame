@@ -31,7 +31,7 @@ public:
 Entity* CreateOgre( Vec3 pos, Entity* player );
 
 void OgreUpdate( Entity* entity );
-void OgreOnHit( Entity* entity, float damage );
+void OgreOnHit( EntityHitInfo info );
 
 //Ogre States
 void OgreMove( Entity* entity, Vec3 target );
@@ -44,3 +44,5 @@ void OgreSwipe( Entity* entity );
 void OgreThrow( Entity* entity );
 void OgreStartDie(Entity* entity);
 void OgreDie( Entity* entity );
+
+void OgreRockCallback( class Projectile* projectile, class Entity* entity );

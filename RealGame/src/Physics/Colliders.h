@@ -18,3 +18,11 @@ struct CharacterCollider {
 	BoundsHalfWidth bounds;
 	struct Entity* owner;
 };
+
+struct EntityHitInfo {
+	float damage;
+	//Can be NULL. I dont think this is needed
+	class Projectile* projectile;
+	class Entity* attacker;
+	class Entity* victim;
+};

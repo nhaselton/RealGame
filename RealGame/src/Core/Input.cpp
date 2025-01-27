@@ -13,8 +13,7 @@ void KeyCallback( GLFWwindow* window, int key, int scancode, int action, int fla
 		printf( "key was -1 for some reason" );
 		return;
 	}
-	//if autorepeating dont reset to pressed
-	if ( action == 1 && keys[key] == 0 )
+	if ( action == 1 && action == GLFW_PRESS  )
 		keys[key] = 1;
 	if ( action == 0 )
 		keys[key] = 0;

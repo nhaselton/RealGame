@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,43 +20,36 @@
 #include "Game\Ogre.h"
 #include "Game\Player.h"
 /*
-	TODO: MVP
-
+	=============MVP===================
 	Immediate:
-		Gun Model + Texture
-			Shoot Animation
-			Reload does a 360, (Can I Just do this in code maybe?)
-		Rock Texture
-	UI:
-		Draw Images on HUD
-		Draw Text on HUD
+	Swipe attack
 
+	Player HP
+	Player Ammo Counter
 
-	One Day:
-		Projectile Callbacks
+	Rock Hurts Player
+	Swipe Hurts Player
+	Pistol Hurts Rockerfeller
 
-
-
-
+	Fix Animated models Normals for lighting
 
 *	Physics:
 *		EntityColliders to be able to detect if they intersect each other
 *		Im fine if they clip each i think, i can have a collision resolve stage?
-
-
-*	
 * 
-*	MVP
-*
-*	Guns For Player:
-*	Revolver
-*		Fires as fast as click
-*		6 Shots then reload (Spin 360)
-*
-*
-*	Ogre
-*		AI
-*		Shootable
+*	============Future==================
+*	Animation Events		
+*		Should be able to add a new channel for events
+*		This may mean it is time to add the decl format.
+* 
+*	Skybox
+*		just want something nicer to look at
+*	Figure out where to store hud textures
+*	Add a default texture for failing to get them. 
+		stop asserting and start warning
+
+	Actual Revolver Spread
+*		Look into exponational decay rate, linear to slow
 */
 
 //Eventually
@@ -117,14 +111,6 @@ int main() {
 	Entity* ogre;
 	ogre = CreateOgre( Vec3( -22, -3, 6 ), player );
 
-	//Revolver
-	Model* revolver = ModelManagerAllocate( &modelManager, "res/models/revolver2.glb" );
-	revolver->numAnimations = 0;
-	revolver->skeleton = 0;
-
-	Mat4 revolverScale = glm::scale( Mat4( 1.0 ), Vec3( .25f ) );
-	Mat4 rot = glm::toMat4( glm::rotate( Quat( 1, 0, 0, 0 ), glm::radians( 90.0f ), Vec3( 0, 1, 0 ) ) );
-
 	for ( int i = 0; i < physics.numBrushes; i++ ) {
 		Brush* brush = &physics.brushes[i];
 		for ( int n = 0; n < brush->numPolygons; n++ ) {
@@ -146,6 +132,7 @@ int main() {
 
 	while ( !WindowShouldClose( &window ) ) {
 		//PROFILE( "Frame" );
+		KeysUpdate();
 		WindowPollInput( &window );
 
 		timer.Tick();
@@ -169,13 +156,11 @@ int main() {
 
 		UpdateProjectiles();
 
-
-		player->Update( player );
-
 		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );
 		RenderDrawFrame( &renderer, dt );
 		RenderDrawEntity( ogre );
+
 
 		for ( int i = 0; i < entityManager.numProjectiles; i++ ) {
 			Projectile* projectile = &entityManager.projectiles[i];
@@ -188,12 +173,19 @@ int main() {
 
 		{
 			glClear( GL_DEPTH_BUFFER_BIT );
-			Mat4 t = glm::translate( Mat4( 1.0 ), Vec3( .5f, -.4f, -1.1f ) );
-			Mat4 r = glm::toMat4( glm::rotate( Quat( 1, 0, 0, 0 ), glm::radians( 92.0f ), Vec3( 0, 1, 0 ) ) );
-			Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( .4f ) );
+			Mat4 t = glm::translate( Mat4( 1.0 ), player->revolver.pos );
+			Mat4 r = glm::toMat4( player->revolver.rotation );
+			Mat4 s = glm::scale( Mat4( 1.0 ), player->revolver.renderModel->scale );
 			Mat4 model = t * r * s;
 			model = glm::inverse( renderer.camera.GetViewMatrix() ) * model;
-			RenderDrawModel( &renderer, revolver, model );
+			RenderDrawModel( &renderer, entityManager.player->revolver.renderModel->model, model, entityManager.player->revolver.renderModel->pose );
+		}
+
+		RenderDrawHealthBar( Vec2( 400, 50 ), Vec2( 500, 75 ), ogre->health, ogre->maxHealth );
+
+		if ( player->revolver.state != REVOLVER_RELOADING ) {
+			Vec2 spreadSize(16 * player->revolver.spread);
+			RenderDrawQuadTextured( Vec2( 640, 360 ) - spreadSize / 2.0f, spreadSize, renderer.crosshair );
 		}
 
 		RenderEndFrame( &renderer );

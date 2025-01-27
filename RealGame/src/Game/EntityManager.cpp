@@ -33,6 +33,8 @@ Entity* NewEntity() {
 	entityManager.activeHead = ent;
 
 	Entity* entity = ( Entity* ) ent->entity;
+	memset( entity, 0, sizeof( Entity ) );
+	entity->rotation = Quat( 1, 0, 0, 0 );
 	
 	//Get Bounds
 	entity->bounds = &physics.colliders[ent->index];
@@ -80,7 +82,13 @@ void UpdateProjectiles( ) {
 		projectile->collider.offset += projectile->velocity * dt;
 
 		DebugDrawAABB( projectile->collider.offset + projectile->collider.bounds.center, projectile->collider.bounds.width, 0.0f, BLUE );
-		//TODO collision check
+		
+		EntityCollisonQuery query;
+		if ( PhysicsQueryIntersectEntities( &projectile->collider, &query ) ) {
+			if ( projectile->OnCollision != 0 ) {
+				projectile->OnCollision( projectile, query.entity );
+			}
+		}
 	}
 
 	entityManager.lastProjectileIndex = currentMaxProjectile;

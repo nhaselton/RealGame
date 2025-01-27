@@ -1,4 +1,3 @@
-#include <glad\glad.h>
 #include "Renderer.h"
 #include "Resources/ShaderManager.h"
 #include "Resources/Shader.h"
@@ -36,16 +35,9 @@ inline void ShaderBuiltInsSetPVM( Renderer* renderer, Mat4 p, Mat4 v, Mat4 m ) {
 	}
 }
 
-void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
-	Mat4 view( 1.0 );
-	renderer->projection = glm::perspective( glm::radians( 90.0f ), 16.0f / 9.0f, .1f, 2048.0f );
-	Vec4 color( 1, 0, 0, 1 );
-
-	renderer->cube = ModelManagerAllocate( &modelManager,"res/models/cube.glb" );
-	renderer->sphere = ModelManagerAllocate( &modelManager, "res/models/sphere.glb" );
-
+void CreateShaders( Renderer* renderer ) {
 	//XYZRGB
-	renderer->shaders[SHADER_XYZRGB] = ShaderManagerCreateShader(&shaderManager, "res/shaders/xyzrgb/xyzrgb.vert", "res/shaders/xyzrgb/xyzrgb.frag");
+	renderer->shaders[SHADER_XYZRGB] = ShaderManagerCreateShader( &shaderManager, "res/shaders/xyzrgb/xyzrgb.vert", "res/shaders/xyzrgb/xyzrgb.frag" );
 	RenderSetShader( renderer, renderer->shaders[SHADER_XYZRGB] );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_XYZRGB], SHADER_ARG_VEC3, "color" );
 
@@ -70,41 +62,47 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_SKINNED], SHADER_ARG_MAT4_ARRAY, "bones" );
 	ShaderSetMat4Array( renderer, renderer->shaders[SHADER_STANDARD_SKINNED], "bones", renderer->mat4Array, 100 );
 
-	renderer->shaders[SHADER_LINE_SHADER] = ShaderManagerCreateShader(&shaderManager, "res/shaders/line/line.vert", "res/shaders/line/line.frag");
+	renderer->shaders[SHADER_LINE_SHADER] = ShaderManagerCreateShader( &shaderManager, "res/shaders/line/line.vert", "res/shaders/line/line.frag" );
+
+	//UI
+	renderer->shaders[SHADER_UI] = ShaderManagerCreateShader( &shaderManager, "res/shaders/ui/ui.vert", "res/shaders/ui/ui.frag" );
+	RenderSetShader( renderer, renderer->shaders[SHADER_UI] );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_UI], SHADER_ARG_INT, "albedo" );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_UI], SHADER_ARG_INT, "solidColor" );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_UI], SHADER_ARG_VEC3, "color" );
 	
+	ShaderSetInt( renderer, renderer->shaders[SHADER_UI], "albedo", S2D_ALBEDO );
+	ShaderSetInt( renderer, renderer->shaders[SHADER_UI], "solidColor", true );
+	ShaderSetVec3( renderer, renderer->shaders[SHADER_UI], "color", Vec3( 1, 0, 0 ) );
+}
+
+void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
+	Mat4 view( 1.0 );
+	renderer->projection = glm::perspective( glm::radians( 90.0f ), 16.0f / 9.0f, .1f, 2048.0f );
+	Vec4 color( 1, 0, 0, 1 );
+
+	renderer->cube = ModelManagerAllocate( &modelManager,"res/models/cube.glb" );
+	renderer->sphere = ModelManagerAllocate( &modelManager, "res/models/sphere.glb" );
+
+	float quadVertices[] = {
+		0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+	};
+
+	CreateGLBuffer( &renderer->quadBuffer, 4, 0, sizeof( quadVertices ), quadVertices, 0, 0, true, true );
+	GLBufferAddAttribute( &renderer->quadBuffer, 0, 3, GL_FLOAT, 5 * sizeof( float ), 0 );
+	GLBufferAddAttribute( &renderer->quadBuffer, 1, 2, GL_FLOAT, 5 * sizeof( float ), ( void* ) ( 3 * sizeof( float ) ) );
+
+	CreateShaders( renderer );
 	//Sets up the PVMs
 	ShaderBuiltInsInit( renderer );
 	
-
-	float vertices[] = {
-		 0.5f,  0.5f, 0.0f,  // top right
-		 0.5f, -0.5f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f   // top left 
-	};
-	unsigned int indices[] = {  // note that we start from 0!
-		0, 1, 3,   // first triangle
-		1, 2, 3    // second triangle
-	};
+	renderer->crosshair = TextureManagerLoadTextureFromFile( "res/textures/crosshair.png" );
 
 	//Buffer
 	glEnable( GL_DEPTH_TEST );
-}
-
-void CameraMovement( Camera* camera , float dt) {
-	return;
-	float mx = 0, my = 0, speed = 15 * dt;
-	if ( KeyDown( KEY_LEFT ) ) mx -= 3;
-	if ( KeyDown( KEY_RIGHT ) ) mx += 3;
-	if ( KeyDown( KEY_DOWN ) ) my -= 1.5;
-	if ( KeyDown( KEY_UP ) ) my += 1.5;
-
-	if ( KeyDown( KEY_W ) ) camera->ProcessKeyboard( FORWARD, speed );
-	if ( KeyDown( KEY_S ) ) camera->ProcessKeyboard( BACKWARD, speed );
-	if ( KeyDown( KEY_A ) ) camera->ProcessKeyboard( LEFT, speed );
-	if ( KeyDown( KEY_D ) ) camera->ProcessKeyboard( RIGHT, speed );
-
-	camera->ProcessMouseMovement( mx * speed * 50, my * speed * 30, true);
 }
 
 void RenderStartFrame( Renderer* renderer ){
@@ -127,13 +125,53 @@ void RenderDrawLevel( Renderer* renderer ) {
 
 		glDrawElements( GL_TRIANGLES, face->numIndices, GL_UNSIGNED_INT, ( void* ) ( face->firstIndex * sizeof( u32 ) ) );
 	}
+}
 
+void RenderDrawQuadColored( Vec2 pos, Vec2 size, Vec3 color ) {
+	Shader* shader = renderer.shaders[SHADER_UI];
+	RenderSetShader( &renderer, shader );
+
+	Mat4 projection = glm::ortho( 0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f );
+	Mat4 t = glm::translate( Mat4( 1.0 ), Vec3( pos, 0 ) );
+	Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( size, 1.0f ) );
+	Mat4 trs = t * s;
+
+	ShaderSetMat4( &renderer, shader, "projection", projection );
+	ShaderSetMat4( &renderer, shader, "model", trs );
+	ShaderSetMat4( &renderer, shader, "view", Mat4( 1.0 ) );
+	ShaderSetInt( &renderer, shader, "solidColor", true );
+	ShaderSetVec3( &renderer, shader, "color", color );
+	
+	glBindVertexArray( renderer.quadBuffer.vao );
+	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
+}
+
+void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture ) {
+	Shader* shader = renderer.shaders[SHADER_UI];
+	RenderSetShader( &renderer, shader );
+
+	Mat4 projection = glm::ortho( 0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f );
+	Mat4 t = glm::translate( Mat4( 1.0 ), Vec3( pos, 0 ) );
+	Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( size, 1.0f ) );
+	Mat4 trs = t * s;
+
+	ShaderSetMat4( &renderer, shader, "projection", projection );
+	ShaderSetMat4( &renderer, shader, "model", trs );
+	ShaderSetMat4( &renderer, shader, "view", Mat4( 1.0 ) );
+	ShaderSetInt( &renderer, shader, "solidColor", false );
+
+	if ( texture ) {
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, texture->id );
+	}
+
+	glBindVertexArray( renderer.quadBuffer.vao );
+	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
 }
 
 void RenderDrawFrame( Renderer* renderer, float dt ){
 	//glEnable( GL_CULL_FACE );
 	//glCullFace( GL_CCW );
-	CameraMovement( &renderer->camera,dt );
 	ShaderBuiltInsSetPVM( renderer, renderer->projection, renderer->camera.GetViewMatrix(), Mat4( 1.0 ) );
 	RenderDrawLevel( renderer );
 
@@ -141,7 +179,7 @@ void RenderDrawFrame( Renderer* renderer, float dt ){
 }
 
 void RenderEndFrame( Renderer* renderer ) {
-	
+
 }
 
 void BuildSkeleton( Skeleton* skeleton, Node* root, Mat4 parent, Mat4* matrices ) {
@@ -273,9 +311,15 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 		u32 index = (u32) li->faces[i].texture;
 		li->faces[i].texture = loadedTextures[index];
 	}
+}
 
-	//for ( int i = 0; i < li->numIndices; i++ )
-	//	printf( "%d, ", indicesTemp[i] );
+void RenderDrawHealthBar( Vec2 pos, Vec2 size, int hp, int maxHp ) {
+	//Red Back
+	//Green Front
 
-	int a = 0;
+	float healthPercent = ( float ) hp / ( float ) maxHp;
+	Vec2 greenBarSize( size.x * healthPercent, size.y );
+
+	RenderDrawQuadColored( pos, greenBarSize, Vec3( 0, 1, 0 ) );
+	RenderDrawQuadColored( pos, size, Vec3( 1, 0, 0 ) );
 }

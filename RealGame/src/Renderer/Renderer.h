@@ -10,6 +10,7 @@ enum builtInShaderList {
 	SHADER_LINE_SHADER,
 	SHADER_STANDARD,
 	SHADER_STANDARD_SKINNED,
+	SHADER_UI,
 	SHADER_LAST
 };
 
@@ -55,7 +56,6 @@ struct LevelRenderInfo {
 	struct RenderBrush* brushes;
 };
 
-
 class Renderer {
 public:
 	ScratchArena arena;
@@ -72,6 +72,10 @@ public:
 	class Model* cube;
 	class Model* sphere;
 	u32 currentShaderID;
+
+	Texture* crosshair;
+
+	GLBuffer quadBuffer;
 };
 extern Renderer renderer;
 
@@ -85,5 +89,9 @@ void RenderDrawModel(Renderer* renderer, class Model* model, Mat4 offset = Mat4(
 void RenderDrawLevel( Renderer* renderer );
 
 void RenderDrawEntity( class Entity* entity );
+
+void RenderDrawHealthBar( Vec2 pos, Vec2 size, int hp, int maxHp );
+void RenderDrawQuadColored( Vec2 pos, Vec2 size, Vec3 color ); 
+void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture );
 
 void RenderLoadLevel( class Level* level, class NFile* file );

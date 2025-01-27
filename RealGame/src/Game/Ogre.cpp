@@ -32,6 +32,7 @@ Entity* CreateOgre( Vec3 pos, Entity* player ) {
 	entity->bounds->offset = pos;
 	entity->bounds->bounds.center = Vec3( 0, 3, 0 );
 	entity->bounds->bounds.width = Vec3( 3 );
+	entity->bounds->owner = entity;
 	
 	entity->rotation = Quat( 1, 0, 0, 0 );
 
@@ -48,13 +49,14 @@ Entity* CreateOgre( Vec3 pos, Entity* player ) {
 	entity->OnHit = OgreOnHit;
 
 	entity->nextAttack = gameTime + 1.0f;
-
+	entity->health = 6;
+	entity->maxHealth = 6;
 	entity->hasThrownRock = false;
 
 	OgreMove( entity, Vec3(0) ); //(BUG) Ogre animation bugs out without this. Look into it
-	entity->state = ( ogreState_t ) OGRE_TAUNT;
-	EntityStartAnimation( entity, OGRE_ANIM_ROARING );
-	//OgreStartChase( entity );
+	//entity->state = ( ogreState_t ) OGRE_TAUNT;
+	//EntityStartAnimation( entity, OGRE_ANIM_ROARING );
+	OgreStartChase( entity );
 	return entity;
 }
 
@@ -87,9 +89,6 @@ void OgreMove( Entity* entity, Vec3 target ) {
 void OgreUpdate( Entity* entity ) {
 	//Apply Gravity
 	entity->pos = MoveAndSlide( entity->bounds, Vec3( 0, -10 * dt, 0 ), 0, true );
-
-	if ( KeyDown( KEY_SPACE ) )
-		printf( "Here" );
 
 	switch ( ( ogreState_t ) entity->state ) {
 		case OGRE_CHASE: OgreChase( entity ); break;
@@ -154,12 +153,13 @@ void OgreThrow( Entity* entity ) {
 		rock->collider.offset = rockSpawn;
 		rock->collider.bounds.width = Vec3( 2.0f );
 		rock->collider.bounds.center = Vec3( 0 );
+		rock->collider.owner = entity;
 		rock->velocity = glm::normalize( ( ogre->player->pos - rockSpawn ) ) * 10.0f;
-		rock->owner = entity;
-		rock->OnCollision = 0;
+		rock->owner = ogre;
 		rock->model.model = rockModel;
 		rock->model.scale = Vec3( 1 );
 		rock->model.translation = Vec3( 0 );
+		rock->OnCollision = OgreRockCallback;
 	}
 
 	if ( entity->currentAnimationPercent == 1.0f ) {
@@ -177,19 +177,36 @@ void OgreSwipe( Entity* entity ) {
 	}
 }
 
-void OgreOnHit( Entity* entity, float damage ) {
-	if ( entity->state == OGRE_DIE ) {
+void OgreOnHit( EntityHitInfo info ) {
+	if ( info.victim->state == OGRE_DIE ) {
 		return;
 	}
-	OgreStartDie( entity );
-	
+
+	info.victim->health -= 1;
+
+	if ( info.victim->health <= 0 )
+		OgreStartDie( info.victim );
 }
 
 void OgreStartDie( Entity* entity ) {
 	EntityStartAnimation( entity, OGRE_ANIM_DYING);
 	entity->state = OGRE_DIE;
+	entity->currentAnimationTime = .6f;
 }
 
 void OgreDie( Entity* entity ) {
 
+}
+
+void OgreRockCallback( class Projectile* projectile, class Entity* entity ) {
+	if ( entity && entity->OnHit != 0 ) {
+		EntityHitInfo info{};
+		info.attacker = projectile->owner;
+		info.damage = 10.0f;
+		info.projectile = projectile;
+		info.victim = entity;
+
+		entity->OnHit( info );
+	}
+	projectile->active = false;
 }
