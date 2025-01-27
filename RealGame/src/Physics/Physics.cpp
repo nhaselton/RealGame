@@ -114,7 +114,7 @@ Vec3 MoveAndSlide( CharacterCollider* cc, Vec3 velocity, int maxBounces, bool ad
 	pos -= cc->bounds.center;
 	Vec3 finalPos = pos;
 
-	DebugDrawAABB( pos, Vec3( 1, 2, 1 ), 0, GREEN );
+	//DebugDrawAABB( pos, Vec3( 1, 2, 1 ), 0, GREEN );
 	//DebugDrawCharacterCollider( characterController, GREEN );
 
 	if ( adjustCharacterController )

@@ -24,6 +24,7 @@ class Ogre : public Entity {
 public:
 	float nextAttack;
 	float attackCooldown;
+	bool hasThrownRock;
 	Entity* player;
 };
 

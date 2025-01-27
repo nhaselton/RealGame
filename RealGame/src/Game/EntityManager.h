@@ -18,6 +18,11 @@ public:
 	PoolArena entityArena;
 	ActiveEntity* activeHead;
 
+	//Because projectiles have such a short lifespan, I'm just going to brute force this
+	Projectile projectiles[MAX_PROJECTILES];
+	int numProjectiles;
+	int lastProjectileIndex; //How far into the array would it possibly have to go.
+
 	//Quick access to player
 	Entity* player;
 };
@@ -28,4 +33,7 @@ void CreateEntityManager();
 //Takes an ActiveEntity from the pool allocator, returns a ptr to the entity and adds it to the activeHeadList
 Entity* NewEntity();
 void DestroyEntity( Entity* entity );
+
+Projectile* NewProjectile();
+void UpdateProjectiles();
 

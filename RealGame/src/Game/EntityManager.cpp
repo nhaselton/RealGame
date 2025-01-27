@@ -1,5 +1,6 @@
 #include "EntityManager.h"
 #include "Physics\Physics.h"
+#include "Renderer\DebugRenderer.h"
 
 void CreateEntityManager() {
 	entityManager.numEntities = 0;
@@ -8,6 +9,9 @@ void CreateEntityManager() {
 		&globalArena, "Entity Manager"
 	);
 	entityManager.activeHead = 0;
+
+	entityManager.numProjectiles = 0;
+	entityManager.lastProjectileIndex = 0;
 
 	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
 		ActiveEntity* activeEntityList = ( ActiveEntity* ) entityManager.entityArena.memory;
@@ -63,4 +67,47 @@ void DestroyEntity( Entity* entity ) {
 	}
 
 	LOG_ASSERT( LGS_GAME, "Could not find entity in list of entities\n" );
+}
+
+void UpdateProjectiles( ) {
+	int currentMaxProjectile = 0;
+	for ( int i = 0; i <= entityManager.lastProjectileIndex; i++ ) {
+		Projectile* projectile = &entityManager.projectiles[i];
+		if ( !projectile->active )
+			continue;
+
+		currentMaxProjectile = i;
+		projectile->collider.offset += projectile->velocity * dt;
+
+		DebugDrawAABB( projectile->collider.offset + projectile->collider.bounds.center, projectile->collider.bounds.width, 0.0f, BLUE );
+		//TODO collision check
+	}
+
+	entityManager.lastProjectileIndex = currentMaxProjectile;
+}
+
+Projectile* NewProjectile() {
+	if ( entityManager.numProjectiles == MAX_PROJECTILES ) {
+		LOG_WARNING( LGS_GAME, "Can not spawn more projectiles.\n" );
+		return 0;
+	}
+
+	for ( int i = 0; i < MAX_PROJECTILES; i++ ) {
+		Projectile* projectile = &entityManager.projectiles[i];
+		//Get Non active projectile
+		if ( projectile->active )
+			continue;
+
+		projectile->active = true;
+		entityManager.numProjectiles++;
+
+		//Update last index if needed
+		if ( i > entityManager.lastProjectileIndex )
+			entityManager.lastProjectileIndex = i;
+
+
+		return projectile;
+	}
+
+	LOG_ASSERT( LGS_GAME, "UNREACHABLE END OF NewProjectile()" );
 }

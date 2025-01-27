@@ -15,6 +15,28 @@ struct RenderModel {
 	Vec3 scale;
 };
 
+//Projectiles are completely separated from entities becuase they share no functionality besides the charactercollider
+//In ray casts, shape casts, etc. the projectile is never queried against 
+// (TODO how to handle few exceptions)
+class Projectile {
+public:
+	bool active; //Could replace this with a long bitflag list in entitymanager
+	//Probably should rename from character collider
+	//I do want it to sweep
+	Vec3 velocity;
+	class Entity* owner;
+
+	CharacterCollider collider;
+	void ( *OnCollision ) ( class Entity* entity, float damage );
+
+	RenderModel model;
+
+	//todo float impactTime
+	//hitCallback?
+	//Damage?
+	//RenderModel
+};
+
 class Entity {
 public:
 	Vec3 pos;

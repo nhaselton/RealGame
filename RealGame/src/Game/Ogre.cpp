@@ -5,9 +5,15 @@
 #include "Physics/Physics.h"
 #include "Renderer\DebugRenderer.h"
 #include "EntityManager.h"
+#include "Resources\ModelManager.h"
+
+Model* rockModel;
 
 Entity* CreateOgre( Vec3 pos, Entity* player ) {
 	//Ogre* entity = ( Ogre* ) ScratchArenaAllocateZero( &globalArena, KB( 1 ) );
+	if ( !rockModel )
+		rockModel = ModelManagerAllocate( &modelManager, "res/models/rock.glb" );
+
 	Ogre* entity = ( Ogre* ) NewEntity();
 	entity->player = player;
 	entity->pos = pos;
@@ -41,16 +47,24 @@ Entity* CreateOgre( Vec3 pos, Entity* player ) {
 	entity->Update = OgreUpdate;
 	entity->OnHit = OgreOnHit;
 
-	//entity->state = ( ogreState_t ) OGRE_TAUNT;
-	//EntityStartAnimation( entity, OGRE_ANIM_ROARING );
-	OgreStartChase( entity );
+	entity->nextAttack = gameTime + 1.0f;
+
+	entity->hasThrownRock = false;
+
+	OgreMove( entity, Vec3(0) ); //(BUG) Ogre animation bugs out without this. Look into it
+	entity->state = ( ogreState_t ) OGRE_TAUNT;
+	EntityStartAnimation( entity, OGRE_ANIM_ROARING );
+	//OgreStartChase( entity );
 	return entity;
 }
 
 void OgreTaunt( Entity* entity ) {
 	//Wait for anim end
-	if ( entity->currentAnimationPercent == 1.0f )
+	if ( entity->currentAnimationPercent == 1.0f ) {
+		Ogre* ogre = ( Ogre* ) entity;
+		ogre->nextAttack = gameTime + 1.0f;
 		OgreStartChase( entity );
+	}
 }
 
 
@@ -74,9 +88,12 @@ void OgreUpdate( Entity* entity ) {
 	//Apply Gravity
 	entity->pos = MoveAndSlide( entity->bounds, Vec3( 0, -10 * dt, 0 ), 0, true );
 
+	if ( KeyDown( KEY_SPACE ) )
+		printf( "Here" );
+
 	switch ( ( ogreState_t ) entity->state ) {
 		case OGRE_CHASE: OgreChase( entity ); break;
-		case OGRE_DIE: break;
+		case OGRE_DIE: OgreDie( entity ); break;
 		case OGRE_SWIPE: OgreSwipe( entity ); break;
 		case OGRE_TAUNT: OgreTaunt( entity ); break;
 		case OGRE_THROW: OgreThrow( entity ); break;
@@ -85,7 +102,7 @@ void OgreUpdate( Entity* entity ) {
 	}
 
 	EntityAnimationUpdate( entity, dt );
-	DebugDrawCharacterCollider( entity->bounds );
+	//DebugDrawCharacterCollider( entity->bounds );
 }
 
 void OgreStartChase( Entity* entity ) {
@@ -99,7 +116,7 @@ void OgreChase( Entity* entity ) {
 	playerPos.y = 0;
 	
 	//Check Attacks
-	if ( ogre->nextAttack <= gameTime && 0) {
+	if ( ogre->nextAttack <= gameTime ) {
 		float playerDistance = glm::length( playerPos - ogre->pos );
 		if ( playerDistance > 15.0f ) {
 			OgreStartThrow(entity);
@@ -126,9 +143,28 @@ void OgreStartSwipe( Entity* entity ) {
 }
 
 void OgreThrow( Entity* entity ) {
+	Ogre* ogre = ( Ogre* ) entity;
+	
+	if ( entity->currentAnimationPercent > .37 && !ogre->hasThrownRock ) {
+		ogre->hasThrownRock = true;
+		
+		Projectile* rock = NewProjectile();
+		Vec3 rockSpawn = entity->pos + Vec3( 0, 4, 0 );;
+
+		rock->collider.offset = rockSpawn;
+		rock->collider.bounds.width = Vec3( 2.0f );
+		rock->collider.bounds.center = Vec3( 0 );
+		rock->velocity = glm::normalize( ( ogre->player->pos - rockSpawn ) ) * 10.0f;
+		rock->owner = entity;
+		rock->OnCollision = 0;
+		rock->model.model = rockModel;
+		rock->model.scale = Vec3( 1 );
+		rock->model.translation = Vec3( 0 );
+	}
+
 	if ( entity->currentAnimationPercent == 1.0f ) {
-		Ogre* ogre = ( Ogre* ) entity;
 		ogre->nextAttack = gameTime + ogre->attackCooldown;
+		ogre->hasThrownRock = false;
 		OgreStartChase( entity );
 	}
 }

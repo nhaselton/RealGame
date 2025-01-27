@@ -84,6 +84,8 @@ int main() {
 	CreateRenderer( &renderer, 0, 0 );
 	CreateDebugRenderer( &renderer, ScratchArenaAllocate( &globalArena, DEBUG_RENDERER_SIZE ), DEBUG_RENDERER_SIZE );
 
+	
+
 	PhysicsInit();
 	CreateEntityManager();
 
@@ -92,12 +94,12 @@ int main() {
 	Timer timer;
 
 	Player* player = CreatePlayer( Vec3( 0 ) );
-	renderer.camera.Yaw = 180.0;
-	renderer.camera.GetViewMatrix();
+	player->camera.Yaw = 180.0;
+	player->camera.GetViewMatrix();
 
 	//Model
 	Entity* ogre;
-	ogre = CreateOgre( Vec3( -22, 10, 6 ), player );
+	ogre = CreateOgre( Vec3( -22, -3, 6 ), player );
 
 	//Revolver
 	Model* revolver = ModelManagerAllocate( &modelManager, "res/models/revolver.glb" );
@@ -120,11 +122,22 @@ int main() {
 
 	PrintAllocators( &globalArena );
 	WindowSetVsync( &window, 1 );
+
+	bool start = false;
+
 	while ( !WindowShouldClose( &window ) ) {
 		//PROFILE( "Frame" );
 		WindowPollInput( &window );
+
 		timer.Tick();
 		dt = timer.GetTimeSeconds();
+		if ( KeyDown( KEY_T ) ) {
+			start = true;
+			dt = 1.0f / 144.0f;
+		}
+		if ( !start ) continue;
+
+
 		timer.Restart();
 		gameTime += dt;
 
@@ -135,6 +148,8 @@ int main() {
 				entity->Update( entity );
 		}
 
+		UpdateProjectiles();
+
 
 		player->Update( player );
 
@@ -142,6 +157,16 @@ int main() {
 		RenderStartFrame( &renderer );
 		RenderDrawFrame( &renderer, dt );
 		RenderDrawEntity( ogre );
+
+		for ( int i = 0; i < entityManager.numProjectiles; i++ ) {
+			Projectile* projectile = &entityManager.projectiles[i];
+			if ( !projectile->active || projectile->model.model == 0 )
+				continue;
+
+			Mat4 t = glm::translate( Mat4( 1.0 ), projectile->collider.offset + projectile->collider.bounds.center );
+			RenderDrawModel( &renderer, projectile->model.model, t );
+		}
+
 		{
 			glClear( GL_DEPTH_BUFFER_BIT );
 			Mat4 t = glm::translate( Mat4( 1.0 ), Vec3( 3, -2.5, -1.2 ) );

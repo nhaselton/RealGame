@@ -34,9 +34,10 @@
 
 #define MAX_ENTITIES 1000
 #define MAX_ENTITY_SIZE 2048
+#define MAX_PROJECTILES 1000
 
 #define PHYSICS_MEMORY MB(10)
-#define MAX_DYNAMIC_COLLIDERS 1024
+
 
 //How big name buffers are when read from disk
 #define NAME_BUF_LEN (MAX_NAME_LENGTH + 4)
