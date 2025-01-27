@@ -8,16 +8,6 @@
 #include "Core\IO.h"
 #include "Core/Parser.h"
 
-struct BoundsMinMax {
-	Vec3 min;
-	Vec3 max;
-};
-
-struct BoundsHalfWidth {
-	Vec3 center;
-	Vec3 width;
-};
-
 #define TOTAL_MEMORY (MB(128))
 #define TEMP_MEMORY (MB(25))
 
@@ -41,6 +31,9 @@ struct BoundsHalfWidth {
 #define MAX_LEVEL_VERTICES (MAX_BRUSHES * 16)
 #define MAX_LEVEL_INDICES (MAX_BRUSHES * 64)
 #define LEVEL_MEMORY (MB(10))
+
+#define MAX_ENTITIES 1000
+#define MAX_ENTITY_SIZE 2048
 
 #define PHYSICS_MEMORY MB(10)
 #define MAX_DYNAMIC_COLLIDERS 1024

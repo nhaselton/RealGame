@@ -1,5 +1,6 @@
 #pragma once
 #include "def.h"
+#include "physics/Colliders.h"
 
 struct BoundsHalfWidth;
 struct SkeletonPose;
@@ -14,19 +15,12 @@ struct RenderModel {
 	Vec3 scale;
 };
 
-//For ray casts / entity entity collisions they use their AABB
-//For Collision with static geometry it uses a Ellipse with the size of bounds.halfWidth
-struct CharacterCollider {
-	Vec3 offset;
-	BoundsHalfWidth bounds;
-};
-
 class Entity {
 public:
 	Vec3 pos;
 	Quat rotation;
 
-	CharacterCollider bounds;
+	CharacterCollider* bounds;
 	RenderModel* renderModel;
 
 	struct AnimationClip* currentAnimation;
@@ -34,6 +28,9 @@ public:
 	float currentAnimationPercent; //t = [0,1]
 
 	u32 state;
+
+	void ( *Update ) ( class Entity* entity );
+	void ( *OnHit ) ( class Entity* entity, float damage );
 };
 
 void EntityStartAnimation( Entity* entity, int index );

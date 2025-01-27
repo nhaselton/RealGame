@@ -28,9 +28,12 @@ public:
 };
 
 Entity* CreateOgre( Vec3 pos, Entity* player );
-void OgreMove( Entity* entity, Vec3 target );
-void OgreUpdate( Entity* entity );
 
+void OgreUpdate( Entity* entity );
+void OgreOnHit( Entity* entity, float damage );
+
+//Ogre States
+void OgreMove( Entity* entity, Vec3 target );
 void OgreTaunt( Entity* entity );
 void OgreStartChase( Entity* entity );
 void OgreChase(Entity * entity);
@@ -38,3 +41,5 @@ void OgreStartThrow( Entity* entity );
 void OgreStartSwipe( Entity* entity );
 void OgreSwipe( Entity* entity );
 void OgreThrow( Entity* entity );
+void OgreStartDie(Entity* entity);
+void OgreDie( Entity* entity );

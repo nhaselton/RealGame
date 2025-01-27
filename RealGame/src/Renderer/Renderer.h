@@ -2,6 +2,7 @@
 #include "def.h"
 #include "GLBuffer.h"
 #include "Camera.h"
+#include "Physics\Colliders.h"
 //
 enum builtInShaderList {
 	SHADER_XYZRGB,

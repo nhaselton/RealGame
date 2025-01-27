@@ -4,9 +4,11 @@
 #include "Resources\ModelManager.h"
 #include "Physics/Physics.h"
 #include "Renderer\DebugRenderer.h"
+#include "EntityManager.h"
 
 Entity* CreateOgre( Vec3 pos, Entity* player ) {
-	Ogre* entity = ( Ogre* ) ScratchArenaAllocateZero( &globalArena, KB( 1 ) );
+	//Ogre* entity = ( Ogre* ) ScratchArenaAllocateZero( &globalArena, KB( 1 ) );
+	Ogre* entity = ( Ogre* ) NewEntity();
 	entity->player = player;
 	entity->pos = pos;
 
@@ -21,16 +23,10 @@ Entity* CreateOgre( Vec3 pos, Entity* player ) {
 	entity->renderModel->pose->pose = ( JointPose* ) ScratchArenaAllocateZero( &globalArena, entity->renderModel->model->skeleton->numNodes * sizeof( JointPose ) );
 	entity->renderModel->pose->skeleton = entity->renderModel->model->skeleton;
 
-	entity->bounds.offset = pos;
-	entity->bounds.bounds.center = Vec3( 0, 3, 0 );
-	entity->bounds.bounds.width = Vec3( 3 );
+	entity->bounds->offset = pos;
+	entity->bounds->bounds.center = Vec3( 0, 3, 0 );
+	entity->bounds->bounds.width = Vec3( 3 );
 	
-
-	//entity->bounds = PhysicsCreateDynamicBody( entity, Vec3( 0, 3.5, 0 ), Vec3( 3.5 ) );
-	//entity->bounds = ( BoundsHalfWidth* ) ScratchArenaAllocate( &globalArena, sizeof( BoundsHalfWidth ) );
-	//entity->bounds->center = Vec3( 0, 3.5, 0 );
-	//entity->bounds->width = Vec3( 7, 7, 7 );
-
 	entity->rotation = Quat( 1, 0, 0, 0 );
 
 	entity->nextAttack = 0;
@@ -38,11 +34,25 @@ Entity* CreateOgre( Vec3 pos, Entity* player ) {
 
 	entity->renderModel->model->animations[OGRE_ANIM_WALKING]->looping = true;
 
+	Vec3 dirToPlayer = player->pos - entity->pos;
+	dirToPlayer.y = 0;
+	entity->rotation = glm::quatLookAt( -dirToPlayer, Vec3( 0, 1, 0 ) );
+
+	entity->Update = OgreUpdate;
+	entity->OnHit = OgreOnHit;
+
 	//entity->state = ( ogreState_t ) OGRE_TAUNT;
 	//EntityStartAnimation( entity, OGRE_ANIM_ROARING );
 	OgreStartChase( entity );
 	return entity;
 }
+
+void OgreTaunt( Entity* entity ) {
+	//Wait for anim end
+	if ( entity->currentAnimationPercent == 1.0f )
+		OgreStartChase( entity );
+}
+
 
 void OgreMove( Entity* entity, Vec3 target ) {
 	if ( target == entity->pos )
@@ -56,20 +66,13 @@ void OgreMove( Entity* entity, Vec3 target ) {
 	float speed = 1.5f;
 	dist = glm::min( dist, speed );
 	
-	//entity->pos += dir * dist * dt;
-	entity->pos = MoveAndSlide( &entity->bounds, dir * dist * dt, 1, true );
 	entity->rotation = glm::quatLookAt( -dir, Vec3( 0, 1, 0 ) );
-}
-
-void OgreTaunt( Entity* entity ) {
-	//Wait for anim end
-	if ( entity->currentAnimationPercent == 1.0f )
-		OgreStartChase(entity);
+	entity->pos = MoveAndSlide( entity->bounds, dir * dist * dt, 0, true );
 }
 
 void OgreUpdate( Entity* entity ) {
 	//Apply Gravity
-	entity->pos = MoveAndSlide( &entity->bounds, Vec3( 0, -10 * dt, 0 ), 1, true );
+	entity->pos = MoveAndSlide( entity->bounds, Vec3( 0, -10 * dt, 0 ), 0, true );
 
 	switch ( ( ogreState_t ) entity->state ) {
 		case OGRE_CHASE: OgreChase( entity ); break;
@@ -82,7 +85,7 @@ void OgreUpdate( Entity* entity ) {
 	}
 
 	EntityAnimationUpdate( entity, dt );
-	DebugDrawCharacterCollider( &entity->bounds );
+	DebugDrawCharacterCollider( entity->bounds );
 }
 
 void OgreStartChase( Entity* entity ) {
@@ -96,7 +99,7 @@ void OgreChase( Entity* entity ) {
 	playerPos.y = 0;
 	
 	//Check Attacks
-	if ( ogre->nextAttack <= gameTime ) {
+	if ( ogre->nextAttack <= gameTime && 0) {
 		float playerDistance = glm::length( playerPos - ogre->pos );
 		if ( playerDistance > 15.0f ) {
 			OgreStartThrow(entity);
@@ -136,4 +139,21 @@ void OgreSwipe( Entity* entity ) {
 		ogre->nextAttack = gameTime + ogre->attackCooldown;
 		OgreStartChase( entity );
 	}
+}
+
+void OgreOnHit( Entity* entity, float damage ) {
+	if ( entity->state == OGRE_DIE ) {
+		return;
+	}
+	OgreStartDie( entity );
+	
+}
+
+void OgreStartDie( Entity* entity ) {
+	EntityStartAnimation( entity, OGRE_ANIM_DYING);
+	entity->state = OGRE_DIE;
+}
+
+void OgreDie( Entity* entity ) {
+
 }

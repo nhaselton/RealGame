@@ -21,7 +21,7 @@ void AnimatePoseNoAnimation( SkeletonPose* pose ) {
 int KeyFrameIndex( float t, float* keyFrames, int length) {
 	assert( length > 0 );
 	for ( int i = 0; i < length; i++ ) {
-		if ( keyFrames[i + 1] > t )
+		if ( keyFrames[i + 1] >= t )
 			return i;
 	}
 	return 0;

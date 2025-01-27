@@ -1,6 +1,6 @@
 #pragma once
 #include "CumDef.h"
-
+#include "Physics\Colliders.h"
 struct NPFace {
 	//
 	u32 textureIndex;

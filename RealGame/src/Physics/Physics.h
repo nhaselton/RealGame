@@ -1,7 +1,6 @@
 #pragma once
 #include "def.h"
-
-struct CharacterCollider;
+#include "Colliders.h"
 
 struct BrushTri {
 	u32 v[3];
@@ -43,6 +42,10 @@ struct Physics {
 	Brush* brushes;
 	int numBrushes;
 	BVHTree staticBVH;
+
+	CharacterCollider colliders[MAX_ENTITIES];
+	CharacterCollider* activeColliders[MAX_ENTITIES];
+	int numActiveColliders;
 };
 extern Physics physics;
 
@@ -76,6 +79,8 @@ struct HitInfo {
 	//t [0,1] for cast.
 	//Overlap in direction of normal for collisions
 	float dist;
+	//In case of raycasting dynamics
+	Entity* entity;
 };
 
 
@@ -84,7 +89,9 @@ struct HitInfo {
 void PhysicsInit();
 void PhysicsLoadLevel( struct Level* level, struct NFile* file );
 
+bool PhysicsQueryRaycast( Vec3 start, Vec3 velocity, HitInfo* best );
 bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo* bestSweep );
+bool PhysicsRaycastDynamic( Vec3 start, Vec3 velocity, HitInfo* info );
 bool BruteCastSphere( Vec3 pos, Vec3 velocity, Vec3 r, SweepInfo* outInfo );
 bool CastSphere( Vec3 pos, Vec3 velocity, Brush* brush, Vec3 r, SweepInfo* outInfo );
 //Should the characterController offset be moved to the new position
@@ -93,6 +100,8 @@ Vec3 MoveAndSlide( CharacterCollider* characterController, Vec3 velocity, int bo
 
 Vec3 EllipseFromWorld( const Vec3& point, const Vec3& radius );
 Vec3 WorldFromEllipse( const Vec3& point, const Vec3& radius );
+
+bool PhysicsRaycastHull( Vec3 start, Vec3 dir, Brush* hull, HitInfo* info );
 
 inline bool FastAABB( const BoundsMinMax& a, const BoundsMinMax& b ) {
 	return

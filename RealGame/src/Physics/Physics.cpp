@@ -4,7 +4,7 @@
 #include "game/Entity.h"
 
 void PhysicsInit() {
-
+	memset( physics.activeColliders, MAX_ENTITIES, MAX_ENTITIES * sizeof( physics.activeColliders[0] ) );
 }
 
 void PhysicsLoadLevel( Level* level, NFile* file ) {
@@ -56,7 +56,7 @@ inline Vec3 ProjectOnPlane( const Vec3& planeNormal, const Vec3& vector ) {
 //https ://arxiv.org/pdf/1211.0059
 //https://www.youtube.com/watch?v=YR6Q7dUz2uk&t=425s
 #define VERY_SMALL_DISTANCE .0000005f //Increasing this will break high fps
-Vec3 MoveAndSlide( CharacterCollider* cc , Vec3 velocity, int maxBounces, bool adjustCharacterController ) {
+Vec3 MoveAndSlide( CharacterCollider* cc, Vec3 velocity, int maxBounces, bool adjustCharacterController ) {
 	Vec3 startPos = cc->bounds.center + cc->offset;
 	Vec3 startVel = velocity;
 
@@ -73,8 +73,8 @@ Vec3 MoveAndSlide( CharacterCollider* cc , Vec3 velocity, int maxBounces, bool a
 	do {
 		SweepInfo info{};
 
-		//if ( !BruteCastSphere( pos, velocity, characterController->bounds.width, &info ) ) {
-		if ( !PhysicsQuerySweepStatic( pos, velocity, cc->bounds.width, &info ) ) {
+		if ( !BruteCastSphere( pos, velocity, cc->bounds.width, &info ) ) {
+		//if ( !PhysicsQuerySweepStatic( pos, velocity, cc->bounds.width, &info ) ) {
 			pos += velocity;
 			break;
 		}
@@ -114,9 +114,9 @@ Vec3 MoveAndSlide( CharacterCollider* cc , Vec3 velocity, int maxBounces, bool a
 	pos -= cc->bounds.center;
 	Vec3 finalPos = pos;
 
-	DebugDrawAABB( pos, Vec3(1,2,1),0,GREEN );
+	DebugDrawAABB( pos, Vec3( 1, 2, 1 ), 0, GREEN );
 	//DebugDrawCharacterCollider( characterController, GREEN );
-	
+
 	if ( adjustCharacterController )
 		cc->offset = finalPos;
 
@@ -414,8 +414,8 @@ bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo*
 	};
 
 	BoundsMinMax AABB2 {
-		start - radius,
-		start + velocity + radius
+		start - radius * 2.0f,
+		start + velocity + radius * 2.0f
 	};
 
 	while ( numStack > 0 ) {
@@ -453,4 +453,124 @@ bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo*
 			stack[numStack++] = &physics.staticBVH.nodes[node->child2];
 	}
 	return bestSweep->foundCollision;
+}
+
+bool PhysicsRaycastHull( Vec3 start, Vec3 dir, Brush* hull, HitInfo* info ) {
+	memset( info, 0, sizeof( *info ) );
+	float tmin = 0.0f;
+	float tmax = 1.0f;
+
+	for ( int i = 0; i < hull->numPolygons; i++ ) {
+		Polygon* poly = &hull->polygons[i];
+		//Intersect each plane
+		Vec3 axis = glm::normalize( poly->n );
+		float denom = glm::dot( poly->n, dir );
+		float dist = -poly->d - glm::dot( poly->n, start );
+		//Parallel
+		if ( fabs( denom ) <= .005f ) {
+			if ( -dist > 0 ) //??
+				return 0;
+		}
+		else {
+			float t = dist / denom;
+			if ( denom < FEPSILON ) {
+				if ( t > tmin ) tmin = t;
+			}
+			else {
+				if ( t < tmax ) tmax = t;
+			}
+			if ( tmin > tmax )
+				return 0;
+		}
+	}
+	info->didHit = true;
+	info->point = start + dir * tmin;
+	info->dist = tmin;
+	return 1;
+}
+
+bool RaycastAABB( const Vec3& start, const Vec3& velocity, const BoundsHalfWidth& aabb, HitInfo* info ) {
+	Vec3 min = aabb.center - aabb.width;
+	Vec3 max = aabb.center + aabb.width;
+
+	float t1 = ( min.x - start.x ) / velocity.x;
+	float t2 = ( max.x - start.x ) / velocity.x;
+	float t3 = ( min.y - start.y ) / velocity.y;
+	float t4 = ( max.y - start.y ) / velocity.y;
+	float t5 = ( min.z - start.z ) / velocity.z;
+	float t6 = ( max.z - start.z ) / velocity.z;
+
+	float tmin = glm::max( glm::max( glm::min( t1, t2 ), glm::min( t3, t4 ) ), glm::min( t5, t6 ) );
+	float tmax = glm::min( glm::min( glm::max( t1, t2 ), glm::max( t3, t4 ) ), glm::max( t5, t6 ) );
+
+	// if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
+	if ( tmax < 0 ) {
+		return false;
+	}
+
+	// if tmin > tmax, ray doesn't intersect AABB
+	if ( tmin > tmax ) {
+		return false;
+	}
+
+	//Inside of box. Rays should nto count inside of an object.
+	if ( tmin < 0.f ) {
+		return false;
+	}
+	
+	info->dist = tmin;
+	info->didHit = true;
+	return tmin;
+
+}
+
+bool PhysicsQueryRaycast( Vec3 start, Vec3 velocity, HitInfo* best ) {
+	memset( best, 0, sizeof( *best ) );
+
+	//First Check Static Geometry
+	//TODO BVH
+	HitInfo bestStatic{};
+	for ( int i = 0; i < physics.numBrushes; i++ ) {
+		HitInfo thisInfo{};
+		if ( PhysicsRaycastHull( start, velocity, &physics.brushes[i], &thisInfo ) ) {
+			if ( thisInfo.didHit < bestStatic.dist ) {
+				bestStatic = thisInfo;
+			}
+		}
+	}
+	
+	HitInfo bestDynamic{};
+	if ( PhysicsRaycastDynamic( start, velocity, &bestDynamic ) )
+		*best = bestDynamic;
+	
+	//if ( bestStatic.didHit && bestStatic.dist < bestDynamic.dist )
+	//	*best = bestStatic;
+
+	if ( best->didHit )
+		best->point = start + velocity * best->dist;
+
+	return best->didHit;
+}
+
+bool PhysicsRaycastDynamic( Vec3 start, Vec3 velocity, HitInfo* out ) {
+	HitInfo best{};
+
+	memset( out, 0, sizeof( *out) );
+	for ( int i = 0; i < physics.numActiveColliders; i++ ) {
+		HitInfo thisHit{};
+		BoundsHalfWidth bounds;
+		CharacterCollider* collider = physics.activeColliders[i];
+		bounds.center = collider->offset + collider->bounds.center;
+		bounds.width = collider->bounds.width;
+
+		if ( RaycastAABB( start, velocity, bounds, &thisHit ) ) {
+			if ( thisHit.dist < best.dist || !best.didHit ) {
+				thisHit.entity = collider->owner;
+				best = thisHit;
+			}
+		}
+	}
+
+	*out = best;
+	return best.didHit;
 }

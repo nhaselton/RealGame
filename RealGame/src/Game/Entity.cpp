@@ -18,7 +18,7 @@ void EntityAnimationUpdate( Entity* entity, float dt ) {
 		if ( entity->currentAnimation->looping )
 			entity->currentAnimationTime -= entity->currentAnimation->duration;
 		else
-			entity->currentAnimationTime = entity->currentAnimation->duration;
+			entity->currentAnimationTime = entity->currentAnimation->duration	;
 	}
 
 	entity->currentAnimationPercent = entity->currentAnimationTime / entity->currentAnimation->duration;
@@ -31,6 +31,6 @@ void EntityMove( Entity* entity, Vec3 velocity ) {
 	Vec3 gravity( 0,  -10.0f * dt , 0 );
 	velocity.y = 0;
 
-	entity->pos = MoveAndSlide( &entity->bounds, velocity, 3, true );
-	entity->pos = MoveAndSlide( &entity->bounds, gravity, 0, true );
+	entity->pos = MoveAndSlide( entity->bounds, velocity, 3, true );
+	entity->pos = MoveAndSlide( entity->bounds, gravity, 0, true );
 }

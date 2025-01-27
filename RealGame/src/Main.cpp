@@ -15,15 +15,17 @@
 #include "Physics\Physics.h"
 
 #include "Game\Entity.h"
+#include "Game\EntityManager.h"
 #include "Game\Ogre.h"
+#include "Game\Player.h"
 /*
 *	Physics:
 *		Entities with EntityColliders
 *		EntityColliders to be able to detect if they intersect each other
 *		Im fine if they clip each i think, i can have a collision resolve stage?
 *		
-*	
-*	BVH For triangles rather than hulls
+*		BVH For triangles rather than hulls?
+*		Or Try Polygon instead of triangles
 *	
 * 
 *	MVP
@@ -57,6 +59,7 @@ ShaderManager shaderManager;
 TextureManager textureManager;
 
 Physics physics;
+EntityManager entityManager;
 
 Level level;
 
@@ -82,23 +85,19 @@ int main() {
 	CreateDebugRenderer( &renderer, ScratchArenaAllocate( &globalArena, DEBUG_RENDERER_SIZE ), DEBUG_RENDERER_SIZE );
 
 	PhysicsInit();
+	CreateEntityManager();
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
 	LoadLevel( &level, "res/maps/map.cum" );
 	Timer timer;
 
-	Entity player;
-	player.pos = Vec3( 0 );
-	player.bounds.offset = player.pos;
-	player.bounds.bounds.center = Vec3( 0 );
-	player.bounds.bounds.width = Vec3( 1, 2, 1 );
-	player.renderModel = 0;
+	Player* player = CreatePlayer( Vec3( 0 ) );
 	renderer.camera.Yaw = 180.0;
 	renderer.camera.GetViewMatrix();
 
 	//Model
 	Entity* ogre;
-	ogre = CreateOgre( Vec3( -22, -3, 6 ), &player );
+	ogre = CreateOgre( Vec3( -22, 10, 6 ), player );
 
 	//Revolver
 	Model* revolver = ModelManagerAllocate( &modelManager, "res/models/revolver.glb" );
@@ -120,9 +119,9 @@ int main() {
 	}
 
 	PrintAllocators( &globalArena );
-	WindowSetVsync( &window, 0 );
+	WindowSetVsync( &window, 1 );
 	while ( !WindowShouldClose( &window ) ) {
-		PROFILE( "Frame" );
+		//PROFILE( "Frame" );
 		WindowPollInput( &window );
 		timer.Tick();
 		dt = timer.GetTimeSeconds();
@@ -130,30 +129,16 @@ int main() {
 		gameTime += dt;
 
 		//Movement
-		float mx = 0, my = 0, speed = 15;
-		if ( KeyDown( KEY_LEFT ) ) mx -= 3;
-		if ( KeyDown( KEY_RIGHT ) ) mx += 3;
-		if ( KeyDown( KEY_DOWN ) ) my -= 1.5;
-		if ( KeyDown( KEY_UP ) ) my += 1.5;
-		renderer.camera.ProcessMouseMovement( mx * speed * dt * 50, my * dt * speed * 50 );
+		for ( ActiveEntity* ent = entityManager.activeHead; ent != 0; ent = ent->next ) {
+			Entity* entity = ( Entity* ) ent->entity;
+			if ( entity->Update != 0 )
+				entity->Update( entity );
+		}
 
-		Vec3 wantDir( 0 );
-		if ( KeyDown( KEY_W ) ) wantDir += renderer.camera.Front;
-		if ( KeyDown( KEY_S ) ) wantDir -= renderer.camera.Front;
-		if ( KeyDown( KEY_A ) ) wantDir += -renderer.camera.Right;
-		if ( KeyDown( KEY_D ) ) wantDir += renderer.camera.Right;
-		if ( wantDir != Vec3( 0 ) ) 
-			wantDir = glm::normalize( wantDir );
 
-		OgreUpdate( ogre );
-		//PlayerMovement( &player, wantDir * 20.0f * dt);
-		HitInfo info{};
-		wantDir *= 20.0f * dt;
-		
-		EntityMove( &player, wantDir );
-		MoveAndSlide( &player.bounds, renderer.camera.Front * 100.0f, 0, 0 );
-		renderer.camera.Position = player.pos + Vec3( 0, 1, 0 );
+		player->Update( player );
 
+		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );
 		RenderDrawFrame( &renderer, dt );
 		RenderDrawEntity( ogre );
