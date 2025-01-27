@@ -174,7 +174,7 @@ void RenderSetShader( Renderer* renderer, Shader* newShader ) {
 }
 
 void RenderDrawModel( Renderer* renderer, Model* model, Mat4 offset, SkeletonPose* pose ) {
-	Shader* shader = ( model->skeleton == 0 ) ? renderer->shaders[SHADER_XYZRGB] : renderer->shaders[SHADER_STANDARD_SKINNED];
+	Shader* shader = ( model->skeleton == 0 ) ? renderer->shaders[SHADER_STANDARD] : renderer->shaders[SHADER_STANDARD_SKINNED];
 	RenderSetShader( renderer, shader );
 
 	//Setup mat4 array

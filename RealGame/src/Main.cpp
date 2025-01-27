@@ -19,13 +19,30 @@
 #include "Game\Ogre.h"
 #include "Game\Player.h"
 /*
+	TODO: MVP
+
+	Immediate:
+		Gun Model + Texture
+			Shoot Animation
+			Reload does a 360, (Can I Just do this in code maybe?)
+		Rock Texture
+	UI:
+		Draw Images on HUD
+		Draw Text on HUD
+
+
+	One Day:
+		Projectile Callbacks
+
+
+
+
+
 *	Physics:
-*		Entities with EntityColliders
 *		EntityColliders to be able to detect if they intersect each other
 *		Im fine if they clip each i think, i can have a collision resolve stage?
-*		
-*		BVH For triangles rather than hulls?
-*		Or Try Polygon instead of triangles
+
+
 *	
 * 
 *	MVP
@@ -39,7 +56,6 @@
 *	Ogre
 *		AI
 *		Shootable
-*		Killable (Sphere per bone?)
 */
 
 //Eventually
@@ -102,7 +118,10 @@ int main() {
 	ogre = CreateOgre( Vec3( -22, -3, 6 ), player );
 
 	//Revolver
-	Model* revolver = ModelManagerAllocate( &modelManager, "res/models/revolver.glb" );
+	Model* revolver = ModelManagerAllocate( &modelManager, "res/models/revolver2.glb" );
+	revolver->numAnimations = 0;
+	revolver->skeleton = 0;
+
 	Mat4 revolverScale = glm::scale( Mat4( 1.0 ), Vec3( .25f ) );
 	Mat4 rot = glm::toMat4( glm::rotate( Quat( 1, 0, 0, 0 ), glm::radians( 90.0f ), Vec3( 0, 1, 0 ) ) );
 
@@ -123,7 +142,7 @@ int main() {
 	PrintAllocators( &globalArena );
 	WindowSetVsync( &window, 1 );
 
-	bool start = false;
+	bool start = true;
 
 	while ( !WindowShouldClose( &window ) ) {
 		//PROFILE( "Frame" );
@@ -169,8 +188,8 @@ int main() {
 
 		{
 			glClear( GL_DEPTH_BUFFER_BIT );
-			Mat4 t = glm::translate( Mat4( 1.0 ), Vec3( 3, -2.5, -1.2 ) );
-			Mat4 r = glm::toMat4( glm::rotate( Quat( 1, 0, 0, 0 ), glm::radians( 80.0f ), Vec3( 0, 1, 0 ) ) );
+			Mat4 t = glm::translate( Mat4( 1.0 ), Vec3( .5f, -.4f, -1.1f ) );
+			Mat4 r = glm::toMat4( glm::rotate( Quat( 1, 0, 0, 0 ), glm::radians( 92.0f ), Vec3( 0, 1, 0 ) ) );
 			Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( .4f ) );
 			Mat4 model = t * r * s;
 			model = glm::inverse( renderer.camera.GetViewMatrix() ) * model;
@@ -181,3 +200,18 @@ int main() {
 		WindowSwapBuffers( &window );
 	}
 }
+
+/*
+	AnimationClip*
+		EventList
+			EventType	
+				Extra data?
+			Time
+
+	Animatior:
+		LastUpdate();
+
+		If ( Any Animation Event between Now & LastUdpate) {
+			AddToListSomewhere on sample
+		}
+*/
