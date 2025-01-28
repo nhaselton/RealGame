@@ -242,6 +242,8 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 				strcpy_s( joint->name, MAX_NAME_LENGTH, name.c_str() );
 			}
 
+			joint->s = Vec3( 1 );
+
 			if ( jnode.find( "translation" ) != jnode.end() ) {
 				JSON& t = jnode["translation"];
 				joint->t = Vec3( t[0], t[1], t[2] );

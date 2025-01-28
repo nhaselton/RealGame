@@ -3,7 +3,14 @@
 #include "GLBuffer.h"
 #include "Camera.h"
 #include "Physics\Colliders.h"
-//
+
+#define FONT_BATCH_SIZE 8192
+
+struct FontVert {
+	Vec2 pos;
+	Vec2 tex;
+};
+
 enum builtInShaderList {
 	SHADER_XYZRGB,
 	SHADER_XYZRGB_SKINNED,
@@ -16,8 +23,31 @@ enum builtInShaderList {
 
 //These should always be bound to these values for consistency
 enum samplerList {
-	S2D_ALBEDO = 0,	
+	S2D_ALBEDO = 0,
 	S2D_LAST
+};
+
+struct BitmapGlyph {
+	int ascii;
+	int x;
+	int y;
+	int width;
+	int height;
+	int xoffset;
+	int yoffset;
+	int xadvance;
+	Vec2 tMin;
+	Vec2 tMax;
+};
+
+struct BitmapFont {
+	BitmapGlyph* glyphs;
+	int numGlyphs;
+	int imageSizeX;
+	int imageSizeY;
+	int lineHeight;
+	int glyphSize;
+	int base;
 };
 
 struct RenderBrushFace {
@@ -66,6 +96,7 @@ public:
 
 	Mat4 mat4Array[100];
 	Mat4 projection;
+	Mat4 orthographic;
 
 	LevelRenderInfo levelInfo;
 
@@ -73,9 +104,17 @@ public:
 	class Model* sphere;
 	u32 currentShaderID;
 
-	Texture* crosshair;
+	Texture* crosshairTex;
+	Texture* healthTex;
+	Texture* fontTex;
 
 	GLBuffer quadBuffer;
+	BitmapFont font;
+
+	//Font
+	GLBuffer fontBuffer;
+	FontVert glyphs[FONT_BATCH_SIZE * 4];
+	u32 numGlyphsBatched;
 };
 extern Renderer renderer;
 
@@ -90,8 +129,15 @@ void RenderDrawLevel( Renderer* renderer );
 
 void RenderDrawEntity( class Entity* entity );
 
+void RenderDrawFontBatch();
+void RenderDrawText( Vec2 pos, float fontSize, const char* string );
+void RenderDrawChar( Vec2 pos, BitmapGlyph* glyph, float fontSize );
+
 void RenderDrawHealthBar( Vec2 pos, Vec2 size, int hp, int maxHp );
 void RenderDrawQuadColored( Vec2 pos, Vec2 size, Vec3 color ); 
 void RenderDrawQuadTextured( Vec2 pos, Vec2 size, struct Texture* texture );
 
 void RenderLoadLevel( class Level* level, class NFile* file );
+
+void RenderInitFont();
+void RenderLoadFontFromFile();

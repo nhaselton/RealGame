@@ -30,6 +30,7 @@ class Shader {
 public:
 	u32 id;
 	ShaderArg* args;
+	bool updateMVP; //Should the MVP be updated each frame
 };
 
 //Sets and uploads them to GPU

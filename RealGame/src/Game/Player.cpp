@@ -72,7 +72,14 @@ void UpdatePlayer( Entity* entity ) {
 		wantDir = glm::normalize( wantDir );
 
 	wantDir *= 20.0f * dt;
+
+	
+#if 1 //Normal
 	EntityMove( player, wantDir );
+#else //Noclip
+	entity->pos += velocity;
+	entity->bounds->offset = entity->pos;
+#endif
 
 	player->camera.Position = player->pos + Vec3( 0, 1, 0 );
 
@@ -142,7 +149,7 @@ void PlayerOnHit( EntityHitInfo info ) {
 	printf( "ouch!" );
 
 	info.victim->health--;
-	if ( info.victim->health < 0 )
+	if ( info.victim->health <= 0 )
 		exit( 0 );
 
 	return;

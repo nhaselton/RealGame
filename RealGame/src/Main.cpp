@@ -20,10 +20,6 @@
 #include "Game\Ogre.h"
 #include "Game\Player.h"
 /*
-	=============MVP===================
-	Fix Animated models Normals for lighting
-	MouseMovement
-*	============Future==================
 *	Font Rendering
 * 
 *	Animation Events		
@@ -86,8 +82,6 @@ int main() {
 	CreateRenderer( &renderer, 0, 0 );
 	CreateDebugRenderer( &renderer, ScratchArenaAllocate( &globalArena, DEBUG_RENDERER_SIZE ), DEBUG_RENDERER_SIZE );
 
-	
-
 	PhysicsInit();
 	CreateEntityManager();
 
@@ -102,6 +96,14 @@ int main() {
 	//Model
 	Entity* ogre;
 	ogre = CreateOgre( Vec3( -22, -3, 6 ), player );
+
+	Entity* goblin = NewEntity();
+	Model* model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
+	EntityGenerateRenderModel( goblin, model, &globalArena );
+	goblin->pos = player->pos + player->camera.Front * 6.0f;
+	goblin->currentAnimation = goblin->renderModel->model->animations[0];
+	goblin->currentAnimation->looping = true;
+
 
 	for ( int i = 0; i < physics.numBrushes; i++ ) {
 		Brush* brush = &physics.brushes[i];
@@ -118,9 +120,9 @@ int main() {
 	}
 
 	PrintAllocators( &globalArena );
-	WindowSetVsync( &window, 1 );
+	WindowSetVsync( &window, 0 );
 
-	bool start = false;
+	bool start = true;
 
 	while ( !WindowShouldClose( &window ) ) {
 		//PROFILE( "Frame" );
@@ -134,9 +136,6 @@ int main() {
 			dt = 1.0f / 144.0f;
 		}
 		if ( !start ) continue;
-
-
-		printf( "%.4f\n", dt );
 
 		timer.Restart();
 		gameTime += dt;
@@ -154,6 +153,9 @@ int main() {
 		RenderStartFrame( &renderer );
 		RenderDrawFrame( &renderer, dt );
 		RenderDrawEntity( ogre );
+
+		EntityAnimationUpdate( goblin, dt );
+		RenderDrawEntity( goblin );
 
 
 		for ( int i = 0; i < entityManager.numProjectiles; i++ ) {
@@ -181,13 +183,19 @@ int main() {
 		//Draw Crosshair
 		if ( player->revolver.state != REVOLVER_RELOADING ) {
 			Vec2 spreadSize(16 * player->revolver.spread);
-			RenderDrawQuadTextured( Vec2( 640, 360 ) - spreadSize / 2.0f, spreadSize, renderer.crosshair );
+			RenderDrawQuadTextured( Vec2( 640, 360 ) - spreadSize / 2.0f, spreadSize, renderer.crosshairTex );
 		}
 
 		//DrawAmmo
 		for ( int i = 0; i < player->revolver.ammo; i++ )
 			RenderDrawQuadColored( Vec2( 20 * i + 20, 640 ), Vec2( 10, 20 ), Vec3( 1, .97, .86 ) );
-		RenderDrawHealthBar( Vec2( 20, 680 ), Vec2( 120, 30 ), player->health, player->maxHealth );
+		
+		RenderDrawQuadTextured( Vec2( 16, 680 ), Vec2( 32 ), renderer.healthTex );
+		RenderDrawHealthBar( Vec2( 64, 680 ), Vec2( 120, 30 ), player->health, player->maxHealth );
+
+		char buffer[2048];
+		sprintf_s( buffer, 2048, "ms: %.2f\nfps: %.0f", dt * 1000.0f, 1.0f / dt );
+		RenderDrawText( Vec2( 1000, 60 ), 32, buffer );
 
 		RenderEndFrame( &renderer );
 		WindowSwapBuffers( &window );

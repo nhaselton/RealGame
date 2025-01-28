@@ -18,24 +18,15 @@ Entity* CreateOgre( Vec3 pos, Entity* player ) {
 	entity->player = player;
 	entity->pos = pos;
 
-	entity->renderModel = (RenderModel*) ScratchArenaAllocateZero( &globalArena, sizeof( RenderModel ) );
-	entity->renderModel->model = ModelManagerAllocate( &modelManager, "res/models/ogre.glb" );
-	entity->renderModel->scale = Vec3(3 );
-	entity->renderModel->rotation = Quat( 1, 0, 0, 0 );
-	entity->renderModel->translation = Vec3( 0 );
-
-	entity->renderModel->pose = (SkeletonPose*) ScratchArenaAllocateZero( &globalArena, sizeof( SkeletonPose ) );
-	entity->renderModel->pose->globalPose = ( Mat4* ) ScratchArenaAllocateZero( &globalArena, entity->renderModel->model->skeleton->numNodes * sizeof( Mat4 ) );
-	entity->renderModel->pose->pose = ( JointPose* ) ScratchArenaAllocateZero( &globalArena, entity->renderModel->model->skeleton->numNodes * sizeof( JointPose ) );
-	entity->renderModel->pose->skeleton = entity->renderModel->model->skeleton;
+	Model* model = ModelManagerAllocate( &modelManager, "res/models/ogre.glb" );
+	EntityGenerateRenderModel( entity, model, &globalArena );
+	entity->renderModel->scale = Vec3( 3 );
 
 	entity->bounds->offset = pos;
 	entity->bounds->bounds.center = Vec3( 0, 3, 0 );
 	entity->bounds->bounds.width = Vec3( 3 );
 	entity->bounds->owner = entity;
 	
-	entity->rotation = Quat( 1, 0, 0, 0 );
-
 	entity->nextAttack = 0;
 	entity->attackCooldown = 5.0f;
 
@@ -43,7 +34,7 @@ Entity* CreateOgre( Vec3 pos, Entity* player ) {
 
 	Vec3 dirToPlayer = player->pos - entity->pos;
 	dirToPlayer.y = 0;
-	entity->rotation = glm::quatLookAt( -dirToPlayer, Vec3( 0, 1, 0 ) );
+	entity->rotation = glm::quatLookAt( -glm::normalize( dirToPlayer ), Vec3( 0, 1, 0 ) );
 
 	entity->Update = OgreUpdate;
 	entity->OnHit = OgreOnHit;
@@ -54,10 +45,8 @@ Entity* CreateOgre( Vec3 pos, Entity* player ) {
 	entity->hasThrownRock = false;
 	entity->hasSwiped = false;
 
-	OgreMove( entity, Vec3(0) ); //(BUG) Ogre animation bugs out without this. Look into it
 	entity->state = ( ogreState_t ) OGRE_TAUNT;
 	EntityStartAnimation( entity, OGRE_ANIM_ROARING );
-	//OgreStartChase( entity );
 	return entity;
 }
 
@@ -194,8 +183,6 @@ void OgreSwipe( Entity* entity ) {
 
 			ogre->player->OnHit( info );
 		}
-
-
 	}
 }
 

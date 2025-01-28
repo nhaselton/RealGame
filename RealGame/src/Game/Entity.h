@@ -56,8 +56,10 @@ public:
 	void ( *Update ) ( class Entity* entity );
 	void ( *OnHit ) ( struct EntityHitInfo info );
 };
-
+//Init
+void EntityGenerateRenderModel( Entity* entity, class Model* model, ScratchArena* arena );
+//Animation
 void EntityStartAnimation( Entity* entity, int index );
 void EntityAnimationUpdate( Entity* entity, float dt );
-
+//Runtime
 void EntityMove( Entity* entity, Vec3 velocity );

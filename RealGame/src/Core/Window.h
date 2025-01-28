@@ -29,7 +29,7 @@ public:
 	std::vector<KeySub*> keySubscriptions;
 	struct GLFWwindow* handle;
 };
-
+extern Window window;
 void WindowInit( Window* window, u32 width, u32 height, const char* title );
 void WindowSwapBuffers( Window* window );
 void WindowPollInput( Window* window );

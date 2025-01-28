@@ -17,5 +17,4 @@ void main(){
 		if ( FragColor.a < .75 )
 			discard;
 	}
-	
 }

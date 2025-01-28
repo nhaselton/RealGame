@@ -12,9 +12,10 @@ float GetScaleFactor( float lastTimeStamp, float nextTimeStamp, float animationT
 }
 
 void AnimatePoseNoAnimation( SkeletonPose* pose ) {
-	for ( int i = 0; i < pose->skeleton->numBones; i++ ) {
+	for ( int i = 0; i < pose->skeleton->numNodes; i++ ) {
 		pose->pose[i].t = pose->skeleton->joints[i].t;
 		pose->pose[i].r = pose->skeleton->joints[i].r;
+		pose->pose[i].s = pose->skeleton->joints[i].s.x;
 	}
 }
 
@@ -80,7 +81,10 @@ float GetScale( float time, AnimationClip* clip, int bone ) {
 	int p1 = p0 + 1;
 	float scale = GetScaleFactor( frames->scaleTimes[p0], frames->scaleTimes[p1], time );
 	Vec3 scaleFinal = glm::mix( frames->scaleKeys[p0], frames->scaleKeys[p1], 0.0f );
-	assert( UniformScale( scaleFinal ) );
+	if ( !UniformScale( scaleFinal ) )
+		scaleFinal = Vec3( 1 );
+	
+	//assert( UniformScale( scaleFinal ) );
 	return scaleFinal.x;
 }
 
@@ -90,7 +94,7 @@ void AnimatePose( float time, AnimationClip* clip, SkeletonPose* pose ) {
 		AnimatePoseNoAnimation( pose );
 		return;
 	}
-
+	
 	assert( clip->skeleton == pose->skeleton );
 
 	for ( int i = 0; i < clip->skeleton->numNodes; i++ ) {

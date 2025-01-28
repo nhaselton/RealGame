@@ -9,8 +9,11 @@ void EntityStartAnimation( Entity* entity, int index ) {
 }
 
 void EntityAnimationUpdate( Entity* entity, float dt ) {
-	if ( !entity->currentAnimation )
+	if ( !entity->currentAnimation ) {
+		AnimatePose( 0, 0, entity->renderModel->pose );
+		UpdatePose( entity->renderModel->pose->skeleton->root, Mat4( 1.0 ), entity->renderModel->pose );
 		return;
+	}
 
 	entity->currentAnimationTime += dt;
 
@@ -33,4 +36,22 @@ void EntityMove( Entity* entity, Vec3 velocity ) {
 
 	entity->pos = MoveAndSlide( entity->bounds, velocity, 3, true );
 	entity->pos = MoveAndSlide( entity->bounds, gravity, 0, true );
+
+}
+
+//Theres gotta be a better way probably idk
+void EntityGenerateRenderModel( Entity* entity, Model* model, ScratchArena* arena ) {
+	assert( model );
+	entity->renderModel = (RenderModel*) ScratchArenaAllocate( arena, sizeof( RenderModel ) );
+	entity->renderModel->rotation = Quat( 1, 0, 0, 0 );
+	entity->renderModel->scale = Vec3( 1 );
+	entity->renderModel->translation = Vec3( 0 );
+
+	entity->renderModel->model = model;
+	entity->renderModel->pose = (SkeletonPose*) ScratchArenaAllocate( arena, sizeof( SkeletonPose ) );
+	entity->renderModel->pose->globalPose = 
+		( Mat4* ) ScratchArenaAllocate( arena,  model->skeleton->numBones *  sizeof( Mat4) );
+	entity->renderModel->pose->pose = 
+		( JointPose* ) ScratchArenaAllocate( arena, model->skeleton->numNodes * sizeof( JointPose ) );
+	entity->renderModel->pose->skeleton = model->skeleton;
 }
