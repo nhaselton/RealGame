@@ -123,7 +123,7 @@ int main() {
 	bool start = false;
 
 	while ( !WindowShouldClose( &window ) ) {
-		PROFILE( "Frame" );
+		//PROFILE( "Frame" );
 		KeysUpdate();
 		WindowPollInput( &window );
 
@@ -135,6 +135,8 @@ int main() {
 		}
 		if ( !start ) continue;
 
+
+		printf( "%.4f\n", dt );
 
 		timer.Restart();
 		gameTime += dt;
