@@ -1,6 +1,16 @@
 #pragma once
-#include "CumDef.h"
 #include "Physics\Colliders.h"
+
+struct DPlane {
+	dVec3 n;
+	double d;
+};
+struct DBrushVertex {
+	dVec3 pos;
+	dVec3 normal;
+	dVec2 uv;
+};
+
 struct NPFace {
 	//
 	u32 textureIndex;

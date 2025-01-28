@@ -1,5 +1,4 @@
 #include "Cum.h"
-#include "CumDef.h"
 
 #include "c:\Workspace\Cpp\RealGame\RealGame\src\Resources\Level.h"
 #include "c:\Workspace\Cpp\RealGame\RealGame\src\physics\physics.h"

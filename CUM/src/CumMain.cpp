@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <chrono>
-#include "cumdef.h"
 #include "Cum.h"
 
 
