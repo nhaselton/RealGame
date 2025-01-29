@@ -216,21 +216,66 @@ void RenderStartFrame( Renderer* renderer ){
 	glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
 }
 
+struct TextureList {
+	Texture* texture;
+	u32 triCount;
+	u32* firstIndexOfTriangles; //Can add ++ and ++++ after
+};
+
 void RenderDrawLevel( Renderer* renderer ) {
-	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD] );
+	TEMP_ARENA_SET;
 
-	glBindVertexArray( renderer->levelInfo.buffer.vao );
-	glActiveTexture( GL_TEXTURE0 );
+	TextureChain* textureChains = renderer->levelInfo.textureChains;
+	u32 totalIndices = 0;
 
+	//Frist Loop through and get counts of each surface
 	for ( u32 i = 0; i < renderer->levelInfo.numFaces; i++ ) {
 		RenderBrushFace* face = &renderer->levelInfo.faces[i];
-		if ( face->texture ) {
-			glActiveTexture( GL_TEXTURE0 + S2D_ALBEDO );
-			glBindTexture( GL_TEXTURE_2D, face->texture->id );
-		}
+		TextureChain* chain = &textureChains[face->textureIndex];
 
-		glDrawElements( GL_TRIANGLES, face->numIndices, GL_UNSIGNED_INT, ( void* ) ( face->firstIndex * sizeof( u32 ) ) );
+		totalIndices += face->numIndices;
+		//Add each triangle
+		for ( int n = 0; n < face->numIndices; n += 3 )
+			chain->firstIndexOfTriangles[chain->numTriangles++] = face->firstIndex + n;
 	}
+
+	//Now Loop through again and construct the index ptr[]
+	u32* indices = ( u32* ) TEMP_ALLOC( totalIndices * sizeof( u32 ) );
+	u32 offset = 0;
+	for ( int i = 0; i < renderer->levelInfo.numTextures; i++ ) {
+		TextureChain* chain = &textureChains[i];
+
+		for ( int n = 0; n < chain->numTriangles; n++ ) {
+			indices[offset++] = renderer->levelInfo.indices[chain->firstIndexOfTriangles[n] + 0];
+			indices[offset++] = renderer->levelInfo.indices[chain->firstIndexOfTriangles[n] + 1];
+			indices[offset++] = renderer->levelInfo.indices[chain->firstIndexOfTriangles[n] + 2];
+		}
+	}
+
+	//Upload indices to GPU
+	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD] );
+	glBindVertexArray( renderer->levelInfo.buffer.vao );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, renderer->levelInfo.buffer.ebo );
+	glBufferSubData( GL_ELEMENT_ARRAY_BUFFER, 0, totalIndices * sizeof( u32 ), indices );
+
+	offset = 0;
+	glActiveTexture( GL_TEXTURE0 );
+	for ( int i = 0; i < renderer->levelInfo.numTextures; i++ ) {
+		TextureChain* chain = &textureChains[i];
+
+		if ( chain->numTriangles == 0 )
+			continue;
+
+		if ( !chain->texture )
+			glBindTexture( GL_TEXTURE_2D, 0 );
+		else
+			glBindTexture( GL_TEXTURE_2D, chain->texture->id );
+
+		//Go back through buffer and do 1 draw call per surface
+		glDrawElements( GL_TRIANGLES, chain->numTriangles * 3, GL_UNSIGNED_INT, ( void* ) ( offset * sizeof( u32 ) ));
+		offset += chain->numTriangles * 3;
+}
+
 }
 
 void RenderDrawQuadColored( Vec2 pos, Vec2 size, Vec3 color ) {
@@ -271,6 +316,11 @@ void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture ) {
 }
 
 void RenderDrawFrame( Renderer* renderer, float dt ){
+	//reset texture chains
+	for ( int i = 0; i < renderer->levelInfo.numTextures; i++ ) {
+		renderer->levelInfo.textureChains[i].numTriangles = 0;
+	}
+
 	ShaderBuiltInsSetPVM( renderer, renderer->projection, renderer->camera.GetViewMatrix(), Mat4( 1.0 ) );
 
 	RenderDrawLevel( renderer );
@@ -278,7 +328,6 @@ void RenderDrawFrame( Renderer* renderer, float dt ){
 
 	RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
 	RenderDrawFontBatch();
-
 
 	glDepthFunc( GL_LEQUAL );
 	glBindVertexArray( renderer->skybox.buffer.vao );
@@ -367,18 +416,18 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	li->numIndices = NFileReadU32( file );
 	li->numFaces = NFileReadU32( file );
 	li->numBrushes = NFileReadU32( file );
+	li-> numTextures = NFileReadU32( file );
 
-	u32 numTextures = NFileReadU32( file );
 	//Load GPU Data
 
 	u32 vertexSize = li->numVertices * sizeof( DrawVertex );
 	u32 indexSize = li->numIndices * sizeof( u32 );
 
 	DrawVertex* verticesTemp = ( DrawVertex* ) TEMP_ALLOC(  vertexSize );
-	u32* indicesTemp = ( u32* ) TEMP_ALLOC( indexSize );
+	li->indices = ( u32* ) ScratchArenaAllocate( &level->arena, indexSize );
 	
 	NFileRead( file, verticesTemp, vertexSize );
-	NFileRead( file, indicesTemp, indexSize );
+	NFileRead( file, li->indices, indexSize );
 
 	Vec3 v0 = verticesTemp[0].pos;
 	for ( int i = 0; i < 24; i++ )
@@ -387,7 +436,7 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 			
 
 	CreateGLBuffer( &li->buffer, li->numVertices, li->numIndices, vertexSize, verticesTemp,
-		indexSize, indicesTemp, true, false );
+		indexSize, li->indices, true, false );
 	GLBufferAddDefaultAttribs( &li->buffer );
 
 
@@ -400,13 +449,13 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	li->brushes = ( RenderBrush* ) ScratchArenaAllocate( &level->arena, brushSize );
 	NFileRead( file, li->faces, faceSize + brushSize);
 
-	char* textureNamesTemp = ( char* ) TEMP_ALLOC( numTextures * NAME_BUF_LEN );
-	NFileRead( file, textureNamesTemp, numTextures * NAME_BUF_LEN );
+	char* textureNamesTemp = ( char* ) TEMP_ALLOC( li->numTextures * NAME_BUF_LEN );
+	NFileRead( file, textureNamesTemp, li->numTextures * NAME_BUF_LEN );
 
-	Texture** loadedTextures = (Texture**) TEMP_ALLOC( numTextures * sizeof( Texture* ) );
+	Texture** loadedTextures = (Texture**) TEMP_ALLOC( li->numTextures * sizeof( Texture* ) );
 
 	// Load in textures
-	for ( int i = 0; i < numTextures; i++ ) {
+	for ( int i = 0; i < li->numTextures; i++ ) {
 		char* name = &textureNamesTemp[ NAME_BUF_LEN * i];
 
 		char fullName[64]{};
@@ -422,6 +471,18 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 		//Index is stored in pointer loc
 		u32 index = (u32) li->faces[i].texture;
 		li->faces[i].texture = loadedTextures[index];
+	}
+
+	u32* numTrianglesPerTexture = (u32*) TEMP_ALLOC( li->numTextures * sizeof( u32 ) );
+	NFileRead( file, numTrianglesPerTexture, li->numTextures * sizeof( u32 ) );
+
+	li->textureChains = ( TextureChain* ) ScratchArenaAllocate( &level->arena, li->numTextures * sizeof( TextureChain ) );
+
+	for ( int i = 0; i < li->numTextures; i++ ) {
+		TextureChain* chain = &li->textureChains[i];
+		chain->texture = loadedTextures[i];
+		chain->firstIndexOfTriangles = ( u32* ) ScratchArenaAllocate( &level->arena, numTrianglesPerTexture[i] * sizeof( u32 ) );
+		chain->numTriangles = 0;
 	}
 }
 

@@ -29,6 +29,12 @@ enum builtInShaderList {
 	SHADER_LAST
 };
 
+struct TextureChain {
+	Texture* texture;
+	u32* firstIndexOfTriangles;
+	u32 numTriangles;
+};
+
 //These should always be bound to these values for consistency
 enum samplerList {
 	S2D_ALBEDO = 0,
@@ -65,6 +71,7 @@ struct RenderBrushFace {
 	u32 firstIndex;
 	u32 numIndices;
 	struct Texture* texture;
+	int textureIndex;
 	//todo tex,etc.
 };
 
@@ -89,10 +96,14 @@ struct LevelRenderInfo {
 	u32 numVertices;
 	u32 numIndices;
 	u32 numFaces;
+	u32 numTextures;
 
 	GLBuffer buffer;
 	struct RenderBrushFace* faces;
 	struct RenderBrush* brushes;
+	TextureChain* textureChains;
+	//Need this for batching textures
+	u32* indices;
 };
 
 class Renderer {

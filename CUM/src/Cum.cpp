@@ -286,7 +286,6 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	// ======
 	// Sort Polygons
 	// ======
-#if 1
 	for ( int b = 0; b < brushes.size(); b++ ) {
 		NPBrush* brush = &brushes[b];
 
@@ -393,30 +392,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 			}
 		}
 	}
-#endif
-#if 0
-	for ( int i = 0; i < faces.size(); i++ ) {
-		NPFace* face = &faces[i];
 
-		std::vector<Vec3> points;
-
-		Vec3 centroid( 0 );
-		for ( int n = 0; n < face->numVertices; n++ ) {
-			points.push_back( vertices[face->firstVertex + n].pos );
-			centroid += vertices[face->firstVertex + n].pos;
-		}
-
-
-		auto sort_predicate = [&centroid] ( const Vec3& a, const Vec3& b ) -> bool {
-			return atan2( a.x - centroid.x, a.y - centroid.y ) <
-				atan2( b.x - centroid.x, b.y - centroid.y );
-			};
-		std::sort( points.begin(), points.end(), sort_predicate );
-
-		for ( int n = 0; n < points.size(); n++ )
-			vertices[face->firstVertex + n].pos = points[n];
-	}
-#endif
 	// ======
 	// Indices
 	// ======
@@ -510,6 +486,9 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	//=======================
 	//       INIT RENDERER 
 	//=======================
+	u32* numTrianglesPerTexture = ( u32* ) malloc( textures.size() * sizeof( u32 ) );
+	memset( numTrianglesPerTexture, 0, textures.size() * sizeof( u32 ) );
+
 	RenderBrush* rBrushes = ( RenderBrush* ) malloc( brushes.size() * sizeof( RenderBrush ) );
 	for ( int i = 0; i < brushes.size(); i++ ) {
 		RenderBrush* brush = &rBrushes[i];
@@ -530,6 +509,8 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		rfaces[i].numVertices = faces[i].numVertices;
 		rfaces[i].numIndices = faces[i].numIndices;
 		rfaces[i].texture = ( Texture* ) faces[i].textureIndex;
+		face->textureIndex = faces[i].textureIndex;
+		numTrianglesPerTexture[faces[i].textureIndex] += faces[i].numIndices / 3;
 	}
 
 	DrawVertex* drawVertices = ( DrawVertex* ) malloc( vertices.size() * sizeof( DrawVertex ) );
@@ -564,84 +545,12 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	//Write out all textures
 	for ( int i = 0; i < numTextures; i++ )
 		fwrite( textures[i].name, NAME_BUF_LEN, 1, out );
+	fwrite( numTrianglesPerTexture, textures.size() * sizeof( u32 ), 1, out );
 
 	//=======================
 	//      INIT PHYSICS 
 	//=======================
-#if 0
-	using namespace physx;
-	PxTransform t;
-	t.p = PxVec3( 0 );
-	t.q = PxQuat( 0, 0, 0, 1 );
 
-
-	// Create a collection and all objects for serialization
-	PxSerializationRegistry* registry = PxSerialization::createSerializationRegistry( PxGetPhysics() );
-	physx::PxCollection* collection = PxCreateCollection();
-
-	PxTolerancesScale scale;
-	PxCookingParams params( scale );
-	physx::PxFilterData data{};
-
-	physx::PxDefaultAllocator alloc;
-	physx::PxDefaultErrorCallback err;
-	physx::PxFoundation* foundation = PxCreateFoundation( PX_PHYSICS_VERSION, alloc, err );
-	physx::PxPhysics* physics = PxCreatePhysics( PX_PHYSICS_VERSION, *foundation, PxTolerancesScale( 1.0 ), false );
-
-	for ( int i = 0; i < brushes.size(); i++ ) {
-		NPBrush* brush = &brushes[i];
-		physx::PxConvexMeshDesc convexDesc;
-		convexDesc.points.count = brush->numVertices;
-		convexDesc.points.stride = sizeof( BrushVertex );
-		convexDesc.points.data = vertices.data() + brush->firstVertex;//level->vertices + brush->firstVertex;
-		convexDesc.flags = PxConvexFlag::eCOMPUTE_CONVEX;
-		convexDesc.indices.count = 0;
-
-
-		PxDefaultMemoryOutputStream buf;
-		PxConvexMeshCookingResult::Enum result;
-
-		if ( !PxCookConvexMesh( params, convexDesc, buf, &result ) ) {
-			printf( "Could not construct mesh\n" );
-			return false;
-		}
-
-
-		PxDefaultMemoryInputData input( buf.getData(), buf.getSize() );
-		PxConvexMesh* convexMesh = physics->createConvexMesh( input );
-
-		physx::PxMaterial* material = physics->createMaterial( .5f, .5f, .25f );
-		PxShape* shape = physics->createShape( PxConvexMeshGeometry( convexMesh ), *material, true );
-		shape->setQueryFilterData( data );
-
-		PxRigidStatic* staticMesh = physics->createRigidStatic( t );
-		staticMesh->attachShape( *shape );
-		staticMesh->setActorFlag( physx::PxActorFlag::eVISUALIZATION, false );
-
-		collection->add( *staticMesh );
-		//scene->addActor( *staticMesh );
-	}
-	scene->addCollection( *collection );
-
-	//Write it to file
-
-	//physx::PxDefaultFileOutputStream outStream( path );
-	//physx::PxSerialization::complete( *collection, *registry );
-	//physx::PxSerialization::serializeCollectionToBinary( outStream, *collection, *registry );
-#endif
-
-#if 0
-	TestBrush tb{};
-	for ( int i = 0; i < 6; i++ ) {
-		tb.p[i].n = faces[i].n;
-		tb.p[i].d = -faces[i].d;
-
-		for ( int n = 0; n < faces[i].numIndices; n++ )
-			tb.p[i].verts[n] = vertices[indices[faces[i].firstIndex + n]].pos;
-	}
-
-	fwrite( &tb, sizeof( tb ), 1, out );
-#endif
 	u32 numTriangles = numIndices / 3;
 
 	Vec3* outVertices = ( Vec3* ) malloc( sizeof( Vec3 ) * numVertices );
@@ -721,6 +630,8 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 * RenderBrushFace[NumFaces]
 * u32 indices[NumIndices]
 * char[MAX_NAME_LEN+4] Textures[NumTextures]
+* u32[NumTextures] NumTrianglesPerTexture
+* 
 *
 *						Physics
 * u32 numBrushes

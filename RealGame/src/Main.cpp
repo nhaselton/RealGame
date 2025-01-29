@@ -23,14 +23,14 @@
 *	Next:
 
 	Graphics
-		Skybox
-*			just want something nicer to look at
 *		Map Renderering
-*			Cull Brushes
-*				Can probably use the convex hull BVH for this!
+*			Cull Brushes with AABB from camera
+*				Can probably use the convex hucll BVH for this
 *				Dont worry about individual faces, quicker to just cull entire brushes
-*			Texture chain
-				Figure out how other games sort by material
+
+		Wrap OGL calls in custom calls?
+		this way i easily track draw calls, texture binds, etc.
+
 		Basic Particle System 
 			Pretty much want to be able to add explosion and blood on shot
 		
@@ -218,18 +218,3 @@ int main() {
 		WindowSwapBuffers( &window );
 	}
 }
-
-/*
-	AnimationClip*
-		EventList
-			EventType	
-				Extra data?
-			Time
-
-	Animatior:
-		LastUpdate();
-
-		If ( Any Animation Event between Now & LastUdpate) {
-			AddToListSomewhere on sample
-		}
-*/
