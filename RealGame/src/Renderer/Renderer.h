@@ -175,6 +175,8 @@ void RenderDrawLevel( Renderer* renderer );
 
 void RenderDrawEntity( class Entity* entity );
 void DrawAllEntities();
+void DrawAllProjectiles();
+void DrawGun();
 
 void RenderDrawFontBatch();
 void RenderDrawText( Vec2 pos, float fontSize, const char* string );

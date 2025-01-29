@@ -7,6 +7,7 @@
 #include "Resources\TextureManager.h"
 #include "resources/Level.h"
 #include "Game/Entity.h"
+#include "Game/Player.h"
 
 
 extern ModelManager modelManager;
@@ -325,6 +326,7 @@ void RenderDrawFrame( Renderer* renderer, float dt ){
 	DrawAllEntities();
 
 	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );	
+
 	//RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
 	//RenderDrawFontBatch();
 
@@ -341,31 +343,6 @@ void RenderEndFrame( Renderer* renderer ) {
 	char buffer[8192]{};
 	if ( renderer->drawStats ) {
 		FrameInfo* info = &renderer->frameInfos[renderer->currentFrameInfo];
-#if 0
-		sprintf_s( buffer, 8192,
-			"Render Stats\n\
-			drawArrayCalls : %d\n\
-			drawArrayTriangleCount: %d\n\
-			drawElementCalls: %d\n\
-			drawElementTriangleCount: %d\n\
-			activeTextureCalls: %d\n\
-			bindTextureCalls: %d\n\
-			bufferSubDataCalls: %d\n\
-			bufferSubdataBytes: %d\n\
-			bindVaoCalls: %d\n\
-			shaderBinds: %d\n\
-			shaderArgsSet: %d", info->drawArrayCalls,
-			info->drawArrayTriangleCount,
-			info->drawElementCalls,
-			info->drawElementTriangleCount,
-			info->activeTextureCalls,
-			info->bindTextureCalls,
-			info->bufferSubDataCalls,
-			info->bufferSubdataBytes,
-			info->bindVaoCalls,
-			info->shaderBinds,
-			info->shaderArgsSet );
-#endif
 		sprintf_s( buffer, 8192, "Draw Calls: %d\nTriangles %d\nShader Binds: %d\nTexture Binds: %d",
 			info->drawArrayCalls + info->drawElementCalls,
 			( info->drawArrayTriangleCount + info->drawElementTriangleCount ) / 2, info->shaderBinds, info->bindTextureCalls );
@@ -373,6 +350,26 @@ void RenderEndFrame( Renderer* renderer ) {
 		RenderDrawText( Vec2( 60, 60 ), 16, buffer );
 		RenderDrawFontBatch();
 	}
+
+	//Draw UI
+	Player* player = entityManager.player;
+	for ( int i = 0; i < player->revolver.ammo; i++ )
+		RenderDrawQuadColored( Vec2( 20 * i + 20, 640 ), Vec2( 10, 20 ), Vec3( 1, .97, .86 ) );
+
+	RenderDrawQuadTextured( Vec2( 16, 680 ), Vec2( 32 ), renderer->healthTex );
+	RenderDrawHealthBar( Vec2( 64, 680 ), Vec2( 120, 30 ), player->health, player->maxHealth );
+
+	memset( buffer, 0, 8192 );
+	sprintf_s( buffer, 2048, "ms: %.2f\nfps: %.0f", dt * 1000.0f, 1.0f / dt );
+	RenderDrawText( Vec2( 1000, 60 ), 32, buffer );
+
+	if ( player->revolver.state != REVOLVER_RELOADING ) {
+		Vec2 spreadSize( 16 * player->revolver.spread );
+		RenderDrawQuadTextured( Vec2( 640, 360 ) - spreadSize / 2.0f, spreadSize, renderer->crosshairTex );
+	}
+
+	//Draw gun last (Will mess up post processing later on)
+	DrawGun();
 }
 
 void BuildSkeleton( Skeleton* skeleton, Node* root, Mat4 parent, Mat4* matrices ) {
@@ -741,4 +738,26 @@ void DrawAllEntities() {
 		if ( stored->entity.renderModel != 0 )
 			RenderDrawEntity( &stored->entity );
 	}
+}
+
+void DrawAllProjectiles() {
+	for ( int i = 0; i < entityManager.numProjectiles; i++ ) {
+		Projectile* projectile = &entityManager.projectiles[i];
+		if ( projectile->state != ACTIVE_ACTIVE || projectile->model.model == 0 )
+			continue;
+
+		Mat4 t = glm::translate( Mat4( 1.0 ), projectile->collider.offset + projectile->collider.bounds.center );
+		RenderDrawModel( &renderer, projectile->model.model, t );
+	}
+}
+
+void DrawGun() {
+	Player* player = entityManager.player;
+	glClear( GL_DEPTH_BUFFER_BIT );
+	Mat4 t = glm::translate( Mat4( 1.0 ), player->revolver.pos );
+	Mat4 r = glm::toMat4( player->revolver.rotation );
+	Mat4 s = glm::scale( Mat4( 1.0 ), player->revolver.renderModel->scale );
+	Mat4 model = t * r * s;
+	model = glm::inverse( renderer.camera.GetViewMatrix() ) * model;
+	RenderDrawModel( &renderer, entityManager.player->revolver.renderModel->model, model, entityManager.player->revolver.renderModel->pose );
 }

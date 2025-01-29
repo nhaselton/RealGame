@@ -29,7 +29,7 @@ public:
 	Entity* player;
 };
 
-Entity* CreateOgre( Vec3 pos, Entity* player );
+Ogre* CreateOgre( Vec3 pos, Entity* player );
 
 void OgreUpdate( Entity* entity );
 void OgreOnHit( EntityHitInfo info );

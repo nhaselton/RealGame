@@ -52,6 +52,7 @@ public:
 	struct AnimationClip* currentAnimation;
 	float currentAnimationTime; 
 	float currentAnimationPercent; //t = [0,1]
+	float animTimeScale;//how fast should the anims be
 
 	u32 state;
 
@@ -68,3 +69,4 @@ void EntityStartAnimation( Entity* entity, int index );
 void EntityAnimationUpdate( Entity* entity, float dt );
 //Runtime
 void EntityMove( Entity* entity, Vec3 velocity );
+void EntityLookAtPlayer( Entity* entity );

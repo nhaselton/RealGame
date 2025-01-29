@@ -18,34 +18,41 @@
 
 /*
 *	Next MVP:
+	Gibs
+		Gib models
+			Maybe make a few differnet sizes
+			
+		Make new Array for never interatables
+				(Never query against)
+		enum 
+			INACTIVE //free to use
+			DYNMAIC // Still doing stuff
+			STATIC //no longer doing physics checks
+		Should have a velocity with acceleration and stuff
+			Be this games form of rigidbody
+			Will need to implement AABB vs Hull
+				Cant really do a single sweep beucase it will have bouncyness
+	Particles
+		Look into how these work
+			Check out doom 2016's too
+			Maybe quake
+		Blood when enemy shot
+		Explosion when enemy dies
+			Explosion + Gore
+		Muzzle Flash
 
-	Proper Entity Resource System?
-		ensure that it Only load resources once
-
-	I want a battlefield (Almost like Doom dark ages)
 	I want many little goblins running at the player
 	I want goblins to explode into gibs when they die
 	Gibs should delete after X time (Or when circular buffer gets full?)
 		Gibs should NOT every be queried, nor should they ever try to do physics once landed
 			MAYBE 1 raycast every second incase floor below them fell down
-	1 Shot on goblin should stun
-	2 Shots should kill and explode
-		should be able to cause a chain reaction
-
+	should be able to cause a chain reaction
 
 	Quake FGD File
 		Player Spawn
 		Ogre
 		Goblins
 
-	Basic Particle System 
-		Blood when enemy shot
-		Explosion when enemy dies
-			Explosion + Gore
-		Muzzle Flash
-
-
-*
 * Animation
 *	Animation Events		
 *		Should be able to add a new channel for events
@@ -97,6 +104,7 @@ Level level;
 
 float dt;
 float gameTime = 0;
+bool paused = false;
 
 int main() {
 	CreateScratchArena( &globalArena, TOTAL_MEMORY, malloc( TOTAL_MEMORY ), NULL, "Global Arena" );
@@ -131,7 +139,7 @@ int main() {
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
 	Goblin::model->animations[0]->looping = true;
 
-	Goblin* goblin = CreateGoblin( Vec3( 5 ) );
+	Goblin* goblin = CreateGoblin( Vec3( 0 ) );
 
 #if 0
 	Entity* goblin = NewEntity();
@@ -168,10 +176,12 @@ int main() {
 		KeysUpdate();
 		WindowPollInput( &window );
 
-		EntityAnimationUpdate( goblin, dt );
+		if ( KeyPressed( KEY_P ) )
+			paused = !paused;
 
 		timer.Tick();
 		dt = timer.GetTimeSeconds();
+
 		if ( KeyDown( KEY_T ) ) {
 			start = true;
 			dt = 1.0f / 144.0f;
@@ -179,58 +189,23 @@ int main() {
 		if ( !start ) continue;
 
 		timer.Restart();
-		gameTime += dt;
-
-		//Movement
-		UpdateEntities();
-
-		UpdateProjectiles();
-		EntityManagerCleanUp();
-
-		AnimateEntities();
+		
+		if ( !paused ) {
+			gameTime += dt;
+			//Movement
+			UpdateEntities();
+			UpdateProjectiles();
+			EntityManagerCleanUp();
+			AnimateEntities();
+		}
 
 		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );
 		RenderDrawFrame( &renderer, dt );
 
-		//Draw Projectiles
-		for ( int i = 0; i < entityManager.numProjectiles; i++ ) {
-			Projectile* projectile = &entityManager.projectiles[i];
-			if ( projectile->state != ACTIVE_ACTIVE || projectile->model.model == 0 )
-				continue;
+		if ( paused )
+			RenderDrawText( Vec2( 600, 300 ), 48, "PAUSED" );
 
-			Mat4 t = glm::translate( Mat4( 1.0 ), projectile->collider.offset + projectile->collider.bounds.center );
-			RenderDrawModel( &renderer, projectile->model.model, t );
-		}
-
-		//Draw Gun
-		{
-			glClear( GL_DEPTH_BUFFER_BIT );
-			Mat4 t = glm::translate( Mat4( 1.0 ), player->revolver.pos );
-			Mat4 r = glm::toMat4( player->revolver.rotation );
-			Mat4 s = glm::scale( Mat4( 1.0 ), player->revolver.renderModel->scale );
-			Mat4 model = t * r * s;
-			model = glm::inverse( renderer.camera.GetViewMatrix() ) * model;
-			RenderDrawModel( &renderer, entityManager.player->revolver.renderModel->model, model, entityManager.player->revolver.renderModel->pose );
-		}
-
-		//Draw Crosshair
-		if ( player->revolver.state != REVOLVER_RELOADING ) {
-			Vec2 spreadSize(16 * player->revolver.spread);
-			RenderDrawQuadTextured( Vec2( 640, 360 ) - spreadSize / 2.0f, spreadSize, renderer.crosshairTex );
-		}
-
-		//DrawAmmo
-		for ( int i = 0; i < player->revolver.ammo; i++ )
-			RenderDrawQuadColored( Vec2( 20 * i + 20, 640 ), Vec2( 10, 20 ), Vec3( 1, .97, .86 ) );
-		
-		RenderDrawQuadTextured( Vec2( 16, 680 ), Vec2( 32 ), renderer.healthTex );
-		RenderDrawHealthBar( Vec2( 64, 680 ), Vec2( 120, 30 ), player->health, player->maxHealth );
-
-		char buffer[2048];
-		sprintf_s( buffer, 2048, "ms: %.2f\nfps: %.0f", dt * 1000.0f, 1.0f / dt );
-		RenderDrawText( Vec2( 1000, 60 ), 32, buffer );
- 
 		RenderEndFrame( &renderer );
 		WindowSwapBuffers( &window );
 	}

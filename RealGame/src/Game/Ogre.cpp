@@ -9,7 +9,7 @@
 
 Model* rockModel;
 
-Entity* CreateOgre( Vec3 pos, Entity* player ) {
+Ogre* CreateOgre( Vec3 pos, Entity* player ) {
 	//Ogre* entity = ( Ogre* ) ScratchArenaAllocateZero( &globalArena, KB( 1 ) );
 	if ( !rockModel )
 		rockModel = ModelManagerAllocate( &modelManager, "res/models/rock.glb" );

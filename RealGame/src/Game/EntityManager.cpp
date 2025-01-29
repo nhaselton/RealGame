@@ -27,6 +27,7 @@ Entity* NewEntity() {
 		memset( &stored->entity, 0, MAX_ENTITY_SIZE );
 
 		stored->entity.rotation = Quat( 1, 0, 0, 0 );
+		stored->entity.animTimeScale = 1.0f;
 
 		//Add Bounds
 		stored->entity.bounds = &physics.entityColliders[i];

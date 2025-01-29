@@ -33,6 +33,8 @@ Player* CreatePlayer( Vec3 pos ) {
 	player->revolver.renderModel->pose->pose = ( JointPose* ) ScratchArenaAllocateZero( &globalArena, revolverModel->skeleton->numNodes * sizeof( JointPose ) );
 	player->revolver.renderModel->pose->skeleton = revolverModel->skeleton;
 
+	player->revolver.animTimeScale = 1.0f;
+
 	player->revolver.state = REVOLVER_RELOADING;
 	player->revolver.currentAnimation = revolverModel->animations[0];
 

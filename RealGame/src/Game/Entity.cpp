@@ -1,7 +1,7 @@
+#include "game.h"
 #include "Entity.h"
 #include "Physics\Physics.h"
 #include "Resources/ModelManager.h"
-
 void EntityStartAnimation( Entity* entity, int index ) {
 	entity->currentAnimation =  entity->renderModel->model->animations[index];
 	entity->currentAnimationTime = 0;
@@ -15,7 +15,7 @@ void EntityAnimationUpdate( Entity* entity, float dt ) {
 		return;
 	}
 
-	entity->currentAnimationTime += dt;
+	entity->currentAnimationTime += dt * entity->animTimeScale;
 
 	if ( entity->currentAnimationTime > entity->currentAnimation->duration ) {
 		if ( entity->currentAnimation->looping )
@@ -54,4 +54,16 @@ void EntityGenerateRenderModel( Entity* entity, Model* model, ScratchArena* aren
 	entity->renderModel->pose->pose = 
 		( JointPose* ) ScratchArenaAllocate( arena, model->skeleton->numNodes * sizeof( JointPose ) );
 	entity->renderModel->pose->skeleton = model->skeleton;
+}
+
+void EntityLookAtPlayer( Entity* entity ) {
+	Vec3 dir = entityManager.player->pos - entity->pos;
+	dir.y = 0;//Do not move on vertical plane
+	float dist = glm::length( dir );
+	dir /= dist;
+	
+	float speed = 1.5f;
+	dist = glm::min( dist, speed );
+	
+	entity->rotation = glm::quatLookAt( -dir, Vec3( 0, 1, 0 ) );
 }
