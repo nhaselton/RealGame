@@ -3,12 +3,19 @@
 #include "GLBuffer.h"
 #include "Camera.h"
 #include "Physics\Colliders.h"
+#include "Resources\TextureManager.h"
 
 #define FONT_BATCH_SIZE 8192
 
 struct FontVert {
 	Vec2 pos;
 	Vec2 tex;
+};
+
+struct Skybox {
+	u32 textureID;
+	Texture faces[6];
+	GLBuffer buffer;
 };
 
 enum builtInShaderList {
@@ -18,12 +25,14 @@ enum builtInShaderList {
 	SHADER_STANDARD,
 	SHADER_STANDARD_SKINNED,
 	SHADER_UI,
+	SHADER_SKYBOX,
 	SHADER_LAST
 };
 
 //These should always be bound to these values for consistency
 enum samplerList {
 	S2D_ALBEDO = 0,
+	S3D_SKYBOX = 15,
 	S2D_LAST
 };
 
@@ -110,6 +119,8 @@ public:
 
 	GLBuffer quadBuffer;
 	BitmapFont font;
+
+	Skybox skybox;
 
 	//Font
 	GLBuffer fontBuffer;

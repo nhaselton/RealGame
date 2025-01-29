@@ -5,6 +5,12 @@
 struct BoundsHalfWidth;
 struct SkeletonPose;
 
+enum activeState_t {
+	ACTIVE_INACTIVE = 0,
+	ACTIVE_WAIT_FOR_REMOVE = 1, //removed at end of frame
+	ACTIVE_ACTIVE = 2,
+};
+
 struct RenderModel {
 	class Model* model;
 	SkeletonPose* pose;
@@ -19,8 +25,7 @@ struct RenderModel {
 // (TODO how to handle few exceptions)
 class Projectile {
 public:
-	bool active; //Could replace this with a long bitflag list in entitymanager
-	//Probably should rename from character collider
+	activeState_t state;
 	//I do want it to sweep
 	Vec3 velocity;
 	class Entity* owner;
@@ -38,6 +43,7 @@ public:
 
 class Entity {
 public:
+	activeState_t activeState;
 	Vec3 pos;
 	Quat rotation;
 

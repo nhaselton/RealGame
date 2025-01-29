@@ -20,14 +20,27 @@
 #include "Game\Ogre.h"
 #include "Game\Player.h"
 /*
-*	Font Rendering
-* 
+*	Next:
+
+	Graphics
+		Skybox
+*			just want something nicer to look at
+*		Map Renderering
+*			Cull Brushes
+*				Can probably use the convex hull BVH for this!
+*				Dont worry about individual faces, quicker to just cull entire brushes
+*			Texture chain
+				Figure out how other games sort by material
+		Basic Particle System 
+			Pretty much want to be able to add explosion and blood on shot
+		
+
+*
+* Animation
 *	Animation Events		
 *		Should be able to add a new channel for events
 *		This may mean it is time to add the decl format.
-* 
-*	Skybox
-*		just want something nicer to look at
+*	Properly loopign animataions 
 *	Figure out where to store hud textures
 *	Add a default texture for failing to get them. 
 		stop asserting and start warning
@@ -38,6 +51,11 @@
 *	Physics:
 *		EntityColliders to be able to detect if they intersect each other
 *		Im fine if they clip each i think, i can have a collision resolve stage?
+* 
+* 	Possible Optimizations:
+		Sparse List for entities. Right now it loops over all 1000, which shouldn't be 
+		too bad however each entity is 2K and that will not be cache coherent at all
+
 */
 
 //Eventually
@@ -141,13 +159,10 @@ int main() {
 		gameTime += dt;
 
 		//Movement
-		for ( ActiveEntity* ent = entityManager.activeHead; ent != 0; ent = ent->next ) {
-			Entity* entity = ( Entity* ) ent->entity;
-			if ( entity->Update != 0 )
-				entity->Update( entity );
-		}
+		UpdateEntities();
 
 		UpdateProjectiles();
+		EntityManagerCleanUp();
 
 		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );
@@ -157,10 +172,12 @@ int main() {
 		EntityAnimationUpdate( goblin, dt );
 		RenderDrawEntity( goblin );
 
+		if ( KeyPressed( KEY_K ) )
+			RemoveEntity( ogre );
 
 		for ( int i = 0; i < entityManager.numProjectiles; i++ ) {
 			Projectile* projectile = &entityManager.projectiles[i];
-			if ( !projectile->active || projectile->model.model == 0 )
+			if ( projectile->state != ACTIVE_ACTIVE || projectile->model.model == 0 )
 				continue;
 
 			Mat4 t = glm::translate( Mat4( 1.0 ), projectile->collider.offset + projectile->collider.bounds.center );

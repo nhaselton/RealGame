@@ -217,5 +217,5 @@ void OgreRockCallback( class Projectile* projectile, class Entity* entity ) {
 
 		entity->OnHit( info );
 	}
-	projectile->active = false;
+	RemoveProjectile( projectile );
 }

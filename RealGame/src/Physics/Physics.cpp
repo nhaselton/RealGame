@@ -73,8 +73,8 @@ Vec3 MoveAndSlide( CharacterCollider* cc, Vec3 velocity, int maxBounces, bool ad
 	do {
 		SweepInfo info{};
 
-		if ( !BruteCastSphere( pos, velocity, cc->bounds.width, &info ) ) {
-		//if ( !PhysicsQuerySweepStatic( pos, velocity, cc->bounds.width, &info ) ) {
+		//if ( !BruteCastSphere( pos, velocity, cc->bounds.width, &info ) ) {
+		if ( !PhysicsQuerySweepStatic( pos, velocity, cc->bounds.width, &info ) ) {
 			pos += velocity;
 			break;
 		}

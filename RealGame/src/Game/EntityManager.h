@@ -2,26 +2,35 @@
 #include "def.h"
 #include "Entity.h"
 
-struct ActiveEntity {
-	ActiveEntity* next;
-	//This allows entities to be in a simple pool array of the same size
-	char entity[2048];
-	u16 pad;
-	//NOTE: Do not let index be in the first 8 bytes of this struct. The next* is stored there for the pool allocator and will break
-	int index;
+//Rather than just storing an entity,
+//Store the entity and then an extra buffer of MAX_ENTITIY_SIZE
+//Do not edit layout of struct
+struct StoredEntity {
+	Entity entity;
+	char entityExtra[MAX_ENTITY_SIZE - sizeof( Entity )];
+	activeState_t state;
+	u32 index; //Quick lookup of index.
 };
 
 class EntityManager {
 public:
 	int numEntities;
 
-	PoolArena entityArena;
-	ActiveEntity* activeHead;
+	//PoolArena entityArena;
+	//ActiveEntity* activeHead;
+	StoredEntity entities[MAX_ENTITIES];
 
 	//Because projectiles have such a short lifespan, I'm just going to brute force this
 	Projectile projectiles[MAX_PROJECTILES];
 	int numProjectiles;
 	int lastProjectileIndex; //How far into the array would it possibly have to go.
+
+	//indices of projectiles that should be removed at the end of the frame
+	u16 removeProjectiles[MAX_PROJECTILES];
+	int numRemoveProjectiles;
+	
+	StoredEntity* removeEntities[MAX_ENTITIES];
+	int numRemoveEntities;
 
 	//Quick access to player
 	class Player* player;
@@ -32,8 +41,12 @@ void CreateEntityManager();
 
 //Takes an ActiveEntity from the pool allocator, returns a ptr to the entity and adds it to the activeHeadList
 Entity* NewEntity();
-void DestroyEntity( Entity* entity );
+void RemoveEntity( Entity* entity );
+void UpdateEntities();
 
 Projectile* NewProjectile();
+void RemoveProjectile( Projectile* projectile );
 void UpdateProjectiles();
 
+//Removes all inactive projectiles & (todo) entities
+void EntityManagerCleanUp();

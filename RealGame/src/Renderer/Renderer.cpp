@@ -81,11 +81,17 @@ void CreateShaders( Renderer* renderer ) {
 	ShaderSetInt( renderer, renderer->shaders[SHADER_UI], "solidColor", true );
 	ShaderSetVec3( renderer, renderer->shaders[SHADER_UI], "color", Vec3( 1, 0, 0 ) );
 
+	renderer->shaders[SHADER_SKYBOX] = ShaderManagerCreateShader( &shaderManager, "res/shaders/skybox/skybox.vert", "res/shaders/skybox/skybox.frag" );
+	RenderSetShader( renderer, renderer->shaders[SHADER_SKYBOX] );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_SKYBOX], SHADER_ARG_INT, "albedo" );
+	ShaderSetInt( renderer, renderer->shaders[SHADER_SKYBOX], "albedo", S3D_SKYBOX );
+
 	for ( int i = 0; i < SHADER_LAST; i++ )
 		renderer->shaders[i]->updateMVP = true;
 
 	//Note: Must do this for all non UPDATE-MVP 
 	Shader* ui = renderer->shaders[SHADER_UI];
+	RenderSetShader( renderer, ui );
 	ui->updateMVP = false;
 	ShaderAddArg( &shaderManager, ui, SHADER_ARG_MAT4, "projection" );
 	ShaderSetMat4( renderer, ui, "projection", renderer->orthographic );
@@ -123,8 +129,59 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	renderer->crosshairTex = TextureManagerLoadTextureFromFile( "res/textures/crosshair.png" );
 	renderer->healthTex = TextureManagerLoadTextureFromFile( "res/textures/health.png" );
 
-	//Buffer
-	glEnable( GL_DEPTH_TEST );
+	//Create Skybox
+	{
+		const char* paths[6] = {
+			"res/textures/skybox/right.png",
+			"res/textures/skybox/left.png",
+			"res/textures/skybox/top.png",
+			"res/textures/skybox/bottom.png",
+			"res/textures/skybox/back.png",
+			"res/textures/skybox/front.png",
+		};
+
+		//Buffer
+		glEnable( GL_DEPTH_TEST );
+
+		glGenTextures( 1, &renderer->skybox.textureID );
+		glBindTexture( GL_TEXTURE_CUBE_MAP, renderer->skybox.textureID );
+		for ( int i = 0; i < 6; i++ ) {
+			Texture* texture = &renderer->skybox.faces[i];
+			u8* data = ( u8* ) stbi_load( paths[i], &texture->width, &texture->height, &texture->channels, 0 );
+			if ( !data ) {
+				LOG_ASSERT( LGS_RENDERER, "Could not load skybox path %s\n", paths[i] );
+				return;
+			}
+
+			glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0, GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+			);
+
+			stbi_image_free( data );
+		}
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+
+		glActiveTexture( GL_TEXTURE0 + S3D_SKYBOX );
+		glBindTexture( GL_TEXTURE_CUBE_MAP, renderer->skybox.textureID );
+
+    float skyboxVertices[] = {
+        // positions          
+		-1.0f,  1.0f, -1.0f,-1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f,  1.0f, -1.0f,-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,-1.0f, -1.0f, -1.0f,-1.0f,  1.0f, -1.0f,-1.0f,  1.0f, -1.0f,-1.0f,  1.0f,  1.0f,-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f, 1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,-1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f, -1.0f,  1.0f,-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f,-1.0f,  1.0f,  1.0f,-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,-1.0f, -1.0f,  1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,-1.0f, -1.0f,  1.0f, 1.0f, -1.0f,  1.0f
+    };
+
+		CreateGLBuffer( &renderer->skybox.buffer, 36, 0, sizeof( skyboxVertices ), skyboxVertices, 0, 0, true, true );
+		GLBufferAddAttribute( &renderer->skybox.buffer, 0, 3, GL_FLOAT, 3 * sizeof( float ), ( void* ) 0 );
+	}
+
 }
 
 void RenderInitFont() {
@@ -215,11 +272,22 @@ void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture ) {
 
 void RenderDrawFrame( Renderer* renderer, float dt ){
 	ShaderBuiltInsSetPVM( renderer, renderer->projection, renderer->camera.GetViewMatrix(), Mat4( 1.0 ) );
+
 	RenderDrawLevel( renderer );
 	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );	
 
 	RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
 	RenderDrawFontBatch();
+
+
+	glDepthFunc( GL_LEQUAL );
+	glBindVertexArray( renderer->skybox.buffer.vao );
+	RenderSetShader( renderer, renderer->shaders[SHADER_SKYBOX] );
+	ShaderSetMat4( renderer, renderer->shaders[SHADER_SKYBOX], "view", Mat4( Mat3( renderer->camera.GetViewMatrix() ) ) );
+	ShaderSetMat4( renderer, renderer->shaders[SHADER_SKYBOX], "model", Mat4( 1.0f ) );
+	glDrawArrays( GL_TRIANGLES, 0, 36 );
+	glDepthFunc( GL_LESS );
+
 }
 
 void RenderEndFrame( Renderer* renderer ) {

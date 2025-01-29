@@ -6,8 +6,6 @@ float GetScaleFactor( float lastTimeStamp, float nextTimeStamp, float animationT
 	float framesDiff = nextTimeStamp - lastTimeStamp;
 	scaleFactor = midWayLength / framesDiff;
 
-	if ( scaleFactor > 1.0f )
-		printf( "" );
 	return scaleFactor;
 }
 

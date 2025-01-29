@@ -4,20 +4,13 @@
 
 void CreateEntityManager() {
 	entityManager.numEntities = 0;
-	CreatePoolArena( &entityManager.entityArena, sizeof( ActiveEntity ), 
-		MAX_ENTITIES, malloc( MAX_ENTITIES * sizeof( ActiveEntity ) ),
-		&globalArena, "Entity Manager"
-	);
-	entityManager.activeHead = 0;
 
 	entityManager.numProjectiles = 0;
 	entityManager.lastProjectileIndex = 0;
+	entityManager.numEntities = 0;
 
-	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
-		ActiveEntity* activeEntityList = ( ActiveEntity* ) entityManager.entityArena.memory;
-		ActiveEntity* activeEnt = &activeEntityList[i];
-		activeEnt->index = i;
-	}
+	for ( u32 i = 0; i < MAX_ENTITIES; i++ )
+		entityManager.entities[i].index = i;
 }
 
 //Takes an ActiveEntity from the pool allocator, returns a ptr to the entity and adds it to the activeHeadList
@@ -27,55 +20,48 @@ Entity* NewEntity() {
 		return 0;
 	}
 
-	//Get new entity
-	ActiveEntity* ent = ( ActiveEntity* ) PoolArenaAllocate( &entityManager.entityArena );
-	ent->next = entityManager.activeHead;
-	entityManager.activeHead = ent;
+	//Find first free entity (TODO Better way?)
+	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
+		StoredEntity* stored = &entityManager.entities[i];
+		if ( stored->state != ACTIVE_INACTIVE )
+			continue;
 
-	Entity* entity = ( Entity* ) ent->entity;
-	memset( entity, 0, sizeof( Entity ) );
-	entity->rotation = Quat( 1, 0, 0, 0 );
-	
-	//Get Bounds
-	entity->bounds = &physics.colliders[ent->index];
-	memset( entity->bounds, 0, sizeof( *entity->bounds ) );
+		//Add Bounds
+		stored->entity.bounds = &physics.entityColliders[i];
+		memset( stored->entity.bounds, 0, sizeof( *stored->entity.bounds ) );
 
-	//Add Active Physics Collider
-	physics.activeColliders[physics.numActiveColliders++] = &physics.colliders[ent->index];
-	entity->bounds->owner = entity;
-	
-	return ( Entity* ) ent->entity;
-}
+		physics.activeColliders[physics.numActiveColliders++] = &physics.entityColliders[i];
+		stored->entity.bounds->owner = &stored->entity;
 
-void DestroyEntity( Entity* entity ) {
-	ActiveEntity* prev = 0;
-	for ( ActiveEntity* ent = entityManager.activeHead; ent != 0; ent = ent->next ) {
-		
-		if ( ( Entity* ) ent->entity == entity ) {
-			//Head
-			if ( !prev ) {
-				entityManager.activeHead = ent->next;
-			}
-			else {
-				prev->next = ent->next;
-			}
-			
-			PoolArenaFree( &entityManager.entityArena, ent );
-			return;
-		}
-
-		prev = ent;
-		ent = ent->next;
+		stored->state = ACTIVE_ACTIVE;
+		return &stored->entity;
 	}
 
-	LOG_ASSERT( LGS_GAME, "Could not find entity in list of entities\n" );
+	return 0;
 }
+
+void RemoveEntity( Entity* e ) {
+	StoredEntity* storedEntity = ( StoredEntity* ) e;
+	e->activeState = ACTIVE_WAIT_FOR_REMOVE;
+	entityManager.removeEntities[entityManager.numRemoveEntities++] = storedEntity;
+
+	//Todo Remove Bounds
+	//Find bounds in active bounds list
+	for ( int i = 0; i < physics.numActiveColliders; i++ ) {
+		CharacterCollider* collider = physics.activeColliders[i];
+		if ( collider == e->bounds ) {
+			//Replace this one with one at end
+			physics.activeColliders[i] = physics.activeColliders[--physics.numActiveColliders];
+		}
+	}
+}
+
 
 void UpdateProjectiles( ) {
 	int currentMaxProjectile = 0;
 	for ( int i = 0; i <= entityManager.lastProjectileIndex; i++ ) {
 		Projectile* projectile = &entityManager.projectiles[i];
-		if ( !projectile->active )
+		if ( projectile->state != ACTIVE_ACTIVE )
 			continue;
 
 		currentMaxProjectile = i;
@@ -103,10 +89,10 @@ Projectile* NewProjectile() {
 	for ( int i = 0; i < MAX_PROJECTILES; i++ ) {
 		Projectile* projectile = &entityManager.projectiles[i];
 		//Get Non active projectile
-		if ( projectile->active )
+		if ( !projectile->state == ACTIVE_ACTIVE )
 			continue;
 
-		projectile->active = true;
+		projectile->state = ACTIVE_ACTIVE;
 		entityManager.numProjectiles++;
 
 		//Update last index if needed
@@ -119,4 +105,30 @@ Projectile* NewProjectile() {
 
 	LOG_ASSERT( LGS_GAME, "UNREACHABLE END OF NewProjectile()" );
 	return 0;
+}
+
+void EntityManagerCleanUp() {
+	for ( int i = 0; i < entityManager.numRemoveProjectiles; i++ )
+		entityManager.projectiles[entityManager.removeProjectiles[i]].state = ACTIVE_INACTIVE;
+
+	for ( int i = 0; i < entityManager.numRemoveEntities; i++ )
+		entityManager.removeEntities[i]->state = ACTIVE_INACTIVE;
+}
+
+void RemoveProjectile( Projectile* projectile ) {
+	u64 projectileIndex = ( u64 ) projectile - ( u64 ) entityManager.projectiles;
+	entityManager.removeProjectiles[entityManager.numRemoveProjectiles++] = (u16) projectileIndex;
+	projectile->state = ACTIVE_WAIT_FOR_REMOVE;
+}
+
+void UpdateEntities() {
+	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
+		StoredEntity* stored = &entityManager.entities[i];
+		
+		if ( stored->state != ACTIVE_ACTIVE )
+			continue;
+
+		if ( stored->entity.Update != 0 )
+			stored->entity.Update( &stored->entity );
+	}
 }

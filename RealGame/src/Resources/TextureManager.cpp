@@ -19,7 +19,7 @@ Texture* TextureManagerDoesTextureExist( const char* path ) {
 	return 0;
 }
 
-Texture* TextureManagerLoadTextureFromMemory( u8* memory, u32 size, const char* name ) {
+Texture* TextureManagerLoadTextureFromMemory( u8* memory, u32 size, const char* name, TextureInfo* info ) {
 	Texture* texture = (Texture*) PoolArenaAllocate( &textureManager.texurePool );
 	memset( texture, 0, sizeof( Texture ) );
 	//LL it
@@ -35,39 +35,63 @@ Texture* TextureManagerLoadTextureFromMemory( u8* memory, u32 size, const char* 
 		LOG_ASSERT( LGS_IO, "Could not load texture from memory" );
 		return 0;
 	}
+	if ( !info ) {
+		//OpenGLify it
+		glGenTextures( 1, &texture->id );
+		glBindTexture( GL_TEXTURE_2D, texture->id );
 
-	//OpenGLify it
-	glGenTextures( 1, &texture->id );
-	glBindTexture( GL_TEXTURE_2D, texture->id );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-	switch ( texture->channels ) {
-	case 3:
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, data );
-		glGenerateMipmap( GL_TEXTURE_2D );
-		break;
-	case 4:
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-		glGenerateMipmap( GL_TEXTURE_2D );
-		break;
+		switch ( texture->channels ) {
+		case 3:
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, data );
+			glGenerateMipmap( GL_TEXTURE_2D );
+			break;
+		case 4:
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+			glGenerateMipmap( GL_TEXTURE_2D );
+			break;
+		}
 	}
+	else {
+		//OpenGLify it
+		glGenTextures( 1, &texture->id );
+		glBindTexture( info->textureType, texture->id );
+
+		glTexParameteri( info->textureType, GL_TEXTURE_WRAP_S, info->wrapS );
+		glTexParameteri( info->textureType, GL_TEXTURE_WRAP_T, info->wrapT );
+		glTexParameteri( info->textureType, GL_TEXTURE_WRAP_R, info->wrapR );
+		glTexParameteri( info->textureType, GL_TEXTURE_MIN_FILTER, info->minFilter );
+		glTexParameteri( info->textureType, GL_TEXTURE_MAG_FILTER, info->magFilter );
+
+		switch ( texture->channels ) {
+		case 3:
+			glTexImage2D( info->target, 0, GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, data );
+			glGenerateMipmap( GL_TEXTURE_2D );
+			break;
+		case 4:
+			glTexImage2D( info->target, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+			glGenerateMipmap( GL_TEXTURE_2D );
+			break;
+		}
+	}
+
 
 	stbi_image_free( data );
 	return texture;
 }
 
-Texture* TextureManagerLoadTextureFromFile( const char* path ) {
+Texture* TextureManagerLoadTextureFromFile( const char* path, TextureInfo* info ) {
 	TEMP_ARENA_SET
 	NFile file;
 	CreateNFile( &file, path, "rb" );
 
 	u8* data = ( u8* ) StackArenaAllocate( &tempArena, file.length );
 	NFileRead( &file, data, file.length );
-	Texture* texture = TextureManagerLoadTextureFromMemory( data, file.length, path );
+	Texture* texture = TextureManagerLoadTextureFromMemory( data, file.length, path, info );
 
 	return texture;
 }

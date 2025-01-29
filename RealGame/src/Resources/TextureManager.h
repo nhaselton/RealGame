@@ -11,6 +11,17 @@ struct Texture {
 	Texture* next;
 };
 
+struct TextureInfo {
+	i32 textureType; //Texture_2D / Texture_cube_map
+	i32 target; //Texture2D / Texture_CubeMap_Postive_X + 1 etc.
+	i32 wrapS;
+	i32 wrapT;
+	i32 wrapR;
+	i32 minFilter;
+	i32 magFilter;
+
+};
+
 class TextureManager {
 public:
 	PoolArena texurePool;
@@ -20,7 +31,7 @@ extern TextureManager textureManager;
 
 void CreateTextureManager( void* data, u32 size );
 Texture* TextureManagerDoesTextureExist( const char* path );
-Texture* TextureManagerLoadTextureFromFile( const char* path );
+Texture* TextureManagerLoadTextureFromFile( const char* path, TextureInfo* info = 0 );
 //Make sure string is null terminated
-Texture* TextureManagerLoadTextureFromMemory( u8* memory, u32 size, const char* name );
+Texture* TextureManagerLoadTextureFromMemory( u8* memory, u32 size, const char* name, TextureInfo* texture = 0 );
 Texture* TextureManagerGetTexture( const char* path, bool loadIfNeeded );

@@ -47,8 +47,12 @@ struct Physics {
 	Brush* brushes;
 	int numBrushes;
 	BVHTree staticBVH;
+	
+	//This is exclusively for entities
+	CharacterCollider entityColliders[MAX_ENTITIES];
 
-	CharacterCollider colliders[MAX_ENTITIES];
+	//This may change in the future, should be anythign dynamic that raycasts/entitys care about
+	//If shootable projectile, put in here. May have to expand capacity to more than MAX_ENTITIES then
 	CharacterCollider* activeColliders[MAX_ENTITIES];
 	int numActiveColliders;
 };

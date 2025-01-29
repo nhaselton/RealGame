@@ -237,7 +237,7 @@ Token Parser::ReadToken() {
 bool Parser::ExpectedTokenString( const char* expected ) {
 #if 1
 	if ( current.type != TT_STRING ) {
-		printf( "Error parser expected string %s but token was type %d\n", ( int ) current.type );
+		printf( "Error parser expected string %s but token was type %d\n", expected, ( int ) current.type );
 		current.Print();
 		return false;
 	}
