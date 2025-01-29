@@ -1,0 +1,9 @@
+//List of all game includes
+//Should have 0 logic
+#pragma once
+//Entity
+#include "Entity.h"
+#include "EntityManager.h"
+#include "Goblin.h"
+#include "Ogre.h"
+#include "Player.h"

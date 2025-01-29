@@ -506,10 +506,9 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		RenderBrushFace* face = &rfaces[i];
 		rfaces[i].firstIndex = faces[i].firstIndex;
 		rfaces[i].firstVertex = faces[i].firstVertex;
-		rfaces[i].numVertices = faces[i].numVertices;
-		rfaces[i].numIndices = faces[i].numIndices;
-		rfaces[i].texture = ( Texture* ) faces[i].textureIndex;
-		face->textureIndex = faces[i].textureIndex;
+		rfaces[i].numVertices = ( u8 ) faces[i].numVertices;
+		rfaces[i].numIndices = ( u8 ) faces[i].numIndices;
+		face->textureIndex = ( u16 ) faces[i].textureIndex;
 		numTrianglesPerTexture[faces[i].textureIndex] += faces[i].numIndices / 3;
 	}
 

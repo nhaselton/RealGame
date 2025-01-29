@@ -14,26 +14,36 @@
 #include "Renderer\DebugRenderer.h"
 
 #include "Physics\Physics.h"
+#include "game/Game.h"
 
-#include "Game\Entity.h"
-#include "Game\EntityManager.h"
-#include "Game\Ogre.h"
-#include "Game\Player.h"
 /*
-*	Next:
+*	Next MVP:
 
-	Graphics
-*		Map Renderering
-*			Cull Brushes with AABB from camera
-*				Can probably use the convex hucll BVH for this
-*				Dont worry about individual faces, quicker to just cull entire brushes
+	Proper Entity Resource System?
+		ensure that it Only load resources once
 
-		Wrap OGL calls in custom calls?
-		this way i easily track draw calls, texture binds, etc.
+	I want a battlefield (Almost like Doom dark ages)
+	I want many little goblins running at the player
+	I want goblins to explode into gibs when they die
+	Gibs should delete after X time (Or when circular buffer gets full?)
+		Gibs should NOT every be queried, nor should they ever try to do physics once landed
+			MAYBE 1 raycast every second incase floor below them fell down
+	1 Shot on goblin should stun
+	2 Shots should kill and explode
+		should be able to cause a chain reaction
 
-		Basic Particle System 
-			Pretty much want to be able to add explosion and blood on shot
-		
+
+	Quake FGD File
+		Player Spawn
+		Ogre
+		Goblins
+
+	Basic Particle System 
+		Blood when enemy shot
+		Explosion when enemy dies
+			Explosion + Gore
+		Muzzle Flash
+
 
 *
 * Animation
@@ -55,6 +65,12 @@
 * 	Possible Optimizations:
 		Sparse List for entities. Right now it loops over all 1000, which shouldn't be 
 		too bad however each entity is 2K and that will not be cache coherent at all
+
+	Graphics
+*		Map Renderering
+*			Cull Brushes with AABB from camera
+*				Can probably use the convex hucll BVH for this
+*				Dont worry about individual faces, quicker to just cull entire brushes
 
 */
 
@@ -104,7 +120,7 @@ int main() {
 	CreateEntityManager();
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
-	LoadLevel( &level, "res/maps/map.cum" );
+	LoadLevel( &level, "res/maps/battlefield.cum" );
 	Timer timer;
 
 	Player* player = CreatePlayer( Vec3( 0 ) );
@@ -112,16 +128,19 @@ int main() {
 	player->camera.GetViewMatrix();
 
 	//Model
-	Entity* ogre;
-	ogre = CreateOgre( Vec3( -22, -3, 6 ), player );
+	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
+	Goblin::model->animations[0]->looping = true;
 
+	Goblin* goblin = CreateGoblin( Vec3( 5 ) );
+
+#if 0
 	Entity* goblin = NewEntity();
 	Model* model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
 	EntityGenerateRenderModel( goblin, model, &globalArena );
 	goblin->pos = player->pos + player->camera.Front * 6.0f;
 	goblin->currentAnimation = goblin->renderModel->model->animations[0];
 	goblin->currentAnimation->looping = true;
-
+#endif
 
 	for ( int i = 0; i < physics.numBrushes; i++ ) {
 		Brush* brush = &physics.brushes[i];
@@ -142,10 +161,14 @@ int main() {
 
 	bool start = true;
 
+	renderer.drawStats = true;
+
 	while ( !WindowShouldClose( &window ) ) {
 		//PROFILE( "Frame" );
 		KeysUpdate();
 		WindowPollInput( &window );
+
+		EntityAnimationUpdate( goblin, dt );
 
 		timer.Tick();
 		dt = timer.GetTimeSeconds();
@@ -164,17 +187,13 @@ int main() {
 		UpdateProjectiles();
 		EntityManagerCleanUp();
 
+		AnimateEntities();
+
 		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );
 		RenderDrawFrame( &renderer, dt );
-		RenderDrawEntity( ogre );
 
-		EntityAnimationUpdate( goblin, dt );
-		RenderDrawEntity( goblin );
-
-		if ( KeyPressed( KEY_K ) )
-			RemoveEntity( ogre );
-
+		//Draw Projectiles
 		for ( int i = 0; i < entityManager.numProjectiles; i++ ) {
 			Projectile* projectile = &entityManager.projectiles[i];
 			if ( projectile->state != ACTIVE_ACTIVE || projectile->model.model == 0 )
@@ -184,6 +203,7 @@ int main() {
 			RenderDrawModel( &renderer, projectile->model.model, t );
 		}
 
+		//Draw Gun
 		{
 			glClear( GL_DEPTH_BUFFER_BIT );
 			Mat4 t = glm::translate( Mat4( 1.0 ), player->revolver.pos );
@@ -193,9 +213,6 @@ int main() {
 			model = glm::inverse( renderer.camera.GetViewMatrix() ) * model;
 			RenderDrawModel( &renderer, entityManager.player->revolver.renderModel->model, model, entityManager.player->revolver.renderModel->pose );
 		}
-
-		//Draw Boss Healthbar
-		RenderDrawHealthBar( Vec2( 400, 50 ), Vec2( 500, 75 ), ogre->health, ogre->maxHealth );
 
 		//Draw Crosshair
 		if ( player->revolver.state != REVOLVER_RELOADING ) {
@@ -213,7 +230,7 @@ int main() {
 		char buffer[2048];
 		sprintf_s( buffer, 2048, "ms: %.2f\nfps: %.0f", dt * 1000.0f, 1.0f / dt );
 		RenderDrawText( Vec2( 1000, 60 ), 32, buffer );
-
+ 
 		RenderEndFrame( &renderer );
 		WindowSwapBuffers( &window );
 	}

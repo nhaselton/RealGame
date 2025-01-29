@@ -41,6 +41,6 @@ void ShaderSetVec4(  class Renderer* renderer, Shader* shader, const char* name,
 void ShaderSetVec3(  class Renderer* renderer, Shader* shader, const char* name, Vec3 vec );
 void ShaderSetVec2(  class Renderer* renderer, Shader* shader, const char* name, Vec2 vec );
 void ShaderSetFloat( class Renderer* renderer, Shader* shader, const char* name, float value );
-void ShaderSetInt(   class Renderer* renderer, Shader* shader, const char* name, i32 value );
+void ShaderSetInt( Renderer* renderer, Shader* shader, const char* name, int value );
 
 void ShaderSetMat4Array( class Renderer* renderer, Shader* shader, const char* name, Mat4* array, i32 count );

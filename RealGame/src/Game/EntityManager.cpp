@@ -19,12 +19,14 @@ Entity* NewEntity() {
 		LOG_ASSERT( LGS_GAME, "Too many entities, can not allocate more\n" );
 		return 0;
 	}
-
 	//Find first free entity (TODO Better way?)
 	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
 		StoredEntity* stored = &entityManager.entities[i];
 		if ( stored->state != ACTIVE_INACTIVE )
 			continue;
+		memset( &stored->entity, 0, MAX_ENTITY_SIZE );
+
+		stored->entity.rotation = Quat( 1, 0, 0, 0 );
 
 		//Add Bounds
 		stored->entity.bounds = &physics.entityColliders[i];
@@ -42,7 +44,7 @@ Entity* NewEntity() {
 
 void RemoveEntity( Entity* e ) {
 	StoredEntity* storedEntity = ( StoredEntity* ) e;
-	e->activeState = ACTIVE_WAIT_FOR_REMOVE;
+	storedEntity->state = ACTIVE_WAIT_FOR_REMOVE;
 	entityManager.removeEntities[entityManager.numRemoveEntities++] = storedEntity;
 
 	//Todo Remove Bounds
@@ -130,5 +132,17 @@ void UpdateEntities() {
 
 		if ( stored->entity.Update != 0 )
 			stored->entity.Update( &stored->entity );
+	}
+}
+
+void AnimateEntities() {
+	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
+		StoredEntity* stored = &entityManager.entities[i];
+
+		if ( stored->state != ACTIVE_ACTIVE )
+			continue;
+
+		if ( stored->entity.renderModel != 0 )
+			EntityAnimationUpdate( &stored->entity, dt );
 	}
 }

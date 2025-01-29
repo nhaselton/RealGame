@@ -43,7 +43,6 @@ public:
 
 class Entity {
 public:
-	activeState_t activeState;
 	Vec3 pos;
 	Quat rotation;
 

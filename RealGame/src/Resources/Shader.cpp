@@ -87,6 +87,8 @@ bool CreateShader( Shader* shader, const char* vertPath, const char* fragPath) {
 }
 
 ShaderArg* ShaderFindArg( Shader* shader, const char* name ) {
+	renderer.frameInfos[renderer.currentFrameInfo].shaderArgsSet++;
+
 	ShaderArg* current = shader->args;
 	while ( current ) {
 		if ( strcmp( name, current->name ) == 0 ) {

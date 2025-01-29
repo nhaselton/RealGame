@@ -21,7 +21,7 @@ Player* CreatePlayer( Vec3 pos ) {
 	/* Create Revolver */
 	memset( &player->revolver, 0, sizeof( player->revolver ) );
 
-	Model* revolverModel = ModelManagerAllocate( &modelManager, "res/models/revolver2Anim.glb" );
+	Model* revolverModel = ModelManagerAllocate( &modelManager, "res/models/revolver.glb" );
 
 	player->revolver.renderModel = new RenderModel;
 	player->revolver.renderModel->model = revolverModel;

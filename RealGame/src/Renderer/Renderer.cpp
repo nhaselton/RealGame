@@ -2,10 +2,12 @@
 #include "Resources/ShaderManager.h"
 #include "Resources/Shader.h"
 #include "Resources\ModelManager.h"
+#include "Game/EntityManager.h"
 #include "Renderer\DebugRenderer.h"
 #include "Resources\TextureManager.h"
 #include "resources/Level.h"
 #include "Game/Entity.h"
+
 
 extern ModelManager modelManager;
 
@@ -97,7 +99,6 @@ void CreateShaders( Renderer* renderer ) {
 	ShaderSetMat4( renderer, ui, "projection", renderer->orthographic );
 	ShaderAddArg( &shaderManager, ui, SHADER_ARG_MAT4, "model" );
 	ShaderSetMat4( renderer, ui, "model", Mat4( 1.0 ) );
-
 }
 
 void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
@@ -204,23 +205,20 @@ void RenderInitFont() {
 	}
 
 	CreateGLBuffer( &renderer.fontBuffer, FONT_BATCH_SIZE * 4, FONT_BATCH_SIZE * 6,
-		FONT_BATCH_SIZE * 4 * sizeof( FontVert ), renderer.glyphs, FONT_BATCH_SIZE * 6 * sizeof( u32 ), 
+		FONT_BATCH_SIZE * 4 * sizeof( FontVert ), renderer.glyphs, FONT_BATCH_SIZE * 6 * sizeof( u32 ),
 		indices,
 		false, true );
 	GLBufferAddAttribute( &renderer.fontBuffer, 0, 2, GL_FLOAT, 4 * sizeof( float ), 0 ); //pos
-	GLBufferAddAttribute( &renderer.fontBuffer, 1, 2, GL_FLOAT, 4 * sizeof( float ), (void*) (2 * sizeof(float)) ); //tex
+	GLBufferAddAttribute( &renderer.fontBuffer, 1, 2, GL_FLOAT, 4 * sizeof( float ), ( void* ) ( 2 * sizeof( float ) ) ); //tex
 }
 
 void RenderStartFrame( Renderer* renderer ){
-	glClearColor( 0, .25, .45, 1 );
-	glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
-}
+	//Clear frame info
+	renderer->currentFrameInfo = ( renderer->currentFrameInfo + 1 ) % MAX_FRAME_INFOS;
+	memset( &renderer->frameInfos[renderer->currentFrameInfo], 0, sizeof(FrameInfo));
 
-struct TextureList {
-	Texture* texture;
-	u32 triCount;
-	u32* firstIndexOfTriangles; //Can add ++ and ++++ after
-};
+	glClear( GL_DEPTH_BUFFER_BIT );
+}
 
 void RenderDrawLevel( Renderer* renderer ) {
 	TEMP_ARENA_SET;
@@ -254,12 +252,12 @@ void RenderDrawLevel( Renderer* renderer ) {
 
 	//Upload indices to GPU
 	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD] );
-	glBindVertexArray( renderer->levelInfo.buffer.vao );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, renderer->levelInfo.buffer.ebo );
-	glBufferSubData( GL_ELEMENT_ARRAY_BUFFER, 0, totalIndices * sizeof( u32 ), indices );
+	nglBindVertexArray( renderer->levelInfo.buffer.vao );
+	nglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, renderer->levelInfo.buffer.ebo );
+	nglBufferSubData( GL_ELEMENT_ARRAY_BUFFER, 0, totalIndices * sizeof( u32 ), indices );
 
 	offset = 0;
-	glActiveTexture( GL_TEXTURE0 );
+	nglActiveTexture( GL_TEXTURE0 );
 	for ( int i = 0; i < renderer->levelInfo.numTextures; i++ ) {
 		TextureChain* chain = &textureChains[i];
 
@@ -267,12 +265,12 @@ void RenderDrawLevel( Renderer* renderer ) {
 			continue;
 
 		if ( !chain->texture )
-			glBindTexture( GL_TEXTURE_2D, 0 );
+			nglBindTexture( GL_TEXTURE_2D, 0 );
 		else
-			glBindTexture( GL_TEXTURE_2D, chain->texture->id );
+			nglBindTexture( GL_TEXTURE_2D, chain->texture->id );
 
 		//Go back through buffer and do 1 draw call per surface
-		glDrawElements( GL_TRIANGLES, chain->numTriangles * 3, GL_UNSIGNED_INT, ( void* ) ( offset * sizeof( u32 ) ));
+		nglDrawElements( GL_TRIANGLES, chain->numTriangles * 3, GL_UNSIGNED_INT, ( void* ) ( offset * sizeof( u32 ) ));
 		offset += chain->numTriangles * 3;
 }
 
@@ -290,8 +288,8 @@ void RenderDrawQuadColored( Vec2 pos, Vec2 size, Vec3 color ) {
 	ShaderSetInt( &renderer, shader, "solidColor", true );
 	ShaderSetVec3( &renderer, shader, "color", color );
 	
-	glBindVertexArray( renderer.quadBuffer.vao );
-	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
+	nglBindVertexArray( renderer.quadBuffer.vao );
+	nglDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
 }
 
 void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture ) {
@@ -307,12 +305,12 @@ void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture ) {
 	ShaderSetInt( &renderer, shader, "solidColor", false );
 
 	if ( texture ) {
-		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_2D, texture->id );
+		nglActiveTexture( GL_TEXTURE0 );
+		nglBindTexture( GL_TEXTURE_2D, texture->id );
 	}
 
-	glBindVertexArray( renderer.quadBuffer.vao );
-	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
+	nglBindVertexArray( renderer.quadBuffer.vao );
+	nglDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
 }
 
 void RenderDrawFrame( Renderer* renderer, float dt ){
@@ -324,23 +322,57 @@ void RenderDrawFrame( Renderer* renderer, float dt ){
 	ShaderBuiltInsSetPVM( renderer, renderer->projection, renderer->camera.GetViewMatrix(), Mat4( 1.0 ) );
 
 	RenderDrawLevel( renderer );
+	DrawAllEntities();
+
 	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );	
+	//RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
+	//RenderDrawFontBatch();
 
-	RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
-	RenderDrawFontBatch();
-
-	glDepthFunc( GL_LEQUAL );
-	glBindVertexArray( renderer->skybox.buffer.vao );
+	glDepthFunc( GL_LEQUAL ); 
+	nglBindVertexArray( renderer->skybox.buffer.vao );
 	RenderSetShader( renderer, renderer->shaders[SHADER_SKYBOX] );
 	ShaderSetMat4( renderer, renderer->shaders[SHADER_SKYBOX], "view", Mat4( Mat3( renderer->camera.GetViewMatrix() ) ) );
 	ShaderSetMat4( renderer, renderer->shaders[SHADER_SKYBOX], "model", Mat4( 1.0f ) );
-	glDrawArrays( GL_TRIANGLES, 0, 36 );
+	nglDrawArrays( GL_TRIANGLES, 0, 36 );
 	glDepthFunc( GL_LESS );
-
 }
 
 void RenderEndFrame( Renderer* renderer ) {
-
+	char buffer[8192]{};
+	if ( renderer->drawStats ) {
+		FrameInfo* info = &renderer->frameInfos[renderer->currentFrameInfo];
+#if 0
+		sprintf_s( buffer, 8192,
+			"Render Stats\n\
+			drawArrayCalls : %d\n\
+			drawArrayTriangleCount: %d\n\
+			drawElementCalls: %d\n\
+			drawElementTriangleCount: %d\n\
+			activeTextureCalls: %d\n\
+			bindTextureCalls: %d\n\
+			bufferSubDataCalls: %d\n\
+			bufferSubdataBytes: %d\n\
+			bindVaoCalls: %d\n\
+			shaderBinds: %d\n\
+			shaderArgsSet: %d", info->drawArrayCalls,
+			info->drawArrayTriangleCount,
+			info->drawElementCalls,
+			info->drawElementTriangleCount,
+			info->activeTextureCalls,
+			info->bindTextureCalls,
+			info->bufferSubDataCalls,
+			info->bufferSubdataBytes,
+			info->bindVaoCalls,
+			info->shaderBinds,
+			info->shaderArgsSet );
+#endif
+		sprintf_s( buffer, 8192, "Draw Calls: %d\nTriangles %d\nShader Binds: %d\nTexture Binds: %d",
+			info->drawArrayCalls + info->drawElementCalls,
+			( info->drawArrayTriangleCount + info->drawElementTriangleCount ) / 2, info->shaderBinds, info->bindTextureCalls );
+		
+		RenderDrawText( Vec2( 60, 60 ), 16, buffer );
+		RenderDrawFontBatch();
+	}
 }
 
 void BuildSkeleton( Skeleton* skeleton, Node* root, Mat4 parent, Mat4* matrices ) {
@@ -367,7 +399,8 @@ void RenderSetShader( Renderer* renderer, Shader* newShader ) {
 	//if ( newShader->id == renderer->currentShaderID ) {
 	//	LOG_WARNING( LGS_RENDERER, "Setting active shader to same shader\n" );
 	//}
-
+	renderer->frameInfos[renderer->currentFrameInfo].shaderBinds++;
+	
 	glUseProgram( newShader->id );
 	renderer->currentShaderID = newShader->id;
 }
@@ -386,17 +419,20 @@ void RenderDrawModel( Renderer* renderer, Model* model, Mat4 offset, SkeletonPos
 
 	for ( u32 i = 0; i < model->numMeshes; i++ ) {
 		if ( model->meshes[i].texture != 0 ) {
-			glActiveTexture( GL_TEXTURE0 + S2D_ALBEDO );
-			glBindTexture( GL_TEXTURE_2D, model->meshes[i].texture->id );
+			nglActiveTexture( GL_TEXTURE0 + S2D_ALBEDO );
+			nglBindTexture( GL_TEXTURE_2D, model->meshes[i].texture->id );
 		}
 
-		glBindVertexArray( model->meshes[i].buffer.vao );
-		glDrawElements( GL_TRIANGLES, model->meshes[i].numIndices, GL_UNSIGNED_INT, (void*) 0 );
+		nglBindVertexArray( model->meshes[i].buffer.vao );
+		nglDrawElements( GL_TRIANGLES, model->meshes[i].numIndices, GL_UNSIGNED_INT, (void*) 0 );
 
 	}
 }
 
 void RenderDrawEntity( Entity* entity ) {
+	if ( entity->renderModel == 0 )
+		return;
+
 	Mat4 t = glm::translate( Mat4( 1.0 ), entity->renderModel->translation + entity->pos );
 	Mat4 rmr = glm::toMat4( entity->renderModel->rotation );
 	Mat4 entr = glm::toMat4( entity->rotation );
@@ -430,10 +466,6 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	NFileRead( file, li->indices, indexSize );
 
 	Vec3 v0 = verticesTemp[0].pos;
-	for ( int i = 0; i < 24; i++ )
-		if ( glm::length( verticesTemp[i].pos - v0 ) < .001f )
-			printf( "%d\n", i );
-			
 
 	CreateGLBuffer( &li->buffer, li->numVertices, li->numIndices, vertexSize, verticesTemp,
 		indexSize, li->indices, true, false );
@@ -469,8 +501,9 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	//Assign faces their textures
 	for ( int i = 0; i < li->numFaces; i++ ) {
 		//Index is stored in pointer loc
-		u32 index = (u32) li->faces[i].texture;
-		li->faces[i].texture = loadedTextures[index];
+		//Texture* texture = loadedTextures[li->faces[i].textureIndex];
+		//u32 index = (u32) li->faces[i].texture;
+		//li->faces[i].texture = loadedTextures[index];
 	}
 
 	u32* numTrianglesPerTexture = (u32*) TEMP_ALLOC( li->numTextures * sizeof( u32 ) );
@@ -586,19 +619,20 @@ BitmapGlyph* RenderGetGlyph( char c ) {
 void RenderDrawFontBatch() {
 	if ( renderer.numGlyphsBatched == 0 ) 
 		return;
-
-
+	
 	RenderSetShader( &renderer, renderer.shaders[SHADER_UI] );
 	ShaderSetInt( &renderer, renderer.shaders[SHADER_UI], "solidColor", false );
+	ShaderSetInt( &renderer, renderer.shaders[SHADER_UI], "albedo", 0 );
 	ShaderSetMat4( &renderer, renderer.shaders[SHADER_UI], "model", Mat4( 1.0 ) );
-	
-	glActiveTexture( GL_TEXTURE0 );
-	glBindTexture( GL_TEXTURE_2D, renderer.fontTex->id );
 
-	glBindVertexArray( renderer.fontBuffer.vao );
-	glBindBuffer( GL_ARRAY_BUFFER, renderer.fontBuffer.vbo );
-	glBufferSubData( GL_ARRAY_BUFFER, 0, 4 * renderer.numGlyphsBatched * sizeof( FontVert ), renderer.glyphs );
-	glDrawElements( GL_TRIANGLES, renderer.numGlyphsBatched * 6, GL_UNSIGNED_INT, 0 );
+	
+	nglActiveTexture( GL_TEXTURE0 + S2D_ALBEDO );
+	nglBindTexture( GL_TEXTURE_2D, renderer.fontTex->id );
+
+	nglBindVertexArray( renderer.fontBuffer.vao );
+	nglBindBuffer( GL_ARRAY_BUFFER, renderer.fontBuffer.vbo );
+	nglBufferSubData( GL_ARRAY_BUFFER, 0, 4 * renderer.numGlyphsBatched * sizeof( FontVert ), renderer.glyphs );
+	nglDrawElements( GL_TRIANGLES, renderer.numGlyphsBatched * 6, GL_UNSIGNED_INT, 0 );
 	renderer.numGlyphsBatched = 0;
 }
 
@@ -633,6 +667,9 @@ void RenderDrawText( Vec2 pos, float fontSize, const char* string ) {
 	float scale = fontSize / renderer.font.glyphSize;
 
 	for ( int i = 0; i < len; i++ ) {
+		if ( string[i] == '\t' ) 
+			continue;
+
 		if ( string[i] == ' ' ) {
 			pos.x += renderer.font.glyphSize * scale;
 			continue;
@@ -648,5 +685,60 @@ void RenderDrawText( Vec2 pos, float fontSize, const char* string ) {
 		RenderDrawChar( pos, glyph, fontSize );
 
 		pos.x += ( glyph->xadvance ) * scale;
+	}
+}
+
+void nglDrawArrays( GLenum mode, GLint first, GLsizei count ) {
+	FrameInfo* info = &renderer.frameInfos[renderer.currentFrameInfo];
+	info->drawArrayCalls++;
+	info->drawArrayTriangleCount += count;
+
+	glDrawArrays( mode, first, count );
+}
+void nglDrawElements( GLenum mode, GLsizei count, GLenum type, const void* indices ) {
+	FrameInfo* info = &renderer.frameInfos[renderer.currentFrameInfo];
+	info->drawElementCalls++;
+	info->drawElementTriangleCount+= count;
+
+	glDrawElements( mode, count, type, indices );
+}
+void nglBindVertexArray( GLuint array ) {
+	FrameInfo* info = &renderer.frameInfos[renderer.currentFrameInfo];
+	info->bindVaoCalls++;
+
+	glBindVertexArray( array );
+}
+void nglBindTexture( GLenum target, GLuint texture ) {
+	FrameInfo* info = &renderer.frameInfos[renderer.currentFrameInfo];
+	info->bindTextureCalls++;
+
+	glBindTexture( target, texture );
+}
+void nglBindBuffer( GLenum target, GLuint buffer ) {
+	glBindBuffer( target, buffer );
+}
+void nglBufferSubData( GLenum target, GLintptr offset, GLsizeiptr size, const void* data ) {
+	FrameInfo* info = &renderer.frameInfos[renderer.currentFrameInfo];
+	info->bufferSubDataCalls++;
+	info->bufferSubdataBytes += size;
+
+	glBufferSubData( target, offset, size, data );
+}
+
+void nglActiveTexture( GLenum texture ) {
+	FrameInfo* info = &renderer.frameInfos[renderer.currentFrameInfo];
+	info->activeTextureCalls++;
+	glActiveTexture( texture );
+}
+
+void DrawAllEntities() {
+	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
+		StoredEntity* stored = &entityManager.entities[i];
+
+		if ( stored->state != ACTIVE_ACTIVE )
+			continue;
+
+		if ( stored->entity.renderModel != 0 )
+			RenderDrawEntity( &stored->entity );
 	}
 }

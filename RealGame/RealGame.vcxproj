@@ -152,6 +152,7 @@
     <ClCompile Include="src\Core\Window.cpp" />
     <ClCompile Include="src\Game\Entity.cpp" />
     <ClCompile Include="src\Game\EntityManager.cpp" />
+    <ClCompile Include="src\Game\Goblin.cpp" />
     <ClCompile Include="src\Game\Ogre.cpp" />
     <ClCompile Include="src\Game\Player.cpp" />
     <ClCompile Include="src\glad.cpp" />
@@ -180,6 +181,8 @@
     <ClInclude Include="src\Core\NMemory.h" />
     <ClInclude Include="src\Game\Entity.h" />
     <ClInclude Include="src\Game\EntityManager.h" />
+    <ClInclude Include="src\Game\Game.h" />
+    <ClInclude Include="src\Game\Goblin.h" />
     <ClInclude Include="src\Game\Ogre.h" />
     <ClInclude Include="src\Game\Player.h" />
     <ClInclude Include="src\Physics\Colliders.h" />

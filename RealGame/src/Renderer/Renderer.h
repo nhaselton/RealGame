@@ -6,6 +6,8 @@
 #include "Resources\TextureManager.h"
 
 #define FONT_BATCH_SIZE 8192
+#define MAX_FRAME_INFOS 1000
+
 
 struct FontVert {
 	Vec2 pos;
@@ -67,12 +69,11 @@ struct BitmapFont {
 
 struct RenderBrushFace {
 	u32 firstVertex;
-	u32 numVertices;
 	u32 firstIndex;
-	u32 numIndices;
-	struct Texture* texture;
-	int textureIndex;
-	//todo tex,etc.
+	//These are kept small becuase there are lots of faces in the maps. It adds up quickly
+	u8 numVertices;
+	u8 numIndices;
+	u16 textureIndex;
 };
 
 struct RenderBrush {
@@ -106,6 +107,25 @@ struct LevelRenderInfo {
 	u32* indices;
 };
 
+struct FrameInfo {
+	u32 drawArrayCalls;
+	u32 drawArrayTriangleCount;
+
+	u32 drawElementCalls;
+	u32 drawElementTriangleCount;
+
+	u32 activeTextureCalls;
+
+	u32 bindTextureCalls;
+	u32 bufferSubDataCalls;
+
+	u32 bufferSubdataBytes;
+	u32 bindVaoCalls;
+
+	u32 shaderBinds;
+	u32 shaderArgsSet;
+};
+
 class Renderer {
 public:
 	ScratchArena arena;
@@ -133,6 +153,10 @@ public:
 
 	Skybox skybox;
 
+	bool drawStats;
+	FrameInfo frameInfos[MAX_FRAME_INFOS];
+	int currentFrameInfo;
+	
 	//Font
 	GLBuffer fontBuffer;
 	FontVert glyphs[FONT_BATCH_SIZE * 4];
@@ -150,6 +174,7 @@ void RenderDrawModel(Renderer* renderer, class Model* model, Mat4 offset = Mat4(
 void RenderDrawLevel( Renderer* renderer );
 
 void RenderDrawEntity( class Entity* entity );
+void DrawAllEntities();
 
 void RenderDrawFontBatch();
 void RenderDrawText( Vec2 pos, float fontSize, const char* string );
@@ -163,3 +188,18 @@ void RenderLoadLevel( class Level* level, class NFile* file );
 
 void RenderInitFont();
 void RenderLoadFontFromFile();
+
+typedef unsigned int GLenum;
+typedef int GLint;
+typedef unsigned int GLuint;
+typedef signed   long long int GLsizeiptr;
+typedef int GLsizei;
+typedef signed   long long int GLintptr;
+
+void nglDrawArrays( GLenum mode, GLint first, GLsizei count );
+void nglDrawElements( GLenum mode, GLsizei count, GLenum type, const void* indices );
+void nglBindVertexArray( GLuint array );
+void nglBindTexture( GLenum target, GLuint texture );
+void nglBindBuffer( GLenum target, GLuint buffer );
+void nglBufferSubData( GLenum target, GLintptr offset, GLsizeiptr size, const void* data );
+void nglActiveTexture( GLenum texture );

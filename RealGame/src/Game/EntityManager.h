@@ -50,3 +50,4 @@ void UpdateProjectiles();
 
 //Removes all inactive projectiles & (todo) entities
 void EntityManagerCleanUp();
+void AnimateEntities();
