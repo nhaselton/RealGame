@@ -614,6 +614,9 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	printf( "Num Indices: %u\n", numIndices );
 	printf( "BVHNodes %u\n", tree.numNodes );
 
+	for ( int i = 0; i < tree.numNodes; i++ )
+		printf( "%.2f %.2f %.2f ", tree.nodes[i].bounds.min.x, tree.nodes[i].bounds.min.y, tree.nodes[i].bounds.min.z );
+
 	return true;
 }
 
@@ -657,25 +660,6 @@ BoundsMinMax BoundsUnion( const BoundsMinMax& a, const BoundsMinMax& b ) {
 	mm.max = glm::max( a.max, b.max );
 	mm.min = glm::min( a.min, b.min );
 	return mm;
-}
-
-//THIS IS SO BAD LOL
-void BVHRemove( BVHNode** arr, int* size, int index1, int index2 ) {
-	if ( index1 > index2 ) {
-		int temp = index1;
-		index1 = index2;
-		index2 = temp;
-	}
-
-	for ( int i = index1; i < *size - 1; i++ ) {
-		arr[i] = arr[i + 1];
-	}
-
-	for ( int i = index2 - 1; i < *size - 2; i++ ) {
-		arr[i] = arr[i + 1];
-	}
-
-	*size -= 2;
 }
 
 BVHTree ConstructBVH( std::vector<NPBrush>& brushes ) {
@@ -743,14 +727,22 @@ BVHTree ConstructBVH( std::vector<NPBrush>& brushes ) {
 		workingSet[bestA]->parent = node->nodeIndex;
 		workingSet[bestB]->parent = node->nodeIndex;
 
+		workingSet[bestA] = workingSet[--numWorkingSet];
+
 		if ( bestA > bestB ) {
 			int temp = bestA;
 			bestA = bestB;
 			bestB = temp;
 		}
 
-		//TODO Do Something faster
-		BVHRemove( workingSet, &numWorkingSet, bestA, bestB );
+		//We removed a node, and we cant just remove this index because the array has shifted
+		BVHNode* bestBPtr = workingSet[bestB];
+		for ( int i = bestA; i < numWorkingSet; i++ ) {
+			if ( workingSet[i] == bestBPtr ) {
+				workingSet[i] = workingSet[--numWorkingSet];
+				break;
+			}
+		}
 
 		//Add the higher level node onto the end, we dont want to use it in this loop
 		workingSet[tree.numNodes - 1 - numTops] = node;

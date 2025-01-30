@@ -46,6 +46,8 @@ public:
 	Vec3 pos;
 	Quat rotation;
 
+	Vec3 boidVelocity;
+
 	CharacterCollider* bounds;
 	RenderModel* renderModel;
 

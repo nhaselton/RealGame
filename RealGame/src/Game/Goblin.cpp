@@ -9,6 +9,7 @@ Model* Goblin::model = 0;
 Goblin* CreateGoblin( Vec3 pos ) {
 	//Todo Better Solution
 	Goblin* goblin = ( Goblin* ) NewEntity();
+	CreateBoid( goblin );
 	EntityGenerateRenderModel( goblin, Goblin::model, &globalArena );
 	goblin->pos = pos;
 	goblin->currentAnimation = goblin->renderModel->model->animations[0];
@@ -65,6 +66,7 @@ void GoblinOnHit( EntityHitInfo info ) {
 	goblin->health--;
 	if ( goblin->health <= 0 ) {
 		RemoveEntity( goblin );	
+		RemoveBoid( goblin );
 
 		Vec3 velocities []{
 			Vec3( -5,10,3 ),
@@ -73,21 +75,22 @@ void GoblinOnHit( EntityHitInfo info ) {
 		};
 
 		Model* gibs = ModelManagerGetModel( "res/models/gib.glb" );
-			ParticleEmitter* emitter = NewParticleEmitter();
-			emitter->pos = goblin->pos + Vec3(0,1,0);
-			emitter->lifeTime = .05f;
-			emitter->color = Vec3( .7, 0, 0 );
 
 		for ( int i = 0; i < 3; i++ ) {
 			RigidBody* gib = NewRigidBody();
 			gib->pos = goblin->pos + Vec3(0,2,0);
 			gib->velocity = velocities[i];
-
+			gib->removeTime = gameTime + 10.0f;;
 			float gibsize = ( ( float ) ( rand() % 2 + 1 ) ) / 2.0f;
 			gib->radius = gibsize;
 			gib->modelScale = gibsize;
 			gib->model = gibs;
 
+			ParticleEmitter* emitter = NewParticleEmitter();
+			emitter->pos = goblin->pos + Vec3( 0, 1, 0 );
+			emitter->lifeTime = 3.0f;
+			emitter->color = Vec3( .7, 0, 0 );
+			gib->emitter = emitter;
 		}
 		return;
 	}

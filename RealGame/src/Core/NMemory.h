@@ -75,6 +75,7 @@ void CreatePoolArena( PoolArena* poolArena, u32 chunkSize, u32 numChunks, void* 
 void* PoolArenaAllocate( PoolArena* arena );
 void* PoolArenaAllocateZero( PoolArena* arena );
 void PoolArenaFree( PoolArena* arena, void* freeChunk );
+void PoolArenaFreeAll(PoolArena* arena);
 
 void CreateStackArena( StackArena* scratchArena, u32 capacity, void* memory, Arena* parent, const char* name = "" );
 void* StackArenaAllocate( StackArena* arena, u32 size );

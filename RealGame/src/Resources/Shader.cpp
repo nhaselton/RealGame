@@ -50,6 +50,9 @@ bool CreateComputeShader( Shader* shader, const char* path ) {
 	glLinkProgram( shader->id );
 	ShaderCheckCompileErrors( cProg, "PROGRAM" );
 
+	shader->flags = SHADER_COMPUTE;
+	shader->paths[2] = path;
+
 	glDeleteShader( cProg );
 	return true;
 }
@@ -92,6 +95,9 @@ bool CreateShader( Shader* shader, const char* vertPath, const char* fragPath) {
 	NFileRead( &fragFile, fragBuffer, fragFile.length );
 	fragBuffer[fragFile.length] = '\0';
 	
+	NFileClose( &vertFile );
+	NFileClose( &fragFile );
+
 	//Create the shaders
 	u32 vProg, fProg;
 	vProg = glCreateShader( GL_VERTEX_SHADER );
@@ -113,6 +119,10 @@ bool CreateShader( Shader* shader, const char* vertPath, const char* fragPath) {
 
 	glDeleteShader( vProg );
 	glDeleteShader( fProg );
+
+	shader->flags = (SHADER_VERTEX | SHADER_FRAGMENT);
+	shader->paths[0] = vertPath;
+	shader->paths[1] = fragPath;
 
 	return true;
 }

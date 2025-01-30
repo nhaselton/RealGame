@@ -17,29 +17,20 @@
 #include "game/Game.h"
 
 /*
-*	Next MVP:
-	Defaults for when a file cant be read:
-		Models
-		Textures
-
-	Shaders
-		or togther types of shaders
-		pass const char* [] for paths, will know count by going through probably
-		Change all Shader* stuff in renderer to shader_t to make it less tedious
-	Shader Reloading.
-		Will just have to re find args for all arguments? 
+*	Next MVP:	
 	
-	Come back to particles this shit sucks
+	Now:
+		Add Billboards
+		Maybe dead particle list too?
+	
+	Once Idtech:
+		Check out their particle system
+		See what i should include
 
 	Navmesh?
 		Enemys are circle on navmesh, shoot rays around the navmesh to see what they hit?
 	
-
 	I want many little goblins running at the player
-	I want goblins to explode into gibs when they die
-	Gibs should delete after X time (Or when circular buffer gets full?)
-		Gibs should NOT every be queried, nor should they ever try to do physics once landed
-			MAYBE 1 raycast every second incase floor below them fell down
 	should be able to cause a chain reaction
 
 	Quake FGD File

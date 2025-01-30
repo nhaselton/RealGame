@@ -88,6 +88,10 @@ void* ScratchArenaAllocate( ScratchArena* arena, u32 size ) {
 }
 
 
+void PoolArenaFreeAll( PoolArena* arena ) {
+	CreatePoolArena( arena, arena->chunkSize, arena->numChunks, arena->memory, arena, arena->name );
+}
+
 void CreatePoolArena( PoolArena* poolArena, u32 chunkSize, u32 numChunks, void* memory, Arena* parent, const char* name ) {
 	assert( chunkSize >= sizeof( void* ) ); //Must be able to store a pointer to the next one
 	assert( parent );
@@ -117,8 +121,8 @@ void CreatePoolArena( PoolArena* poolArena, u32 chunkSize, u32 numChunks, void* 
 	}
 	current->next = 0;
 
-
-	SetParentChildren( poolArena, parent );
+	if ( parent != poolArena )//(Hack) Can set parent to self to reset arena
+		SetParentChildren( poolArena, parent );
 }
 
 void* PoolArenaAllocateZero( PoolArena* arena ) {

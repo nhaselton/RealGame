@@ -42,7 +42,7 @@ inline void ShaderBuiltInsSetPVM( Renderer* renderer, Mat4 p, Mat4 v, Mat4 m ) {
 	}
 }
 
-void CreateShaders( Renderer* renderer ) {
+void RenderCreateShaders( Renderer* renderer ) {
 	//Brute force here. Set nons at end
 	//XYZRGB
 	renderer->shaders[SHADER_XYZRGB] = ShaderManagerCreateShader( &shaderManager, "res/shaders/xyzrgb/xyzrgb.vert", "res/shaders/xyzrgb/xyzrgb.frag" );
@@ -115,6 +115,8 @@ void CreateShaders( Renderer* renderer ) {
 	ShaderSetMat4( renderer, ui, "projection", renderer->orthographic );
 	ShaderAddArg( &shaderManager, ui, SHADER_ARG_MAT4, "model" );
 	ShaderSetMat4( renderer, ui, "model", Mat4( 1.0 ) );
+
+	ShaderBuiltInsInit( renderer );
 }
 
 void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
@@ -139,9 +141,7 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	GLBufferAddAttribute( &renderer->quadBuffer, 0, 2, GL_FLOAT, 4 * sizeof( float ), 0 );
 	GLBufferAddAttribute( &renderer->quadBuffer, 1, 2, GL_FLOAT, 4 * sizeof( float ), ( void* ) ( 2 * sizeof( float ) ) );
 
-	CreateShaders( renderer );
-	//Sets up the PVMs
-	ShaderBuiltInsInit( renderer );
+	RenderCreateShaders( renderer );
 	
 	RenderInitFont();
 
@@ -245,6 +245,9 @@ void RenderInitFont() {
 }
 
 void RenderStartFrame( Renderer* renderer ){
+	if ( KeyPressed( KEY_T ) )
+		ReloadShaders();
+
 	//Clear frame info
 	renderer->currentFrameInfo = ( renderer->currentFrameInfo + 1 ) % MAX_FRAME_INFOS;
 	memset( &renderer->frameInfos[renderer->currentFrameInfo], 0, sizeof(FrameInfo));
@@ -840,7 +843,7 @@ void RenderDrawAllRigidBodies() {
 		if ( body->state == RB_NONE )
 			continue;
 
-		DebugDrawSphere( body->pos, body->radius );
+		//DebugDrawSphere( body->pos, body->radius );
 		if ( body->model ) {
 			Mat4 t = glm::translate( Mat4( 1.0 ), body->pos + body->visualOffset );
 			Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( body->modelScale ) );

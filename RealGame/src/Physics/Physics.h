@@ -46,7 +46,8 @@ struct BVHTree {
 enum rigidBodyState_t {
 	RB_NONE,
 	RB_IN_MOTION,
-	RB_STATIC
+	RB_STATIC,
+	RB_CAN_REMOVE
 };
 
 //These are never queried by anything
@@ -56,11 +57,13 @@ struct RigidBody {
 	Vec3 pos;
 	Vec3 velocity;
 	float radius; //Faster to collide with surface. Can also sweep
+	float removeTime; //What gametime should this be removed at
 
 	//For Drawing
 	class Model* model;
 	Vec3 visualOffset;
 	float modelScale;
+	class ParticleEmitter* emitter;
 };
 
 
@@ -76,12 +79,13 @@ struct Physics {
 	//If shootable projectile, put in here. May have to expand capacity to more than MAX_ENTITIES then
 	CharacterCollider* activeColliders[MAX_ENTITIES];
 	int numActiveColliders;
-	
-	//These dotn collide with anything except for static geometry
-	//Circular Queue 
-	//Nobody should ever "own" one of these, once its created it can be removed at ANY time.
+
+	//Enemys that use boid style movement
+	Entity* boids[MAX_ENTITIES];
+	int numBoids;
+
 	RigidBody rigidBodies[MAX_RIGIDBODIES];
-	int rigidBodyHead;
+	int numRigidBodies;
 };
 extern Physics physics;
 
@@ -126,6 +130,10 @@ void PhysicsRigidBodiesUpdate();
 bool PhysicsQueryRaycast( Vec3 start, Vec3 velocity, HitInfo* best );
 bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo* bestSweep );
 bool PhysicsQueryIntersectEntities( CharacterCollider* cc, EntityCollisonQuery* outQuery );
+
+void CreateBoid( class Entity* entity );
+void RemoveBoid( class Entity* entity );
+void UpdateBoids();
 
 bool PhysicsRaycastDynamic( Vec3 start, Vec3 velocity, HitInfo* info );
 bool BruteCastSphere( Vec3 pos, Vec3 velocity, Vec3 r, SweepInfo* outInfo );

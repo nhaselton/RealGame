@@ -2,6 +2,7 @@
 #include "Resources\Level.h"
 #include "Renderer/DebugRenderer.h"
 #include "game/Entity.h"
+#include "Renderer\Renderer.h"
 
 void PhysicsInit() {
 	memset( physics.activeColliders, MAX_ENTITIES, MAX_ENTITIES * sizeof( physics.activeColliders[0] ) );
@@ -608,6 +609,10 @@ bool PhysicsQueryIntersectEntities( CharacterCollider* cc, EntityCollisonQuery* 
 void PhysicsRigidBodiesUpdate() {
 	for ( int i = 0; i < MAX_RIGIDBODIES; i++ ) {
 		RigidBody* body = &physics.rigidBodies[i];
+		
+		if ( body->removeTime < gameTime )
+			body->state = RB_NONE;
+
 		if ( body->state != RB_IN_MOTION )
 			continue;
 		
@@ -616,11 +621,18 @@ void PhysicsRigidBodiesUpdate() {
 		body->velocity -= 10 * dt;
 		Vec3 frameVel = ( velLast + body->velocity ) * 0.5f * dt;
 
+		if ( body->emitter )
+			body->emitter->pos = body->pos;
+
 		SweepInfo info;
 		//todo handle collsions properly
 		if ( BruteCastSphere( body->pos, frameVel, Vec3( body->radius ), &info ) ) {
 			body->pos = info.r3Point;
 			body->state = RB_STATIC;
+
+			//Remove emitter, it shoots downwards
+			if ( body->emitter )
+				body->emitter->currentTime = body->emitter->lifeTime + 1.0f;
 		}
 		else {
 			body->pos += frameVel;
@@ -629,10 +641,33 @@ void PhysicsRigidBodiesUpdate() {
 }
 
 RigidBody* NewRigidBody() {
-	physics.rigidBodyHead = ( physics.rigidBodyHead + 1 ) % MAX_RIGIDBODIES;
-	RigidBody* body = &physics.rigidBodies[physics.rigidBodyHead];
-	memset( body, 0, sizeof( *body ) );
-	body->modelScale = 1.0f;
-	body->state = RB_IN_MOTION;
-	return body;
+	for ( int i = 0; i < MAX_RIGIDBODIES; i++ ) {
+		RigidBody* body = &physics.rigidBodies[i];
+		if ( body->state == ACTIVE_INACTIVE ) {
+			memset( body, 0, sizeof( *body ) );
+			body->modelScale = 1.0f;
+			body->state = RB_IN_MOTION;
+			physics.numRigidBodies++;
+			return body;
+		}
+	}
+	return 0;
+}
+
+void CreateBoid( Entity* entity ) {
+	physics.boids[physics.numBoids++] = entity;
+}
+
+void RemoveBoid( Entity* entity ) {
+	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
+		if ( physics.boids[i] == entity )
+			physics.boids[i] = physics.boids[--physics.numBoids];
+	}
+}
+
+#define BOID_MAX_RANGE 20.0f
+void UpdateBoids() {
+	TEMP_ARENA_SET;
+
+
 }

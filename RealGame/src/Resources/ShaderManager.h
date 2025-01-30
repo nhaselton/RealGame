@@ -23,3 +23,4 @@ void CreateShaderManager( ShaderManager* manager, u32 numShaders, void* shaderMe
 class Shader* ShaderManagerCreateShader( ShaderManager* manager, const char* vertexPath, const char* fragPath );
 class Shader* ShaderManagerCreateComputeShader( ShaderManager* manager, const char* path );
 void ShaderAddArg( ShaderManager* manager, Shader* shader, shaderArg_t type, const char* name );
+void ReloadShaders();

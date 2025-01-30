@@ -192,6 +192,8 @@ public:
 extern Renderer renderer;
 
 void CreateRenderer( Renderer* renderer, void* memory, u32 size );
+void RenderCreateShaders( Renderer* renderer );
+
 void RenderStartFrame( Renderer* renderer );
 void RenderDrawFrame( Renderer* renderer, float dt );
 void RenderEndFrame( Renderer* renderer );

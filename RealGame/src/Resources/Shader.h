@@ -26,10 +26,19 @@ struct ShaderArg {
 	ShaderArg* next;
 };
 
+enum shaderFlags_t {
+	SHADER_NONE = 0,
+	SHADER_VERTEX = 0b1,
+	SHADER_FRAGMENT = 0b10,
+	SHADER_COMPUTE = 0b100,
+};
+
 class Shader {
 public:
+	const char* paths[3];
 	u32 id;
 	ShaderArg* args;
+	u8 flags;
 	bool updateMVP; //Should the MVP be updated each frame
 };
 

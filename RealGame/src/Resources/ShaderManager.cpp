@@ -1,5 +1,6 @@
 #include "ShaderManager.h"
 #include "Shader.h"
+#include "Renderer\Renderer.h"
 #include <glad\glad.h>
 
 //From Shader.cpp, this is the only file that should call it
@@ -79,4 +80,16 @@ void ShaderAddArg( ShaderManager* manager, Shader* shader, shaderArg_t type, con
 	//Add to list
 	arg->next = shader->args;
 	shader->args = arg;
+}
+
+void ReloadShaders() {
+	for ( ShaderInfo* info = shaderManager.head; info != 0; info = info->next) {
+		info->shader.args = 0;
+		glDeleteProgram( info->shader.id );
+	}
+
+	PoolArenaFreeAll( &shaderManager.argAlloc );
+	PoolArenaFreeAll( &shaderManager.shaderAlloc );
+	shaderManager.head = 0;
+	RenderCreateShaders(&renderer);
 }
