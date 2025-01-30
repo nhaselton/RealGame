@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "Physics/Physics.h"
 #include "Resources/ModelManager.h"
 #include "Renderer\DebugRenderer.h"
 
@@ -11,7 +12,7 @@ Goblin* CreateGoblin( Vec3 pos ) {
 	goblin->pos = pos;
 	goblin->currentAnimation = goblin->renderModel->model->animations[0];
 	goblin->state = GOBLIN_CHASE;
-	goblin->health = 5;
+	goblin->health = 1;
 	goblin->maxHealth = 5;
 	goblin->currentAnimation = Goblin::model->animations[0];
 	goblin->renderModel->scale = Vec3( .45 );
@@ -63,6 +64,25 @@ void GoblinOnHit( EntityHitInfo info ) {
 	goblin->health--;
 	if ( goblin->health <= 0 ) {
 		RemoveEntity( goblin );	
+
+		Vec3 velocities []{
+			Vec3( -5,10,3 ),
+			Vec3( 10,10,-7 ),
+			Vec3( -3,10, 8 ),
+		};
+
+		Model* gibs = ModelManagerGetModel( "res/models/gib.glb" );
+
+		for ( int i = 0; i < 3; i++ ) {
+			RigidBody* gib = NewRigidBody();
+			gib->pos = goblin->pos + Vec3(0,2,0);
+			gib->velocity = velocities[i];
+
+			float gibsize = ( ( float ) ( rand() % 2 + 1 ) ) / 2.0f;
+			gib->radius = gibsize;
+			gib->modelScale = gibsize;
+			gib->model = gibs;
+		}
 		return;
 	}
 

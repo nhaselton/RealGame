@@ -136,6 +136,7 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 	memset( model, 0, sizeof( Model ) );
 	//Allocate enough memory that the model only requires 1 allocation to handle everything including joints
 	CreateScratchArena( &info->arena, MAX_MODEL_SIZE - sizeof( ModelInfo ), ( u8* ) info + sizeof( ModelInfo ), &manager->modelArena, path );
+	strcpy_s( model->path, MAX_PATH_LENGTH, path );
 
 	// ==========================================
 	//				Load GLTF Model
@@ -569,3 +570,18 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 	return model;
 }
 
+//todo better solution
+Model* ModelManagerGetModel( const char* path ) {
+	for ( ModelInfo* model = modelManager.modelHead; model != 0; model = model->next ) {
+		if ( strcmp( path, model->model.path ) == 0 )
+			return &model->model;
+
+		if ( model == 0 ) {
+			LOG_WARNING( LGS_RENDERER, "COULD NOT FIND MODEL %s\n", path );
+			return 0 ;
+		}
+	}
+
+	//unreachable but whatever
+	return 0;
+}

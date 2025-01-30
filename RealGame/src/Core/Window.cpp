@@ -20,8 +20,8 @@ void WindowInit( Window* window, u32 width, u32 height, const char* title ) {
 		return;
 	}
 
-	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
-	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
+	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
+	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 4 );
 	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 	window->handle = glfwCreateWindow( width, height, title, NULL, NULL );
 	glfwSetErrorCallback( ErrorCallback );

@@ -21,4 +21,5 @@ extern ShaderManager shaderManager;
 void CreateShaderManager( ShaderManager* manager, u32 numShaders, void* shaderMemory, 
 	u32 numShaderArgs, void* shaderArgMemory );
 class Shader* ShaderManagerCreateShader( ShaderManager* manager, const char* vertexPath, const char* fragPath );
+class Shader* ShaderManagerCreateComputeShader( ShaderManager* manager, const char* path );
 void ShaderAddArg( ShaderManager* manager, Shader* shader, shaderArg_t type, const char* name );

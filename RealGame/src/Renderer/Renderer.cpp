@@ -1,4 +1,4 @@
-#include "Renderer.h"
+﻿#include "Renderer.h"
 #include "Resources/ShaderManager.h"
 #include "Resources/Shader.h"
 #include "Resources\ModelManager.h"
@@ -8,7 +8,7 @@
 #include "resources/Level.h"
 #include "Game/Entity.h"
 #include "Game/Player.h"
-
+#include "Physics\Physics.h"
 
 extern ModelManager modelManager;
 
@@ -89,8 +89,23 @@ void CreateShaders( Renderer* renderer ) {
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_SKYBOX], SHADER_ARG_INT, "albedo" );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_SKYBOX], "albedo", S3D_SKYBOX );
 
+	renderer->shaders[SHADER_PARTICLES] = ShaderManagerCreateShader( &shaderManager, "res/shaders/particles/particles.vert", "res/shaders/particles/particles.frag" );
+	RenderSetShader( renderer, renderer->shaders[SHADER_PARTICLES] );
+
+	renderer->shaders[SHADER_COMP_CREATE_PARTICLES] = ShaderManagerCreateComputeShader( &shaderManager, "res/shaders/particles/createParticles.comp" );
+	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_CREATE_PARTICLES] );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_COMP_CREATE_PARTICLES], SHADER_ARG_FLOAT, "dt" );
+
+	renderer->shaders[SHADER_COMP_UPDATE_PARTICLES] = ShaderManagerCreateComputeShader( &shaderManager, "res/shaders/particles/UpdateParticles.comp" );
+	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES] );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES], SHADER_ARG_FLOAT, "dt" );
+
+
 	for ( int i = 0; i < SHADER_LAST; i++ )
 		renderer->shaders[i]->updateMVP = true;
+
+	renderer->shaders[SHADER_COMP_CREATE_PARTICLES]->updateMVP = false;
+	renderer->shaders[SHADER_COMP_UPDATE_PARTICLES]->updateMVP = false;
 
 	//Note: Must do this for all non UPDATE-MVP 
 	Shader* ui = renderer->shaders[SHADER_UI];
@@ -130,6 +145,19 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 
 	renderer->crosshairTex = TextureManagerLoadTextureFromFile( "res/textures/crosshair.png" );
 	renderer->healthTex = TextureManagerLoadTextureFromFile( "res/textures/health.png" );
+
+	//Particle Buffer
+	glGenBuffers( 1, &renderer->particleSSBO );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleSSBO );
+	glBufferData( GL_SHADER_STORAGE_BUFFER, MAX_PARTICLES * PARTICLE_SIZE_GPU, 0, GL_DYNAMIC_DRAW); 
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, renderer->particleSSBO );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 ); 
+	
+	glGenBuffers( 1, &renderer->particleEmitterSSBO );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleEmitterSSBO );
+	glBufferData( GL_SHADER_STORAGE_BUFFER, MAX_PARTICLE_EMITTERS * sizeof( ParticleEmitter ) + sizeof( Vec4 ), 0, GL_DYNAMIC_DRAW );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, renderer->particleEmitterSSBO );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 ); 
 
 	//Create Skybox
 	{
@@ -323,9 +351,46 @@ void RenderDrawFrame( Renderer* renderer, float dt ){
 	ShaderBuiltInsSetPVM( renderer, renderer->projection, renderer->camera.GetViewMatrix(), Mat4( 1.0 ) );
 
 	RenderDrawLevel( renderer );
-	DrawAllEntities();
+	RenderDrawAllEntities();
+	RenderDrawAllProjectiles();
+	RenderDrawAllRigidBodies();
+
 
 	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );	
+
+	renderer->particleEmitters[0].pos = entityManager.entities[1].entity.pos;
+	renderer->particleEmitters[0].color = Vec3( 1, 0, 0 );
+	renderer->particleEmitters[0].lifeTime = 10.0f;
+	renderer->particleEmitters[0].currentTime = 0.0f;
+
+
+	//Draw Particles
+	//Maybe do a depth pass, draw the particles after the depth test and add the semaphore before any more gpu work (While gathering indices for level it can ruin)
+	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_CREATE_PARTICLES] );
+	ShaderSetFloat( renderer, renderer->shaders[SHADER_COMP_CREATE_PARTICLES], "dt", dt );
+
+	//FOR NOW... Brute force just upload all emitters
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleEmitterSSBO );
+	glBufferSubData( GL_SHADER_STORAGE_BUFFER, sizeof(Vec4), MAX_PARTICLE_EMITTERS * sizeof(ParticleEmitter), renderer->particleEmitters);
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+
+	//Update Particles
+	glDispatchCompute( MAX_PARTICLE_EMITTERS, 1, 1); //Creates particles
+	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+	
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, renderer->particleSSBO );
+	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES] );
+	ShaderSetFloat( renderer, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES], "dt", dt );
+	printf( "%f\n", dt );
+	glDispatchCompute( MAX_PARTICLES, 1, 1 ); //updates particles
+	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+
+	//Render Particles
+	RenderSetShader( renderer, renderer->shaders[SHADER_PARTICLES] );
+	glPointSize( 8 );
+	glDrawArrays( GL_POINTS, 0, MAX_PARTICLES );
+
+
 
 	//RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
 	//RenderDrawFontBatch();
@@ -369,7 +434,7 @@ void RenderEndFrame( Renderer* renderer ) {
 	}
 
 	//Draw gun last (Will mess up post processing later on)
-	DrawGun();
+	RenderDrawGun();
 }
 
 void BuildSkeleton( Skeleton* skeleton, Node* root, Mat4 parent, Mat4* matrices ) {
@@ -728,7 +793,7 @@ void nglActiveTexture( GLenum texture ) {
 	glActiveTexture( texture );
 }
 
-void DrawAllEntities() {
+void RenderDrawAllEntities() {
 	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
 		StoredEntity* stored = &entityManager.entities[i];
 
@@ -740,7 +805,7 @@ void DrawAllEntities() {
 	}
 }
 
-void DrawAllProjectiles() {
+void RenderDrawAllProjectiles() {
 	for ( int i = 0; i < entityManager.numProjectiles; i++ ) {
 		Projectile* projectile = &entityManager.projectiles[i];
 		if ( projectile->state != ACTIVE_ACTIVE || projectile->model.model == 0 )
@@ -751,7 +816,7 @@ void DrawAllProjectiles() {
 	}
 }
 
-void DrawGun() {
+void RenderDrawGun() {
 	Player* player = entityManager.player;
 	glClear( GL_DEPTH_BUFFER_BIT );
 	Mat4 t = glm::translate( Mat4( 1.0 ), player->revolver.pos );
@@ -760,4 +825,20 @@ void DrawGun() {
 	Mat4 model = t * r * s;
 	model = glm::inverse( renderer.camera.GetViewMatrix() ) * model;
 	RenderDrawModel( &renderer, entityManager.player->revolver.renderModel->model, model, entityManager.player->revolver.renderModel->pose );
+}
+
+void RenderDrawAllRigidBodies() {
+	for ( int i = 0; i < MAX_RIGIDBODIES; i++ ) {
+		RigidBody* body = &physics.rigidBodies[i];
+		if ( body->state == RB_NONE )
+			continue;
+
+		DebugDrawSphere( body->pos, body->radius );
+		if ( body->model ) {
+			Mat4 t = glm::translate( Mat4( 1.0 ), body->pos + body->visualOffset );
+			Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( body->modelScale ) );
+			Mat4 trs = t * s;
+			RenderDrawModel( &renderer, body->model, trs );
+		}
+	}
 }

@@ -604,3 +604,35 @@ bool PhysicsQueryIntersectEntities( CharacterCollider* cc, EntityCollisonQuery* 
 	}
 	return false;
 }
+
+void PhysicsRigidBodiesUpdate() {
+	for ( int i = 0; i < MAX_RIGIDBODIES; i++ ) {
+		RigidBody* body = &physics.rigidBodies[i];
+		if ( body->state != RB_IN_MOTION )
+			continue;
+		
+		Vec3 velLast = body->velocity;
+		//Gravity
+		body->velocity -= 10 * dt;
+		Vec3 frameVel = ( velLast + body->velocity ) * 0.5f * dt;
+
+		SweepInfo info;
+		//todo handle collsions properly
+		if ( BruteCastSphere( body->pos, frameVel, Vec3( body->radius ), &info ) ) {
+			body->pos = info.r3Point;
+			body->state = RB_STATIC;
+		}
+		else {
+			body->pos += frameVel;
+		}
+	}
+}
+
+RigidBody* NewRigidBody() {
+	physics.rigidBodyHead = ( physics.rigidBodyHead + 1 ) % MAX_RIGIDBODIES;
+	RigidBody* body = &physics.rigidBodies[physics.rigidBodyHead];
+	memset( body, 0, sizeof( *body ) );
+	body->modelScale = 1.0f;
+	body->state = RB_IN_MOTION;
+	return body;
+}

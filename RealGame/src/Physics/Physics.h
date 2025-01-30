@@ -43,6 +43,27 @@ struct BVHTree {
 	int root;
 };
 
+enum rigidBodyState_t {
+	RB_NONE,
+	RB_IN_MOTION,
+	RB_STATIC
+};
+
+//These are never queried by anything
+//its just for gibs, dead bodies, etc.
+struct RigidBody {
+	rigidBodyState_t state;
+	Vec3 pos;
+	Vec3 velocity;
+	float radius; //Faster to collide with surface. Can also sweep
+
+	//For Drawing
+	class Model* model;
+	Vec3 visualOffset;
+	float modelScale;
+};
+
+
 struct Physics {
 	Brush* brushes;
 	int numBrushes;
@@ -55,6 +76,12 @@ struct Physics {
 	//If shootable projectile, put in here. May have to expand capacity to more than MAX_ENTITIES then
 	CharacterCollider* activeColliders[MAX_ENTITIES];
 	int numActiveColliders;
+	
+	//These dotn collide with anything except for static geometry
+	//Circular Queue 
+	//Nobody should ever "own" one of these, once its created it can be removed at ANY time.
+	RigidBody rigidBodies[MAX_RIGIDBODIES];
+	int rigidBodyHead;
 };
 extern Physics physics;
 
@@ -80,7 +107,6 @@ struct SweepInfo {
 	float t;
 };
 
-
 struct HitInfo {
 	bool didHit;
 	Vec3 point;
@@ -92,11 +118,10 @@ struct HitInfo {
 	Entity* entity;
 };
 
-
-
-
 void PhysicsInit();
 void PhysicsLoadLevel( struct Level* level, struct NFile* file );
+
+void PhysicsRigidBodiesUpdate();
 
 bool PhysicsQueryRaycast( Vec3 start, Vec3 velocity, HitInfo* best );
 bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo* bestSweep );
@@ -113,6 +138,8 @@ Vec3 EllipseFromWorld( const Vec3& point, const Vec3& radius );
 Vec3 WorldFromEllipse( const Vec3& point, const Vec3& radius );
 
 bool PhysicsRaycastHull( Vec3 start, Vec3 dir, Brush* hull, HitInfo* info );
+
+RigidBody* NewRigidBody();
 
 inline bool FastAABB( const BoundsMinMax& a, const BoundsMinMax& b ) {
 	return

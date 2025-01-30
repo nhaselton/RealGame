@@ -1,0 +1,49 @@
+#version 440
+
+uniform float dt;
+
+struct Particle	{
+	vec4 pos;		//xyz = pos.	w = lifeTime [0,1]
+	vec4 color;		//xyz color		w: ?
+	vec4 velocity;	//xyz = vel		w = ? 
+	vec4 pad;
+};
+
+//Assume Spherical
+struct ParticleEmitter {
+	vec4 pos; //XYZ: pos, W: Spawn Speed
+	vec4 color; //XYZ: color, Z: Range
+
+	float currentLifeTime;
+	float maxLifeTime;
+	float a; float b;
+};
+
+layout(std430, binding = 1 ) buffer particleBuffer {
+	Particle particles[];
+};
+
+layout(std430, binding = 2 ) buffer particleAddBuffer {
+	uint next;
+	uint pad,pad2,pad3;
+	ParticleEmitter emitters[];
+};
+
+
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+void main() {
+	uint id = gl_GlobalInvocationID.x;
+	if ( id == 0 ) {
+		uint particleIndex = atomicAdd(next,1);
+		if ( next == 32768  ){
+			atomicExchange(next,0);
+		}
+		
+		particles[particleIndex].pos.xyz = emitters[id].pos.xyz;
+		particles[particleIndex].velocity.xyz = vec3(.01f);
+		particles[particleIndex].color.xyz = emitters[id].color.xyz;
+
+		emitters[id].currentLifeTime += dt;
+	}
+}

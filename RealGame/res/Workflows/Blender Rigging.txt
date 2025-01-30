@@ -6,6 +6,7 @@ https://www.youtube.com/watch?v=iZBx1I7vmQ0
 4) Create game ready armature with the addon
 5) Create animations with control rig
 6) bake animations to old rig
-7) Delete Control rig then export (No special settings required)
-	Look into special settings to not have to delete armature
+7) Transfer rig to game rig
+8) Select everything under game rig
+9) select Realgame export and export
 

@@ -5,8 +5,12 @@
 #include "Physics\Colliders.h"
 #include "Resources\TextureManager.h"
 
-#define FONT_BATCH_SIZE 8192
 #define MAX_FRAME_INFOS 1000
+#define FONT_BATCH_SIZE 8192
+#define MAX_PARTICLES 32768 //1MB of particles. Must change compute if this changes
+#define MAX_PARTICLE_EMITTERS 64
+#define PARTICLE_SIZE_GPU 64 //pos,vel,lifetime,active?
+
 
 
 struct FontVert {
@@ -28,7 +32,27 @@ enum builtInShaderList {
 	SHADER_STANDARD_SKINNED,
 	SHADER_UI,
 	SHADER_SKYBOX,
-	SHADER_LAST
+	SHADER_PARTICLES,
+	
+	SHADER_COMP_CREATE_PARTICLES,
+	SHADER_COMP_UPDATE_PARTICLES,
+	SHADER_LAST,
+};
+
+//Must be sets of Vec4s
+struct ParticleEmitter {
+	Vec3 pos;
+	float speed;
+
+	Vec3 color;
+	float colorRange; //color = random(color-range,color+range)
+
+	float currentTime;
+	float lifeTime;
+	float pad, pad2;
+
+	Vec4 sixtyfourpad;
+
 };
 
 struct TextureChain {
@@ -157,6 +181,12 @@ public:
 	FrameInfo frameInfos[MAX_FRAME_INFOS];
 	int currentFrameInfo;
 	
+	u32 particleSSBO;
+	u32 particleEmitterSSBO;
+	//Note: When uploading particle emiiters, dont forget the sizeof(Vec4) offset for count.
+	ParticleEmitter particleEmitters[MAX_PARTICLE_EMITTERS];
+	GLBuffer particleBuffer;
+
 	//Font
 	GLBuffer fontBuffer;
 	FontVert glyphs[FONT_BATCH_SIZE * 4];
@@ -174,9 +204,10 @@ void RenderDrawModel(Renderer* renderer, class Model* model, Mat4 offset = Mat4(
 void RenderDrawLevel( Renderer* renderer );
 
 void RenderDrawEntity( class Entity* entity );
-void DrawAllEntities();
-void DrawAllProjectiles();
-void DrawGun();
+void RenderDrawAllEntities();
+void RenderDrawAllProjectiles();
+void RenderDrawAllRigidBodies();
+void RenderDrawGun();
 
 void RenderDrawFontBatch();
 void RenderDrawText( Vec2 pos, float fontSize, const char* string );

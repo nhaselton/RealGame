@@ -1,0 +1,26 @@
+#version 440
+
+uniform float dt;
+
+struct Particle	{
+	vec4 pos;		//xyz = pos.	w = lifeTime [0,1]
+	vec4 color;		//xyz color		w: ?
+	vec4 velocity;	//xyz = vel		w = ? 
+	vec4 pad;
+};
+
+layout(std430, binding = 1 ) buffer particleBuffer {
+	Particle particles[];
+};
+
+
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+void main() {
+	uint id = gl_GlobalInvocationID.x;
+	if ( particles[id].color.xyz != vec3(1,0,0))
+		return;
+
+	particles[id].pos.xyz -= vec3(.01) * dt * .01f;
+	
+}

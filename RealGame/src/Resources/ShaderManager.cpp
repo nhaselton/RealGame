@@ -4,6 +4,7 @@
 
 //From Shader.cpp, this is the only file that should call it
 bool CreateShader( Shader* shader, const char* vertexPath, const char* fragPath );
+bool CreateComputeShader( Shader* shader, const char* path );
 
 void CreateShaderManager( ShaderManager* manager, 
 	u32 numShaders, void* shaderMemory,
@@ -23,6 +24,27 @@ Shader* ShaderManagerCreateShader( ShaderManager* manager, const char* vertexPat
 
 	//Make sure it actually Creates a shader
 	if ( !CreateShader( &info->shader, vertexPath, fragPath ) ) {
+		PoolArenaFree( &manager->shaderAlloc, info );
+		return 0;
+	}
+
+	//Add shader to list
+	info->next = manager->head;
+	manager->head = info;
+	return &info->shader;
+}
+
+Shader* ShaderManagerCreateComputeShader( ShaderManager* manager, const char* path ) {
+	ShaderInfo* info = ( ShaderInfo* ) PoolArenaAllocate( &manager->shaderAlloc );
+
+	//Make sure theres room
+	if ( !info ) {
+		LOG_ASSERT( LGS_RENDERER, "Can not allocate new shader %s\n", path );
+		return 0;
+	}
+
+	//Make sure it actually Creates a shader
+	if ( !CreateComputeShader( &info->shader, path ) ) {
 		PoolArenaFree( &manager->shaderAlloc, info );
 		return 0;
 	}

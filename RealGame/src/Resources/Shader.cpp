@@ -23,6 +23,37 @@ void ShaderCheckCompileErrors( GLuint shader, const char* type ) {
 	}
 }
 
+bool CreateComputeShader( Shader* shader, const char* path ) {
+	memset( shader, 0, sizeof( *shader ) );
+	TEMP_ARENA_SET;
+
+	NFile file;
+	CreateNFile( &file, path, "rb" );
+
+	if ( !NFileValid( &file ) ) {
+		LOG_ASSERT( LGS_RENDERER, "Could not load shader %s\n" );
+		return false;
+	}
+
+	char* buffer = ( char* ) TEMP_ALLOC( file.length + 1 );
+	NFileRead( &file, buffer, file.length );
+	buffer[file.length] = '\0';
+
+	u32 cProg;
+	cProg = glCreateShader( GL_COMPUTE_SHADER );
+	glShaderSource( cProg, 1, &buffer, NULL );
+	glCompileShader( cProg );
+	ShaderCheckCompileErrors( cProg, "Compute" );
+
+	shader->id = glCreateProgram();
+	glAttachShader( shader->id, cProg );
+	glLinkProgram( shader->id );
+	ShaderCheckCompileErrors( cProg, "PROGRAM" );
+
+	glDeleteShader( cProg );
+	return true;
+}
+
 //Return if shader was crated successfully
 bool CreateShader( Shader* shader, const char* vertPath, const char* fragPath) {
 	memset( shader, 0, sizeof( *shader ) );

@@ -203,6 +203,7 @@ void DebugRendererFrame( Mat4 view, Mat4 projection, float dt ) {
 			Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( prim->data.sphere.radius ) );
 			Mat4 trs = t * s;
 			//todo rotations
+			RenderSetShader( &renderer, renderer.shaders[SHADER_XYZRGB] );
 			ShaderSetMat4( &renderer, renderer.shaders[SHADER_XYZRGB], "model", trs );
 			ShaderSetVec3( &renderer, renderer.shaders[SHADER_XYZRGB], "color", prim->color );
 			RenderDrawModel( &renderer, renderer.sphere,trs );

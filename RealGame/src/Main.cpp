@@ -18,20 +18,6 @@
 
 /*
 *	Next MVP:
-	Gibs
-		Gib models
-			Maybe make a few differnet sizes
-			
-		Make new Array for never interatables
-				(Never query against)
-		enum 
-			INACTIVE //free to use
-			DYNMAIC // Still doing stuff
-			STATIC //no longer doing physics checks
-		Should have a velocity with acceleration and stuff
-			Be this games form of rigidbody
-			Will need to implement AABB vs Hull
-				Cant really do a single sweep beucase it will have bouncyness
 	Particles
 		Look into how these work
 			Check out doom 2016's too
@@ -40,6 +26,22 @@
 		Explosion when enemy dies
 			Explosion + Gore
 		Muzzle Flash
+
+	Defaults for when a file cant be read:
+		Models
+		Textures
+
+	Shaders
+		or togther types of shaders
+		pass const char* [] for paths, will know count by going through probably
+		Change all Shader* stuff in renderer to shader_t to make it less tedious
+	Shader Reloading.
+		Will just have to re find args for all arguments? 
+		
+
+	Navmesh?
+		Enemys are circle on navmesh, shoot rays around the navmesh to see what they hit?
+	
 
 	I want many little goblins running at the player
 	I want goblins to explode into gibs when they die
@@ -135,37 +137,16 @@ int main() {
 	player->camera.Yaw = 180.0;
 	player->camera.GetViewMatrix();
 
+	//Gibs
+	ModelManagerAllocate( &modelManager, "res/models/gib.glb" );
+
 	//Model
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
 	Goblin::model->animations[0]->looping = true;
-
 	Goblin* goblin = CreateGoblin( Vec3( 0 ) );
 
-#if 0
-	Entity* goblin = NewEntity();
-	Model* model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
-	EntityGenerateRenderModel( goblin, model, &globalArena );
-	goblin->pos = player->pos + player->camera.Front * 6.0f;
-	goblin->currentAnimation = goblin->renderModel->model->animations[0];
-	goblin->currentAnimation->looping = true;
-#endif
-
-	for ( int i = 0; i < physics.numBrushes; i++ ) {
-		Brush* brush = &physics.brushes[i];
-		for ( int n = 0; n < brush->numPolygons; n++ ) {
-			Polygon* face = &brush->polygons[n];
-			for ( int k = 0; k < face->numTriangles; k++ ) {
-				u32* tri = face->triangles[k].v;
-				Vec3* verts = brush->vertices;
-				//DebugDrawLine( verts[tri[0]], verts[tri[1]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
-				//DebugDrawLine( verts[tri[1]], verts[tri[2]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
-				//DebugDrawLine( verts[tri[2]], verts[tri[0]], Vec3( 0, 0, 1 ), 1.5f, true, false, 10000.0f );
-			}
-		}
-	}
-
 	PrintAllocators( &globalArena );
-	WindowSetVsync( &window, 0 );
+	WindowSetVsync( &window, 1 );
 
 	bool start = true;
 
@@ -195,9 +176,12 @@ int main() {
 			//Movement
 			UpdateEntities();
 			UpdateProjectiles();
+			PhysicsRigidBodiesUpdate();
 			EntityManagerCleanUp();
 			AnimateEntities();
 		}
+
+		DebugDrawLine( Vec3( 0 ), Vec3( 10 ) );
 
 		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );
