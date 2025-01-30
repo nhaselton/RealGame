@@ -1,5 +1,5 @@
 #include "TextureManager.h"
-
+#include "Renderer\Renderer.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <glad\glad.h>
@@ -105,6 +105,8 @@ Texture* TextureManagerGetTexture( const char* path, bool loadIfNeeded ) {
 		else
 			LOG_ERROR( LGS_IO, "Could not get and load texture %s\n", path );
 	}
+	if ( !doesExist )
+		doesExist = renderer.blankTexture;
 
 	return doesExist;
 }

@@ -125,6 +125,8 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 
 	renderer->cube = ModelManagerAllocate( &modelManager,"res/models/cube.glb" );
 	renderer->sphere = ModelManagerAllocate( &modelManager, "res/models/sphere.glb" );
+	renderer->whiteNoiseTex = TextureManagerLoadTextureFromFile( "res/textures/whitenoise.png" );
+	renderer->blankTexture = TextureManagerLoadTextureFromFile( "res/textures/blank.png" );
 
 	float quadVertices[] = {
 		0.0f, 1.0f, 0.0f, 1.0f,
@@ -156,6 +158,7 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	glGenBuffers( 1, &renderer->particleEmitterSSBO );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleEmitterSSBO );
 	glBufferData( GL_SHADER_STORAGE_BUFFER, MAX_PARTICLE_EMITTERS * sizeof( ParticleEmitter ) + sizeof( Vec4 ), 0, GL_DYNAMIC_DRAW );
+	glBufferSubData( GL_SHADER_STORAGE_BUFFER, sizeof( Vec4 ), MAX_PARTICLE_EMITTERS * sizeof( ParticleEmitter ), 0 );
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, renderer->particleEmitterSSBO );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 ); 
 
@@ -358,12 +361,6 @@ void RenderDrawFrame( Renderer* renderer, float dt ){
 
 	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );	
 
-	renderer->particleEmitters[0].pos = entityManager.entities[1].entity.pos;
-	renderer->particleEmitters[0].color = Vec3( 1, 0, 0 );
-	renderer->particleEmitters[0].lifeTime = 10.0f;
-	renderer->particleEmitters[0].currentTime = 0.0f;
-
-
 	//Draw Particles
 	//Maybe do a depth pass, draw the particles after the depth test and add the semaphore before any more gpu work (While gathering indices for level it can ruin)
 	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_CREATE_PARTICLES] );
@@ -381,7 +378,7 @@ void RenderDrawFrame( Renderer* renderer, float dt ){
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, renderer->particleSSBO );
 	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES] );
 	ShaderSetFloat( renderer, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES], "dt", dt );
-	printf( "%f\n", dt );
+
 	glDispatchCompute( MAX_PARTICLES, 1, 1 ); //updates particles
 	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
@@ -390,6 +387,12 @@ void RenderDrawFrame( Renderer* renderer, float dt ){
 	glPointSize( 8 );
 	glDrawArrays( GL_POINTS, 0, MAX_PARTICLES );
 
+	//Copy emitters back to CPU
+	//(Performance) Worry about performance later
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleEmitterSSBO );
+	glGetBufferSubData( GL_SHADER_STORAGE_BUFFER, sizeof( Vec4 ), MAX_PARTICLE_EMITTERS * sizeof( ParticleEmitter ), renderer->particleEmitters );
+
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
 
 
 	//RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
@@ -402,6 +405,10 @@ void RenderDrawFrame( Renderer* renderer, float dt ){
 	ShaderSetMat4( renderer, renderer->shaders[SHADER_SKYBOX], "model", Mat4( 1.0f ) );
 	nglDrawArrays( GL_TRIANGLES, 0, 36 );
 	glDepthFunc( GL_LESS );
+
+
+	for ( int i = 0; i < MAX_PARTICLE_EMITTERS; i++ ) 
+		renderer->particleEmitters[i].currentTime += dt;
 }
 
 void RenderEndFrame( Renderer* renderer ) {
@@ -841,4 +848,16 @@ void RenderDrawAllRigidBodies() {
 			RenderDrawModel( &renderer, body->model, trs );
 		}
 	}
+}
+
+ParticleEmitter* NewParticleEmitter() {
+	for ( int i = 0; i < MAX_PARTICLE_EMITTERS; i++ ) {
+		ParticleEmitter* emitter = &renderer.particleEmitters[i];
+		if ( emitter->currentTime >= emitter->lifeTime ) {
+			memset( emitter, 0, sizeof( *emitter ) );
+			return emitter;
+		}
+	}
+	LOG_WARNING( LGS_RENDERER, "No active particle emitters\n" );
+	return 0;
 }

@@ -191,7 +191,7 @@ void ShaderSetFloat( Renderer* renderer, Shader* shader, const char* name, float
 	CHECKSHADER();
 
 	memcpy( arg->value, &value, sizeof( float ) );
-	glUniform1f( arg->uniformLoc, ( GLfloat ) *arg->value );
+	glUniform1f( arg->uniformLoc, value );
 }
 
 void ShaderSetFloat( Renderer* renderer, Shader* shader, const char* name, int value ) {

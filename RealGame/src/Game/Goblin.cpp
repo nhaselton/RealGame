@@ -2,6 +2,7 @@
 #include "Physics/Physics.h"
 #include "Resources/ModelManager.h"
 #include "Renderer\DebugRenderer.h"
+#include "Renderer\Renderer.h"
 
 Model* Goblin::model = 0;
 
@@ -72,6 +73,10 @@ void GoblinOnHit( EntityHitInfo info ) {
 		};
 
 		Model* gibs = ModelManagerGetModel( "res/models/gib.glb" );
+			ParticleEmitter* emitter = NewParticleEmitter();
+			emitter->pos = goblin->pos + Vec3(0,1,0);
+			emitter->lifeTime = .05f;
+			emitter->color = Vec3( .7, 0, 0 );
 
 		for ( int i = 0; i < 3; i++ ) {
 			RigidBody* gib = NewRigidBody();
@@ -82,6 +87,7 @@ void GoblinOnHit( EntityHitInfo info ) {
 			gib->radius = gibsize;
 			gib->modelScale = gibsize;
 			gib->model = gibs;
+
 		}
 		return;
 	}

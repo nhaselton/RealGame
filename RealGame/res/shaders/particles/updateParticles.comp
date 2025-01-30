@@ -18,9 +18,9 @@ layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 void main() {
 	uint id = gl_GlobalInvocationID.x;
-	if ( particles[id].color.xyz != vec3(1,0,0))
-		return;
-
-	particles[id].pos.xyz -= vec3(.01) * dt * .01f;
 	
+	particles[id].pos.xyz += particles[id].velocity.xyz * dt;
+	particles[id].velocity -= 10.0 * dt;
+	particles[id].pos.y -= 10.0 * dt; 
+
 }

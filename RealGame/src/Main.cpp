@@ -18,15 +18,6 @@
 
 /*
 *	Next MVP:
-	Particles
-		Look into how these work
-			Check out doom 2016's too
-			Maybe quake
-		Blood when enemy shot
-		Explosion when enemy dies
-			Explosion + Gore
-		Muzzle Flash
-
 	Defaults for when a file cant be read:
 		Models
 		Textures
@@ -37,7 +28,8 @@
 		Change all Shader* stuff in renderer to shader_t to make it less tedious
 	Shader Reloading.
 		Will just have to re find args for all arguments? 
-		
+	
+	Come back to particles this shit sucks
 
 	Navmesh?
 		Enemys are circle on navmesh, shoot rays around the navmesh to see what they hit?

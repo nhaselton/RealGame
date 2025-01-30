@@ -2,7 +2,7 @@
 
 #include "ModelManager.h"
 #include "TextureManager.h"
-
+#include "Renderer\Renderer.h"
 void CreateModelManager( ModelManager* manager, u32 memorySize, void* memory, u32 animationSize, void* animMemory ) {
 	u8* mmemory = (u8*) memory;
 	u32 a = MODEL_MANAGER_SIZE;
@@ -578,10 +578,10 @@ Model* ModelManagerGetModel( const char* path ) {
 
 		if ( model == 0 ) {
 			LOG_WARNING( LGS_RENDERER, "COULD NOT FIND MODEL %s\n", path );
-			return 0 ;
+			return renderer.cube;
 		}
 	}
 
 	//unreachable but whatever
-	return 0;
+	return renderer.cube;
 }

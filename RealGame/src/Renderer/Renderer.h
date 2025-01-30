@@ -11,8 +11,6 @@
 #define MAX_PARTICLE_EMITTERS 64
 #define PARTICLE_SIZE_GPU 64 //pos,vel,lifetime,active?
 
-
-
 struct FontVert {
 	Vec2 pos;
 	Vec2 tex;
@@ -50,9 +48,6 @@ struct ParticleEmitter {
 	float currentTime;
 	float lifeTime;
 	float pad, pad2;
-
-	Vec4 sixtyfourpad;
-
 };
 
 struct TextureChain {
@@ -158,9 +153,9 @@ public:
 
 	Camera camera;
 
-	Mat4 mat4Array[100];
 	Mat4 projection;
 	Mat4 orthographic;
+	Mat4 mat4Array[100];
 
 	LevelRenderInfo levelInfo;
 
@@ -171,6 +166,8 @@ public:
 	Texture* crosshairTex;
 	Texture* healthTex;
 	Texture* fontTex;
+	Texture* whiteNoiseTex;
+	Texture* blankTexture;
 
 	GLBuffer quadBuffer;
 	BitmapFont font;
@@ -221,6 +218,8 @@ void RenderLoadLevel( class Level* level, class NFile* file );
 
 void RenderInitFont();
 void RenderLoadFontFromFile();
+
+ParticleEmitter* NewParticleEmitter();
 
 typedef unsigned int GLenum;
 typedef int GLint;

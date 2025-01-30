@@ -154,7 +154,6 @@ inline Quat BlendRotation( const Quat& a, const Quat& b, float t ) {
 
 void CreateModelManager( ModelManager* manager, u32 memorySize, void* memory, u32 animationSize, void* animMemory );
 Model* ModelManagerAllocate( ModelManager* manager, const char* path );
-Model* GetModel( const char* path );
 
 float GetScaleFactor( float lastTimeStamp, float nextTimeStamp, float animationTime );
 void AnimatePoseNoAnimation( SkeletonPose* pose );
