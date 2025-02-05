@@ -19,7 +19,7 @@ Goblin* CreateGoblin( Vec3 pos ) {
 	goblin->currentAnimation = Goblin::model->animations[0];
 	goblin->renderModel->scale = Vec3( .45 );
 
-	goblin->pos = Vec3( 0, -.3, 0 );
+	goblin->bounds->bounds.center = Vec3( 0, -.3, 0 );
 	goblin->bounds->bounds.width = Vec3( 1.55f, 2, 1.55f );
 	goblin->bounds->bounds.center += Vec3( -.1f, .6f, 0 );
 	goblin->bounds->offset = goblin->pos;
@@ -46,6 +46,7 @@ void GoblinChase( Goblin* goblin ) {
 	Vec3 velocity = entityManager.player->pos - goblin->pos;
 	velocity.y = 0;
 
+	velocity = goblin->boidVelocity;
 	if ( glm::length2( velocity ) != 0 ) {
 		velocity = glm::normalize( velocity ) * 10.0f * dt;
 		EntityMove( goblin, velocity );
@@ -85,11 +86,14 @@ void GoblinOnHit( EntityHitInfo info ) {
 			gib->radius = gibsize;
 			gib->modelScale = gibsize;
 			gib->model = gibs;
-
-			ParticleEmitter* emitter = NewParticleEmitter();
-			emitter->pos = goblin->pos + Vec3( 0, 1, 0 );
-			emitter->lifeTime = 3.0f;
-			emitter->color = Vec3( .7, 0, 0 );
+			
+			ParticleEmitter2* emitter = NewParticleEmitter();
+			emitter->pos = Vec3(0, 0, 1);
+			emitter->colorStart = Vec3(0.7, 0, 0);
+			emitter->initalVelocity = Vec3(0, 1, 0);
+			emitter->emitterLifetime = 3.0f + gameTime;
+			emitter->maxParticles = 600;
+			emitter->spawnRate = 100;
 			gib->emitter = emitter;
 		}
 		return;

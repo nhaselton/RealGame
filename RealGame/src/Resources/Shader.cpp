@@ -39,6 +39,8 @@ bool CreateComputeShader( Shader* shader, const char* path ) {
 	NFileRead( &file, buffer, file.length );
 	buffer[file.length] = '\0';
 
+	NFileClose(&file);
+
 	u32 cProg;
 	cProg = glCreateShader( GL_COMPUTE_SHADER );
 	glShaderSource( cProg, 1, &buffer, NULL );
@@ -230,4 +232,14 @@ void ShaderSetMat4Array( class Renderer* renderer, Shader* shader, const char* n
 	memcpy( arg->value, &value, sizeof( int ) );
 	Mat4* loc = ( Mat4* ) value;
 	glUniformMatrix4fv( arg->uniformLoc, count, GL_FALSE, ( GLfloat* ) loc );
+}
+
+void ShaderSetIntArray(class Renderer* renderer, Shader* shader, const char* name, int* value, i32 count) {
+	ShaderArg* arg = ShaderFindArg(shader, name);
+	CHECKARG();
+	CHECKSHADER();
+
+	memcpy(arg->value, &value, sizeof(int));
+	Mat4* loc = (Mat4*)value;
+	glUniform1iv(arg->uniformLoc, count, (GLint*)loc);
 }

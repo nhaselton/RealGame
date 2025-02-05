@@ -1,3 +1,4 @@
+#pragma once
 #include "def.h"
 #include "Entity.h"
 #include "renderer/Camera.h"
@@ -18,6 +19,8 @@ public:
 	Vec3 basePosition;
 	Quat baseRotation;
 
+	float muzzleFlashTime;
+	float maxMuzzleFlashTime;
 	float spread;
 	float spreadDecayRate;
 	int ammo;

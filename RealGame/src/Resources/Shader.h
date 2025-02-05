@@ -10,6 +10,7 @@ enum shaderArg_t {
 	SHADER_ARG_QUAT,
 	SHADER_ARG_INT,
 
+	SHADER_ARG_INT_ARRAY,
 	SHADER_ARG_MAT4_ARRAY,
 };
 
@@ -53,3 +54,4 @@ void ShaderSetFloat( class Renderer* renderer, Shader* shader, const char* name,
 void ShaderSetInt( Renderer* renderer, Shader* shader, const char* name, int value );
 
 void ShaderSetMat4Array( class Renderer* renderer, Shader* shader, const char* name, Mat4* array, i32 count );
+void ShaderSetIntArray(class Renderer* renderer, Shader* shader, const char* name, Mat4* array, i32 count);

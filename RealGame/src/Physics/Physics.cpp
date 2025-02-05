@@ -2,6 +2,8 @@
 #include "Resources\Level.h"
 #include "Renderer/DebugRenderer.h"
 #include "game/Entity.h"
+#include "game/EntityManager.h"
+#include "Game/Player.h"
 #include "Renderer\Renderer.h"
 
 void PhysicsInit() {
@@ -631,8 +633,8 @@ void PhysicsRigidBodiesUpdate() {
 			body->state = RB_STATIC;
 
 			//Remove emitter, it shoots downwards
-			if ( body->emitter )
-				body->emitter->currentTime = body->emitter->lifeTime + 1.0f;
+			if (body->emitter)
+				RemoveEmitter(body->emitter);
 		}
 		else {
 			body->pos += frameVel;
@@ -660,8 +662,10 @@ void CreateBoid( Entity* entity ) {
 
 void RemoveBoid( Entity* entity ) {
 	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
-		if ( physics.boids[i] == entity )
+		if (physics.boids[i] == entity) {
 			physics.boids[i] = physics.boids[--physics.numBoids];
+			return;
+		}
 	}
 }
 
@@ -669,5 +673,37 @@ void RemoveBoid( Entity* entity ) {
 void UpdateBoids() {
 	TEMP_ARENA_SET;
 
+	//Query all near by
+	Vec3 playerPos = entityManager.player->pos;
+	for (int i = 0; i < physics.numBoids; i++) {
+		Entity* entity = physics.boids[i];
+		Vec3 targetVelocity = glm::normalize(Vec3(playerPos - entity->pos));
+		Vec3 avoidVelocity = Vec3(0);
+		int numToAvoid = 0;
 
+		for (int n = 0; n < physics.numBoids; n++) {
+			if (n == i) continue;
+			Entity* other = physics.boids[n];
+
+			Vec3 dir = other->pos - entity->pos;
+			
+			//Todo fix directly inside of each other
+			if (dir == Vec3(0))
+				continue;
+			
+			float dist = glm::length(dir);
+			dir /= dist;
+
+			avoidVelocity += dir / dist;
+			numToAvoid++;
+		}
+		
+		if (numToAvoid > 0) {
+			avoidVelocity /= (float)numToAvoid;
+			avoidVelocity *= 15.0f;
+		}
+
+		entity->boidVelocity = -avoidVelocity + (targetVelocity * 10.0f);
+		entity->boidVelocity.y = 0;
+	}
 }

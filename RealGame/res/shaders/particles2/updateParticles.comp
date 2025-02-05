@@ -1,0 +1,25 @@
+#version 440
+
+uniform float dt;
+
+struct Particle	{
+	vec4 pos;		//xyz = pos.	w = lifeTime [0,1]
+	vec4 color;		//xyz color		w: ?
+	vec4 velocity;	//xyz = vel		w = damping 
+	vec4 acceleration;
+};
+
+layout(std430, binding = 3 ) buffer particleBuffer {
+	Particle particles[];
+};
+
+
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+void main() {
+	uint id = gl_GlobalInvocationID.x;
+
+	//Note: Could integrate this properly and make it less "frame dependent" but i really dont care to
+	particles[id].velocity.xyz += vec3(0,-10,0) * dt;
+	particles[id].pos += particles[id].velocity * dt ;
+}

@@ -1,0 +1,100 @@
+#version 440
+
+uniform float dt;
+
+float rand(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+float rand2(vec2 co){
+    return fract(sin(dot(co, vec2(4554.9898, 78123.26565433))) * 43758.5453);
+}
+
+float rand23(vec2 co){
+    return fract(sin(dot(co, vec2(-4554.9898, 7.26565433))) * 437.5453);
+}
+
+
+struct Particle	{
+	vec4 pos;		//xyz = pos.	w = lifeTime [0,1]
+	vec4 color;		//xyz color		w: ?
+	vec4 velocity;	//xyz = vel		w = ? 
+	vec4 acceleration;
+};
+
+//Assume Spherical
+struct ParticleEmitter {
+	vec3 pos;
+	float spawnSpeed;
+
+	vec3 colorStart;
+	float lifeTime;
+
+	vec3 colorEnd;
+	//[0,1] all at once or evenly spread out
+	float spawnBunching;
+
+	vec3 initalVelocity;
+	//Max amount it can spawn
+	float NOTUSED;
+
+	vec3 pad;
+	//Particles per second
+	float spawnRate;
+
+	vec4 pad2;
+
+	int firstParticle;
+	int maxParticles;
+	int currentParticles;
+	int b;
+};
+
+layout(std430, binding = 3 ) buffer particleBuffer {
+	Particle particles[];
+};
+
+layout(std430, binding = 4 ) buffer particleAddBuffer {
+	int particlesPerEmitter[64];
+	ParticleEmitter emitters[];
+};
+
+layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+void main() {
+	uint id = gl_GlobalInvocationID.x;
+
+	int emitterIndex = -1;
+
+	//See if this is slow
+	int offset = 0;
+	for ( int i = 0; i < 63; i++) {
+		int lessThan = offset + particlesPerEmitter[i];
+		if ( id  < lessThan ){
+			emitterIndex = i;
+			break;
+		}
+
+		offset = lessThan;
+	}
+
+	if ( emitterIndex >= 0 ) {
+		int particleIndex = emitters[emitterIndex].firstParticle +
+		atomicAdd(emitters[emitterIndex].currentParticles,1);
+
+
+		//Sanity check to not go over 
+		if (true || particleIndex < emitters[emitterIndex].firstParticle + emitters[emitterIndex].maxParticles ) {
+			float a = rand( -particles[particleIndex].pos.xy  );
+			float b = rand2( particles[particleIndex].pos.xz  );
+			float c = rand23( particles[particleIndex].pos.zy );
+
+			particles[particleIndex].pos.xyz = emitters[emitterIndex].pos;
+			particles[particleIndex].velocity.xyz = normalize(vec3(a,b,c)) * 6.0f;
+			particles[particleIndex].color.xyz = emitters[emitterIndex].colorStart;
+
+		}else{
+			atomicAdd(emitters[emitterIndex].currentParticles,-1);
+		}
+	}
+}

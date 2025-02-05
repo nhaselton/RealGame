@@ -31,11 +31,48 @@ enum builtInShaderList {
 	SHADER_UI,
 	SHADER_SKYBOX,
 	SHADER_PARTICLES,
-	
 	SHADER_COMP_CREATE_PARTICLES,
 	SHADER_COMP_UPDATE_PARTICLES,
+	SHADER_PARTICLES2,
+	SHADER_COMP_CREATE_PARTICLES2,
+	SHADER_COMP_UPDATE_PARTICLES2,
+	SHADER_BILLBOARD,
 	SHADER_LAST,
 };
+
+struct ParticleEmitter2 {
+	Vec3 pos;
+	float spawnSpeed;
+
+	Vec3 colorStart;
+	float lifeTime;
+
+	Vec3 colorEnd;
+	//[0,1] all at once or evenly spread out
+	float spawnBunching;
+
+	Vec3 initalVelocity;
+	//Max amount it can spawn
+	float NOTUSED;
+
+	Vec3 acceleration;
+	//Particles per second
+	float spawnRate;
+
+	Vec2 pad2;
+	float emitterTimeNow;
+	float emitterLifetime;
+
+
+	//First parrticle will be changed to the correct value in render
+	//This one will be recalculated when new ones are added or removed
+	int firstParticle;
+	int maxParticles;
+	int currentParticles;
+	int b;
+};
+
+
 
 //Must be sets of Vec4s
 struct ParticleEmitter {
@@ -168,6 +205,7 @@ public:
 	Texture* fontTex;
 	Texture* whiteNoiseTex;
 	Texture* blankTexture;
+	Texture* muzzleFlash;
 
 	GLBuffer quadBuffer;
 	BitmapFont font;
@@ -178,11 +216,19 @@ public:
 	FrameInfo frameInfos[MAX_FRAME_INFOS];
 	int currentFrameInfo;
 	
-	u32 particleSSBO;
-	u32 particleEmitterSSBO;
-	//Note: When uploading particle emiiters, dont forget the sizeof(Vec4) offset for count.
-	ParticleEmitter particleEmitters[MAX_PARTICLE_EMITTERS];
-	GLBuffer particleBuffer;
+	u32 particleSSBO2;
+	u32 particleEmitterSSBO2;
+
+	struct Emitter2 {
+		int numParticlesPerEmitter[MAX_PARTICLE_EMITTERS];
+		ParticleEmitter2 emitters[MAX_PARTICLE_EMITTERS];
+	};
+	Emitter2 emitters;
+	GLBuffer particleBuffer2;
+	bool emittersDirty = false;
+	int numEmitters;
+
+	GLBuffer billboard;
 
 	//Font
 	GLBuffer fontBuffer;
@@ -207,6 +253,7 @@ void RenderDrawAllEntities();
 void RenderDrawAllProjectiles();
 void RenderDrawAllRigidBodies();
 void RenderDrawGun();
+void RenderUpdateAndDrawParticles();
 
 void RenderDrawFontBatch();
 void RenderDrawText( Vec2 pos, float fontSize, const char* string );
@@ -215,13 +262,15 @@ void RenderDrawChar( Vec2 pos, BitmapGlyph* glyph, float fontSize );
 void RenderDrawHealthBar( Vec2 pos, Vec2 size, int hp, int maxHp );
 void RenderDrawQuadColored( Vec2 pos, Vec2 size, Vec3 color ); 
 void RenderDrawQuadTextured( Vec2 pos, Vec2 size, struct Texture* texture );
+void RenderDrawMuzzleFlash(Texture* texture);
 
 void RenderLoadLevel( class Level* level, class NFile* file );
 
 void RenderInitFont();
 void RenderLoadFontFromFile();
 
-ParticleEmitter* NewParticleEmitter();
+ParticleEmitter2* NewParticleEmitter();
+void RemoveEmitter(ParticleEmitter2* emitter);
 
 typedef unsigned int GLenum;
 typedef int GLint;

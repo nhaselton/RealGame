@@ -1,4 +1,5 @@
-﻿#include "Renderer.h"
+﻿#include <glm/gtx/euler_angles.hpp>
+#include "Renderer.h"
 #include "Resources/ShaderManager.h"
 #include "Resources/Shader.h"
 #include "Resources\ModelManager.h"
@@ -14,9 +15,9 @@ extern ModelManager modelManager;
 
 //Only adds view projection model
 inline void ShaderBuiltInsInit( Renderer* renderer ) {
-	for ( int i = 0; i < SHADER_LAST; i++ ) {
+	for (int i = 0; i < SHADER_LAST; i++) {
 		Shader* shader = renderer->shaders[i];
-		if ( !shader->updateMVP )
+		if (!shader->updateMVP)
 			continue;
 		RenderSetShader( renderer, shader );
 		ShaderAddArg( &shaderManager, shader, SHADER_ARG_MAT4, "view" );
@@ -31,9 +32,9 @@ inline void ShaderBuiltInsInit( Renderer* renderer ) {
 }
 
 inline void ShaderBuiltInsSetPVM( Renderer* renderer, Mat4 p, Mat4 v, Mat4 m ) {
-	for ( int i = 0; i < SHADER_LAST; i++ ) {
+	for (int i = 0; i < SHADER_LAST; i++) {
 		Shader* shader = renderer->shaders[i];
-		if ( !shader->updateMVP )
+		if (!shader->updateMVP)
 			continue;
 		RenderSetShader( renderer, shader );
 		ShaderSetMat4( renderer, shader, "view", v );
@@ -79,7 +80,7 @@ void RenderCreateShaders( Renderer* renderer ) {
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_UI], SHADER_ARG_INT, "albedo" );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_UI], SHADER_ARG_INT, "solidColor" );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_UI], SHADER_ARG_VEC3, "color" );
-	
+
 	ShaderSetInt( renderer, renderer->shaders[SHADER_UI], "albedo", S2D_ALBEDO );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_UI], "solidColor", true );
 	ShaderSetVec3( renderer, renderer->shaders[SHADER_UI], "color", Vec3( 1, 0, 0 ) );
@@ -100,12 +101,31 @@ void RenderCreateShaders( Renderer* renderer ) {
 	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES] );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES], SHADER_ARG_FLOAT, "dt" );
 
+	renderer->shaders[SHADER_PARTICLES2] = ShaderManagerCreateShader( &shaderManager, "res/shaders/particles/particles.vert", "res/shaders/particles/particles.frag" );
+	RenderSetShader( renderer, renderer->shaders[SHADER_PARTICLES2] );
 
-	for ( int i = 0; i < SHADER_LAST; i++ )
+	renderer->shaders[SHADER_COMP_CREATE_PARTICLES2] = ShaderManagerCreateComputeShader( &shaderManager, "res/shaders/particles2/createParticles.comp" );
+	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_CREATE_PARTICLES2] );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_COMP_CREATE_PARTICLES2], SHADER_ARG_FLOAT, "dt" );
+
+	renderer->shaders[SHADER_COMP_UPDATE_PARTICLES2] = ShaderManagerCreateComputeShader( &shaderManager, "res/shaders/particles2/UpdateParticles.comp" );
+	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES2] );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES2], SHADER_ARG_FLOAT, "dt" );
+
+
+	renderer->shaders[SHADER_BILLBOARD] = ShaderManagerCreateShader( &shaderManager, "res/shaders/billboard/billboard.vert", "res/shaders/billboard/billboard.frag" );
+	RenderSetShader( renderer, renderer->shaders[SHADER_BILLBOARD] );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_BILLBOARD], SHADER_ARG_INT, "albedo" );
+	ShaderSetInt( renderer, renderer->shaders[SHADER_BILLBOARD], "albedo", S3D_SKYBOX );
+
+
+	for (int i = 0; i < SHADER_LAST; i++)
 		renderer->shaders[i]->updateMVP = true;
 
 	renderer->shaders[SHADER_COMP_CREATE_PARTICLES]->updateMVP = false;
 	renderer->shaders[SHADER_COMP_UPDATE_PARTICLES]->updateMVP = false;
+	renderer->shaders[SHADER_COMP_UPDATE_PARTICLES2]->updateMVP = false;
+	renderer->shaders[SHADER_COMP_CREATE_PARTICLES2]->updateMVP = false;
 
 	//Note: Must do this for all non UPDATE-MVP 
 	Shader* ui = renderer->shaders[SHADER_UI];
@@ -122,45 +142,60 @@ void RenderCreateShaders( Renderer* renderer ) {
 void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	Mat4 view( 1.0 );
 	renderer->projection = glm::perspective( glm::radians( 90.0f ), 16.0f / 9.0f, .1f, 2048.0f );
-	renderer->orthographic = glm::ortho( 0.0f, ( float ) window.width, ( float ) window.height, 0.0f,-1.0f, 1.0f );
+	renderer->orthographic = glm::ortho( 0.0f, ( float )window.width, ( float )window.height, 0.0f, -1.0f, 1.0f );
 	Vec4 color( 1, 0, 0, 1 );
 
-	renderer->cube = ModelManagerAllocate( &modelManager,"res/models/cube.glb" );
+	renderer->cube = ModelManagerAllocate( &modelManager, "res/models/cube.glb" );
 	renderer->sphere = ModelManagerAllocate( &modelManager, "res/models/sphere.glb" );
 	renderer->whiteNoiseTex = TextureManagerLoadTextureFromFile( "res/textures/whitenoise.png" );
 	renderer->blankTexture = TextureManagerLoadTextureFromFile( "res/textures/blank.png" );
+	renderer->muzzleFlash = TextureManagerLoadTextureFromFile( "res/textures/muzzleFlash.png" );
 
 	float quadVertices[] = {
-		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 	};
 
-	CreateGLBuffer( &renderer->quadBuffer, 4, 0, sizeof( quadVertices ), quadVertices, 0, 0, true, true );
-	GLBufferAddAttribute( &renderer->quadBuffer, 0, 2, GL_FLOAT, 4 * sizeof( float ), 0 );
-	GLBufferAddAttribute( &renderer->quadBuffer, 1, 2, GL_FLOAT, 4 * sizeof( float ), ( void* ) ( 2 * sizeof( float ) ) );
+	CreateGLBuffer( &renderer->quadBuffer, 20, 0, sizeof( quadVertices ), quadVertices, 0, 0, true, true );
+	GLBufferAddAttribute( &renderer->quadBuffer, 0, 3, GL_FLOAT, 5 * sizeof( float ), 0 );
+	GLBufferAddAttribute( &renderer->quadBuffer, 1, 2, GL_FLOAT, 5 * sizeof( float ), ( void* )(3 * sizeof( float )) );
 
 	RenderCreateShaders( renderer );
-	
+
 	RenderInitFont();
 
 	renderer->crosshairTex = TextureManagerLoadTextureFromFile( "res/textures/crosshair.png" );
 	renderer->healthTex = TextureManagerLoadTextureFromFile( "res/textures/health.png" );
 
-	//Particle Buffer
-	glGenBuffers( 1, &renderer->particleSSBO );
-	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleSSBO );
-	glBufferData( GL_SHADER_STORAGE_BUFFER, MAX_PARTICLES * PARTICLE_SIZE_GPU, 0, GL_DYNAMIC_DRAW); 
-	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, renderer->particleSSBO );
-	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 ); 
-	
-	glGenBuffers( 1, &renderer->particleEmitterSSBO );
-	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleEmitterSSBO );
-	glBufferData( GL_SHADER_STORAGE_BUFFER, MAX_PARTICLE_EMITTERS * sizeof( ParticleEmitter ) + sizeof( Vec4 ), 0, GL_DYNAMIC_DRAW );
-	glBufferSubData( GL_SHADER_STORAGE_BUFFER, sizeof( Vec4 ), MAX_PARTICLE_EMITTERS * sizeof( ParticleEmitter ), 0 );
-	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, renderer->particleEmitterSSBO );
-	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 ); 
+	glGenBuffers( 1, &renderer->particleSSBO2 );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleSSBO2 );
+	glBufferData( GL_SHADER_STORAGE_BUFFER, MAX_PARTICLES * PARTICLE_SIZE_GPU, 0, GL_DYNAMIC_DRAW );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 3, renderer->particleSSBO2 );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+
+	glGenBuffers( 1, &renderer->particleEmitterSSBO2 );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleEmitterSSBO2 );
+	glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof( renderer->emitters ), 0, GL_DYNAMIC_DRAW );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 4, renderer->particleEmitterSSBO2 );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+
+	//Billboard
+	float veritcesarr[]{
+	0, -1, 1, 0, 1, 11111,
+	0, -1, -1, 0, 0, 1111,
+	0, 1, -1, 1, 0, 1111,
+
+	0, -1, 1, 0, 1, 1111,
+	0, 1, -1, 1, 0, 1111,
+	0, 1, 1, 1, 1, 1111
+	};
+
+	CreateGLBuffer( &renderer->billboard, 0, 0, sizeof( veritcesarr ), veritcesarr, 0, 0, true, 0 );
+	GLBufferAddAttribute( &renderer->billboard, 0, 3, GL_FLOAT, 6 * sizeof( float ), ( void* )0 );
+	GLBufferAddAttribute( &renderer->billboard, 1, 3, GL_FLOAT, 6 * sizeof( float ), ( void* )sizeof( Vec3 ) );
+
 
 	//Create Skybox
 	{
@@ -172,16 +207,15 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 			"res/textures/skybox/back.png",
 			"res/textures/skybox/front.png",
 		};
-
 		//Buffer
 		glEnable( GL_DEPTH_TEST );
 
 		glGenTextures( 1, &renderer->skybox.textureID );
 		glBindTexture( GL_TEXTURE_CUBE_MAP, renderer->skybox.textureID );
-		for ( int i = 0; i < 6; i++ ) {
+		for (int i = 0; i < 6; i++) {
 			Texture* texture = &renderer->skybox.faces[i];
-			u8* data = ( u8* ) stbi_load( paths[i], &texture->width, &texture->height, &texture->channels, 0 );
-			if ( !data ) {
+			u8* data = ( u8* )stbi_load( paths[i], &texture->width, &texture->height, &texture->channels, 0 );
+			if (!data) {
 				LOG_ASSERT( LGS_RENDERER, "Could not load skybox path %s\n", paths[i] );
 				return;
 			}
@@ -201,20 +235,34 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 		glActiveTexture( GL_TEXTURE0 + S3D_SKYBOX );
 		glBindTexture( GL_TEXTURE_CUBE_MAP, renderer->skybox.textureID );
 
-    float skyboxVertices[] = {
-        // positions          
-		-1.0f,  1.0f, -1.0f,-1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f,  1.0f, -1.0f,-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,-1.0f, -1.0f, -1.0f,-1.0f,  1.0f, -1.0f,-1.0f,  1.0f, -1.0f,-1.0f,  1.0f,  1.0f,-1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f, -1.0f, 1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,-1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f, -1.0f,  1.0f,-1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f,-1.0f,  1.0f,  1.0f,-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,-1.0f, -1.0f,  1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,-1.0f, -1.0f,  1.0f, 1.0f, -1.0f,  1.0f
-    };
+		float skyboxVertices[] = {
+			// positions          
+			-1.0f,  1.0f, -1.0f,-1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f,  1.0f, -1.0f,-1.0f,  1.0f, -1.0f,
+			-1.0f, -1.0f,  1.0f,-1.0f, -1.0f, -1.0f,-1.0f,  1.0f, -1.0f,-1.0f,  1.0f, -1.0f,-1.0f,  1.0f,  1.0f,-1.0f, -1.0f,  1.0f,
+			 1.0f, -1.0f, -1.0f, 1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f,  1.0f,-1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f, -1.0f,  1.0f,-1.0f, -1.0f,  1.0f,
+			-1.0f,  1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f,-1.0f,  1.0f,  1.0f,-1.0f,  1.0f, -1.0f,
+			-1.0f, -1.0f, -1.0f,-1.0f, -1.0f,  1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,-1.0f, -1.0f,  1.0f, 1.0f, -1.0f,  1.0f
+		};
 
 		CreateGLBuffer( &renderer->skybox.buffer, 36, 0, sizeof( skyboxVertices ), skyboxVertices, 0, 0, true, true );
-		GLBufferAddAttribute( &renderer->skybox.buffer, 0, 3, GL_FLOAT, 3 * sizeof( float ), ( void* ) 0 );
+		GLBufferAddAttribute( &renderer->skybox.buffer, 0, 3, GL_FLOAT, 3 * sizeof( float ), ( void* )0 );
 	}
 
+
+	for (int i = 0; i < 3; i++) {
+		renderer->emitters.emitters[i].pos = Vec3 ( 0, 0, 1 );
+		renderer->emitters.emitters[i].emitterLifetime = 1.0f;
+		renderer->emitters.emitters[i].maxParticles = 3000;
+	}
+
+	for (int i = 3; i < 6; i++) {
+		renderer->emitters.emitters[i].pos = Vec3 ( 1, 1, 1 );
+		renderer->emitters.emitters[i].emitterLifetime = 3.0f;
+		renderer->emitters.emitters[i].maxParticles = 5000;
+	}
+
+	renderer->numEmitters = 6;
 }
 
 void RenderInitFont() {
@@ -222,9 +270,9 @@ void RenderInitFont() {
 	RenderLoadFontFromFile();
 
 	TEMP_ARENA_SET;
-	u32* indices = ( u32* ) TEMP_ALLOC( FONT_BATCH_SIZE * sizeof( indices[0] ) * 6 );
+	u32* indices = ( u32* )TEMP_ALLOC( FONT_BATCH_SIZE * sizeof( indices[0] ) * 6 );
 	int offset = 0;
-	for ( int i = 0; i < FONT_BATCH_SIZE * 4; i += 6 ) {
+	for (int i = 0; i < FONT_BATCH_SIZE * 4; i += 6) {
 		indices[i + 0] = 0 + offset;
 		indices[i + 1] = 1 + offset;
 		indices[i + 2] = 2 + offset;
@@ -241,16 +289,16 @@ void RenderInitFont() {
 		indices,
 		false, true );
 	GLBufferAddAttribute( &renderer.fontBuffer, 0, 2, GL_FLOAT, 4 * sizeof( float ), 0 ); //pos
-	GLBufferAddAttribute( &renderer.fontBuffer, 1, 2, GL_FLOAT, 4 * sizeof( float ), ( void* ) ( 2 * sizeof( float ) ) ); //tex
+	GLBufferAddAttribute( &renderer.fontBuffer, 1, 2, GL_FLOAT, 4 * sizeof( float ), ( void* )(2 * sizeof( float )) ); //tex
 }
 
-void RenderStartFrame( Renderer* renderer ){
-	if ( KeyPressed( KEY_T ) )
+void RenderStartFrame( Renderer* renderer ) {
+	if (KeyPressed( KEY_T ))
 		ReloadShaders();
 
 	//Clear frame info
-	renderer->currentFrameInfo = ( renderer->currentFrameInfo + 1 ) % MAX_FRAME_INFOS;
-	memset( &renderer->frameInfos[renderer->currentFrameInfo], 0, sizeof(FrameInfo));
+	renderer->currentFrameInfo = (renderer->currentFrameInfo + 1) % MAX_FRAME_INFOS;
+	memset( &renderer->frameInfos[renderer->currentFrameInfo], 0, sizeof( FrameInfo ) );
 
 	glClear( GL_DEPTH_BUFFER_BIT );
 }
@@ -262,23 +310,23 @@ void RenderDrawLevel( Renderer* renderer ) {
 	u32 totalIndices = 0;
 
 	//Frist Loop through and get counts of each surface
-	for ( u32 i = 0; i < renderer->levelInfo.numFaces; i++ ) {
+	for (u32 i = 0; i < renderer->levelInfo.numFaces; i++) {
 		RenderBrushFace* face = &renderer->levelInfo.faces[i];
 		TextureChain* chain = &textureChains[face->textureIndex];
 
 		totalIndices += face->numIndices;
 		//Add each triangle
-		for ( int n = 0; n < face->numIndices; n += 3 )
+		for (int n = 0; n < face->numIndices; n += 3)
 			chain->firstIndexOfTriangles[chain->numTriangles++] = face->firstIndex + n;
 	}
 
 	//Now Loop through again and construct the index ptr[]
-	u32* indices = ( u32* ) TEMP_ALLOC( totalIndices * sizeof( u32 ) );
+	u32* indices = ( u32* )TEMP_ALLOC( totalIndices * sizeof( u32 ) );
 	u32 offset = 0;
-	for ( int i = 0; i < renderer->levelInfo.numTextures; i++ ) {
+	for (int i = 0; i < renderer->levelInfo.numTextures; i++) {
 		TextureChain* chain = &textureChains[i];
 
-		for ( int n = 0; n < chain->numTriangles; n++ ) {
+		for (int n = 0; n < chain->numTriangles; n++) {
 			indices[offset++] = renderer->levelInfo.indices[chain->firstIndexOfTriangles[n] + 0];
 			indices[offset++] = renderer->levelInfo.indices[chain->firstIndexOfTriangles[n] + 1];
 			indices[offset++] = renderer->levelInfo.indices[chain->firstIndexOfTriangles[n] + 2];
@@ -293,21 +341,22 @@ void RenderDrawLevel( Renderer* renderer ) {
 
 	offset = 0;
 	nglActiveTexture( GL_TEXTURE0 );
-	for ( int i = 0; i < renderer->levelInfo.numTextures; i++ ) {
+	for (int i = 0; i < renderer->levelInfo.numTextures; i++) {
 		TextureChain* chain = &textureChains[i];
 
-		if ( chain->numTriangles == 0 )
+		if (chain->numTriangles == 0)
 			continue;
 
-		if ( !chain->texture )
+		if (!chain->texture)
 			nglBindTexture( GL_TEXTURE_2D, 0 );
 		else
 			nglBindTexture( GL_TEXTURE_2D, chain->texture->id );
 
 		//Go back through buffer and do 1 draw call per surface
-		nglDrawElements( GL_TRIANGLES, chain->numTriangles * 3, GL_UNSIGNED_INT, ( void* ) ( offset * sizeof( u32 ) ));
+		nglDrawElements( GL_TRIANGLES, chain->numTriangles * 3, GL_UNSIGNED_INT, ( void* )(offset * sizeof( u32 )) );
+
 		offset += chain->numTriangles * 3;
-}
+	}
 
 }
 
@@ -322,7 +371,7 @@ void RenderDrawQuadColored( Vec2 pos, Vec2 size, Vec3 color ) {
 	ShaderSetMat4( &renderer, shader, "model", trs );
 	ShaderSetInt( &renderer, shader, "solidColor", true );
 	ShaderSetVec3( &renderer, shader, "color", color );
-	
+
 	nglBindVertexArray( renderer.quadBuffer.vao );
 	nglDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
 }
@@ -339,7 +388,7 @@ void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture ) {
 	ShaderSetMat4( &renderer, shader, "model", trs );
 	ShaderSetInt( &renderer, shader, "solidColor", false );
 
-	if ( texture ) {
+	if (texture) {
 		nglActiveTexture( GL_TEXTURE0 );
 		nglBindTexture( GL_TEXTURE_2D, texture->id );
 	}
@@ -348,9 +397,9 @@ void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture ) {
 	nglDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
 }
 
-void RenderDrawFrame( Renderer* renderer, float dt ){
+void RenderDrawFrame( Renderer* renderer, float dt ) {
 	//reset texture chains
-	for ( int i = 0; i < renderer->levelInfo.numTextures; i++ ) {
+	for (int i = 0; i < renderer->levelInfo.numTextures; i++) {
 		renderer->levelInfo.textureChains[i].numTriangles = 0;
 	}
 
@@ -362,73 +411,162 @@ void RenderDrawFrame( Renderer* renderer, float dt ){
 	RenderDrawAllRigidBodies();
 
 
-	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );	
-
-	//Draw Particles
-	//Maybe do a depth pass, draw the particles after the depth test and add the semaphore before any more gpu work (While gathering indices for level it can ruin)
-	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_CREATE_PARTICLES] );
-	ShaderSetFloat( renderer, renderer->shaders[SHADER_COMP_CREATE_PARTICLES], "dt", dt );
-
-	//FOR NOW... Brute force just upload all emitters
-	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleEmitterSSBO );
-	glBufferSubData( GL_SHADER_STORAGE_BUFFER, sizeof(Vec4), MAX_PARTICLE_EMITTERS * sizeof(ParticleEmitter), renderer->particleEmitters);
-	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
-
-	//Update Particles
-	glDispatchCompute( MAX_PARTICLE_EMITTERS, 1, 1); //Creates particles
-	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
-	
-	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, renderer->particleSSBO );
-	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES] );
-	ShaderSetFloat( renderer, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES], "dt", dt );
-
-	glDispatchCompute( MAX_PARTICLES, 1, 1 ); //updates particles
-	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
-
-	//Render Particles
-	RenderSetShader( renderer, renderer->shaders[SHADER_PARTICLES] );
-	glPointSize( 8 );
-	glDrawArrays( GL_POINTS, 0, MAX_PARTICLES );
-
-	//Copy emitters back to CPU
-	//(Performance) Worry about performance later
-	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleEmitterSSBO );
-	glGetBufferSubData( GL_SHADER_STORAGE_BUFFER, sizeof( Vec4 ), MAX_PARTICLE_EMITTERS * sizeof( ParticleEmitter ), renderer->particleEmitters );
-
-	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
-
+	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );
 
 	//RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
 	//RenderDrawFontBatch();
+	RenderUpdateAndDrawParticles();
 
-	glDepthFunc( GL_LEQUAL ); 
+	glDepthFunc( GL_LEQUAL );
 	nglBindVertexArray( renderer->skybox.buffer.vao );
 	RenderSetShader( renderer, renderer->shaders[SHADER_SKYBOX] );
 	ShaderSetMat4( renderer, renderer->shaders[SHADER_SKYBOX], "view", Mat4( Mat3( renderer->camera.GetViewMatrix() ) ) );
 	ShaderSetMat4( renderer, renderer->shaders[SHADER_SKYBOX], "model", Mat4( 1.0f ) );
 	nglDrawArrays( GL_TRIANGLES, 0, 36 );
 	glDepthFunc( GL_LESS );
+}
 
+void RenderUpdateAndDrawParticles() {
+	RenderSetShader( &renderer, renderer.shaders[SHADER_UI] );
+	float particleSize = 720.0f / ( float )MAX_PARTICLES;
 
-	for ( int i = 0; i < MAX_PARTICLE_EMITTERS; i++ ) 
-		renderer->particleEmitters[i].currentTime += dt;
+	glDepthFunc( GL_LEQUAL );
+
+	Vec2 start( 40, 40 );
+	RenderDrawQuadColored( start, Vec2( particleSize * ( float )MAX_PARTICLES, 40 ), BLACK );
+
+	Vec3 colors[]{
+		RED,
+		BLUE,
+		GREEN,
+		Vec3( 1,1,0 ),
+		Vec3( 1,0,1 ),
+		Vec3( 0,1,1 ),
+	};
+
+	for (int i = 0; i < renderer.numEmitters; i++) {
+		float particleLength = ( float )renderer.emitters.emitters[i].maxParticles / ( float )MAX_PARTICLES * 720.0f;
+		int colorIndex = i % (sizeof( colors ) / sizeof( colors[0] ));
+		RenderDrawQuadColored( start, Vec2( particleLength, 40 ), colors[colorIndex] );
+		start.x += particleLength;
+	}
+	//Figure out how many particles each must do
+
+	RenderSetShader( &renderer, renderer.shaders[SHADER_COMP_CREATE_PARTICLES2] );
+
+	//Figure out how many particles to draw for each
+	int totalEmit = 0;
+	int firstParticle = 0;
+	for (int i = 0; i < renderer.numEmitters; i++) {
+		ParticleEmitter2* emitter = &renderer.emitters.emitters[i];
+		emitter->emitterTimeNow += dt;
+
+		int particleCountNow = ( int )roundf( emitter->emitterTimeNow * emitter->spawnRate );
+		int emit = particleCountNow - emitter->currentParticles;
+		renderer.emitters.numParticlesPerEmitter[i] = emit;
+		emitter->currentParticles = particleCountNow;
+		emitter->firstParticle = firstParticle;
+		firstParticle += emitter->maxParticles;
+		totalEmit += emit;
+
+		//If this is now empty, remove it after rendering
+		if (emitter->emitterTimeNow > emitter->emitterLifetime) {
+			renderer.emittersDirty = true;
+			continue;
+		}
+	}
+
+	//Upload all emitters (Todo only do when dirtydds)
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer.particleEmitterSSBO2 );
+	glBufferSubData( GL_SHADER_STORAGE_BUFFER, 0, sizeof( renderer.emitters ), &renderer.emitters );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+
+	//Update Particles
+	glDispatchCompute( totalEmit, 1, 1 ); //Creates particles
+	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, renderer.particleSSBO2 );
+	RenderSetShader( &renderer, renderer.shaders[SHADER_COMP_UPDATE_PARTICLES2] );
+	ShaderSetFloat( &renderer, renderer.shaders[SHADER_COMP_UPDATE_PARTICLES2], "dt", dt );
+
+	glDispatchCompute( MAX_PARTICLES / 32, 1, 1 ); //updates particles
+	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+
+	//Render Particles
+	RenderSetShader( &renderer, renderer.shaders[SHADER_PARTICLES2] );
+	glPointSize( 3 );
+	glDrawArrays( GL_POINTS, 0, MAX_PARTICLES );
+
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+
+	//Clean the emitters once done
+	if (renderer.emittersDirty) {
+		
+
+		for (int i = 0; i < renderer.numEmitters; i++) {
+			ParticleEmitter2* emitter = &renderer.emitters.emitters[i];
+			if (emitter->emitterLifetime == 0 || emitter->emitterTimeNow > emitter->emitterLifetime) {
+				int numSubtract = 1;
+				int subtractPartices = emitter->maxParticles;
+
+				//Get next ones in a row to do 1 memcpy
+				for (int n = i + 1; n < renderer.numEmitters; n++) {
+					ParticleEmitter2* emitter = &renderer.emitters.emitters[n];
+					if (emitter->emitterLifetime == 0 || emitter->emitterTimeNow > emitter->emitterLifetime) {
+						i++;
+						numSubtract++;
+						subtractPartices += emitter->maxParticles;
+					}
+					else
+						break;
+				}
+
+				//If these are the onyl emitters then we dont need to move any data
+				if (numSubtract == renderer.numEmitters) {
+					renderer.numEmitters = 0;
+				}
+				else {
+					u32 emittersLeft = renderer.numEmitters - i - 1;
+					//If 0 emitters left, it means we only removed off the end. do not need to move data
+					if (emittersLeft == 0) {
+						renderer.numEmitters -= emittersLeft;
+					}
+					//We have emitters left and need to move them and their particles over
+					else {
+						memcpy ( emitter, emitter + numSubtract, emittersLeft * sizeof ( ParticleEmitter2 ) );
+						renderer.numEmitters = emittersLeft;
+
+						glBindBuffer ( GL_COPY_READ_BUFFER, renderer.particleEmitterSSBO2 );
+						glBindBuffer ( GL_COPY_WRITE_BUFFER, renderer.particleEmitterSSBO2 ); 
+						int read = emitter->firstParticle * PARTICLE_SIZE_GPU;
+						int write = (emitter->firstParticle + subtractPartices ) * PARTICLE_SIZE_GPU;
+						glCopyBufferSubData( GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, read, write, subtractPartices* PARTICLE_SIZE_GPU );
+						glBindBuffer ( GL_COPY_READ_BUFFER, 0 );
+						glBindBuffer ( GL_COPY_WRITE_BUFFER, 0 );
+					}
+				}
+			}
+		}
+	}
+
+	glBindBuffer ( GL_SHADER_STORAGE_BUFFER, 0 );
 }
 
 void RenderEndFrame( Renderer* renderer ) {
 	char buffer[8192]{};
-	if ( renderer->drawStats ) {
+	if (renderer->drawStats) {
 		FrameInfo* info = &renderer->frameInfos[renderer->currentFrameInfo];
 		sprintf_s( buffer, 8192, "Draw Calls: %d\nTriangles %d\nShader Binds: %d\nTexture Binds: %d",
 			info->drawArrayCalls + info->drawElementCalls,
-			( info->drawArrayTriangleCount + info->drawElementTriangleCount ) / 2, info->shaderBinds, info->bindTextureCalls );
-		
+			(info->drawArrayTriangleCount + info->drawElementTriangleCount) / 2, info->shaderBinds, info->bindTextureCalls );
+
 		RenderDrawText( Vec2( 60, 60 ), 16, buffer );
 		RenderDrawFontBatch();
 	}
 
 	//Draw UI
 	Player* player = entityManager.player;
-	for ( int i = 0; i < player->revolver.ammo; i++ )
+	for (int i = 0; i < player->revolver.ammo; i++)
 		RenderDrawQuadColored( Vec2( 20 * i + 20, 640 ), Vec2( 10, 20 ), Vec3( 1, .97, .86 ) );
 
 	RenderDrawQuadTextured( Vec2( 16, 680 ), Vec2( 32 ), renderer->healthTex );
@@ -438,7 +576,7 @@ void RenderEndFrame( Renderer* renderer ) {
 	sprintf_s( buffer, 2048, "ms: %.2f\nfps: %.0f", dt * 1000.0f, 1.0f / dt );
 	RenderDrawText( Vec2( 1000, 60 ), 32, buffer );
 
-	if ( player->revolver.state != REVOLVER_RELOADING ) {
+	if (player->revolver.state != REVOLVER_RELOADING) {
 		Vec2 spreadSize( 16 * player->revolver.spread );
 		RenderDrawQuadTextured( Vec2( 640, 360 ) - spreadSize / 2.0f, spreadSize, renderer->crosshairTex );
 	}
@@ -450,21 +588,21 @@ void RenderEndFrame( Renderer* renderer ) {
 void BuildSkeleton( Skeleton* skeleton, Node* root, Mat4 parent, Mat4* matrices ) {
 	Mat4 t = glm::translate( Mat4( 1.0 ), root->t );
 	Mat4 r = glm::toMat4( root->r );
-	Mat4 s = glm::scale( Mat4( 1.0 ), root ->s );
-	
+	Mat4 s = glm::scale( Mat4( 1.0 ), root->s );
+
 	Mat4 local = t * r * s;
 	Mat4 global = parent * local;
-	
-	if ( root->boneID != -1 )
-		matrices[root->boneID] = global * skeleton->inverseBinds[root->boneID] ;
-	
-	for ( int i = 0; i < root->numChildren; i++ )
+
+	if (root->boneID != -1)
+		matrices[root->boneID] = global * skeleton->inverseBinds[root->boneID];
+
+	for (int i = 0; i < root->numChildren; i++)
 		BuildSkeleton( skeleton, root->children[i], global, matrices );
 
 }
 
 void RenderSetShader( Renderer* renderer, Shader* newShader ) {
-	if ( !newShader || newShader->id == -1 ) {
+	if (!newShader || newShader->id == -1) {
 		LOG_ASSERT( LGS_RENDERER, "Trying to use shader that does not exist" );
 		return;
 	}
@@ -472,37 +610,37 @@ void RenderSetShader( Renderer* renderer, Shader* newShader ) {
 	//	LOG_WARNING( LGS_RENDERER, "Setting active shader to same shader\n" );
 	//}
 	renderer->frameInfos[renderer->currentFrameInfo].shaderBinds++;
-	
+
 	glUseProgram( newShader->id );
 	renderer->currentShaderID = newShader->id;
 }
 
 void RenderDrawModel( Renderer* renderer, Model* model, Mat4 offset, SkeletonPose* pose ) {
-	Shader* shader = ( model->skeleton == 0 ) ? renderer->shaders[SHADER_STANDARD] : renderer->shaders[SHADER_STANDARD_SKINNED];
+	Shader* shader = (model->skeleton == 0) ? renderer->shaders[SHADER_STANDARD] : renderer->shaders[SHADER_STANDARD_SKINNED];
 	RenderSetShader( renderer, shader );
 
 	//Setup mat4 array
-	if ( model->skeleton && pose ) {
-		BuildSkeleton( model->skeleton, &model->skeleton->joints[model->skeleton->root], Mat4(1.0f), renderer->mat4Array);
+	if (model->skeleton && pose) {
+		BuildSkeleton( model->skeleton, &model->skeleton->joints[model->skeleton->root], Mat4( 1.0f ), renderer->mat4Array );
 		ShaderSetMat4Array( renderer, shader, "bones", pose->globalPose, model->skeleton->numBones );
-	}	
+	}
 
 	ShaderSetMat4( renderer, shader, "model", offset );
 
-	for ( u32 i = 0; i < model->numMeshes; i++ ) {
-		if ( model->meshes[i].texture != 0 ) {
+	for (u32 i = 0; i < model->numMeshes; i++) {
+		if (model->meshes[i].texture != 0) {
 			nglActiveTexture( GL_TEXTURE0 + S2D_ALBEDO );
 			nglBindTexture( GL_TEXTURE_2D, model->meshes[i].texture->id );
 		}
 
 		nglBindVertexArray( model->meshes[i].buffer.vao );
-		nglDrawElements( GL_TRIANGLES, model->meshes[i].numIndices, GL_UNSIGNED_INT, (void*) 0 );
+		nglDrawElements( GL_TRIANGLES, model->meshes[i].numIndices, GL_UNSIGNED_INT, ( void* )0 );
 
 	}
 }
 
 void RenderDrawEntity( Entity* entity ) {
-	if ( entity->renderModel == 0 )
+	if (entity->renderModel == 0)
 		return;
 
 	Mat4 t = glm::translate( Mat4( 1.0 ), entity->renderModel->translation + entity->pos );
@@ -512,7 +650,7 @@ void RenderDrawEntity( Entity* entity ) {
 	Mat4 s = glm::scale( Mat4( 1.0 ), entity->renderModel->scale );
 	Mat4 trs = t * r * s;
 
-	SkeletonPose* pose = ( entity->renderModel->pose != 0 ) ? entity->renderModel->pose : 0;
+	SkeletonPose* pose = (entity->renderModel->pose != 0) ? entity->renderModel->pose : 0;
 	RenderDrawModel( &renderer, entity->renderModel->model, trs, pose );
 }
 
@@ -524,16 +662,16 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	li->numIndices = NFileReadU32( file );
 	li->numFaces = NFileReadU32( file );
 	li->numBrushes = NFileReadU32( file );
-	li-> numTextures = NFileReadU32( file );
+	li->numTextures = NFileReadU32( file );
 
 	//Load GPU Data
 
 	u32 vertexSize = li->numVertices * sizeof( DrawVertex );
 	u32 indexSize = li->numIndices * sizeof( u32 );
 
-	DrawVertex* verticesTemp = ( DrawVertex* ) TEMP_ALLOC(  vertexSize );
-	li->indices = ( u32* ) ScratchArenaAllocate( &level->arena, indexSize );
-	
+	DrawVertex* verticesTemp = ( DrawVertex* )TEMP_ALLOC( vertexSize );
+	li->indices = ( u32* )ScratchArenaAllocate( &level->arena, indexSize );
+
 	NFileRead( file, verticesTemp, vertexSize );
 	NFileRead( file, li->indices, indexSize );
 
@@ -547,20 +685,20 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	//Load in CPU Data
 	u32 brushSize = li->numBrushes * sizeof( RenderBrush );
 	u32 faceSize = li->numFaces * sizeof( RenderBrushFace );
-	
-	//Note: Since these are allocated next to each other, it's okay to blast  li->faces with the size of both
-	li->faces = ( RenderBrushFace* ) ScratchArenaAllocate( &level->arena, faceSize );
-	li->brushes = ( RenderBrush* ) ScratchArenaAllocate( &level->arena, brushSize );
-	NFileRead( file, li->faces, faceSize + brushSize);
 
-	char* textureNamesTemp = ( char* ) TEMP_ALLOC( li->numTextures * NAME_BUF_LEN );
+	//Note: Since these are allocated next to each other, it's okay to blast  li->faces with the size of both
+	li->faces = ( RenderBrushFace* )ScratchArenaAllocate( &level->arena, faceSize );
+	li->brushes = ( RenderBrush* )ScratchArenaAllocate( &level->arena, brushSize );
+	NFileRead( file, li->faces, faceSize + brushSize );
+
+	char* textureNamesTemp = ( char* )TEMP_ALLOC( li->numTextures * NAME_BUF_LEN );
 	NFileRead( file, textureNamesTemp, li->numTextures * NAME_BUF_LEN );
 
-	Texture** loadedTextures = (Texture**) TEMP_ALLOC( li->numTextures * sizeof( Texture* ) );
+	Texture** loadedTextures = ( Texture** )TEMP_ALLOC( li->numTextures * sizeof( Texture* ) );
 
 	// Load in textures
-	for ( int i = 0; i < li->numTextures; i++ ) {
-		char* name = &textureNamesTemp[ NAME_BUF_LEN * i];
+	for (int i = 0; i < li->numTextures; i++) {
+		char* name = &textureNamesTemp[NAME_BUF_LEN * i];
 
 		char fullName[64]{};
 		strcpy( fullName, "res/textures/" );
@@ -571,22 +709,22 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	}
 
 	//Assign faces their textures
-	for ( int i = 0; i < li->numFaces; i++ ) {
+	for (int i = 0; i < li->numFaces; i++) {
 		//Index is stored in pointer loc
 		//Texture* texture = loadedTextures[li->faces[i].textureIndex];
 		//u32 index = (u32) li->faces[i].texture;
 		//li->faces[i].texture = loadedTextures[index];
 	}
 
-	u32* numTrianglesPerTexture = (u32*) TEMP_ALLOC( li->numTextures * sizeof( u32 ) );
+	u32* numTrianglesPerTexture = ( u32* )TEMP_ALLOC( li->numTextures * sizeof( u32 ) );
 	NFileRead( file, numTrianglesPerTexture, li->numTextures * sizeof( u32 ) );
 
-	li->textureChains = ( TextureChain* ) ScratchArenaAllocate( &level->arena, li->numTextures * sizeof( TextureChain ) );
+	li->textureChains = ( TextureChain* )ScratchArenaAllocate( &level->arena, li->numTextures * sizeof( TextureChain ) );
 
-	for ( int i = 0; i < li->numTextures; i++ ) {
+	for (int i = 0; i < li->numTextures; i++) {
 		TextureChain* chain = &li->textureChains[i];
 		chain->texture = loadedTextures[i];
-		chain->firstIndexOfTriangles = ( u32* ) ScratchArenaAllocate( &level->arena, numTrianglesPerTexture[i] * sizeof( u32 ) );
+		chain->firstIndexOfTriangles = ( u32* )ScratchArenaAllocate( &level->arena, numTrianglesPerTexture[i] * sizeof( u32 ) );
 		chain->numTriangles = 0;
 	}
 }
@@ -595,7 +733,7 @@ void RenderDrawHealthBar( Vec2 pos, Vec2 size, int hp, int maxHp ) {
 	//Red Back
 	//Green Front
 
-	float healthPercent = ( float ) hp / ( float ) maxHp;
+	float healthPercent = ( float )hp / ( float )maxHp;
 	Vec2 greenBarSize( size.x * healthPercent, size.y );
 
 	RenderDrawQuadColored( pos, greenBarSize, Vec3( 0, 1, 0 ) );
@@ -604,11 +742,11 @@ void RenderDrawHealthBar( Vec2 pos, Vec2 size, int hp, int maxHp ) {
 
 void RenderLoadFontFromFile() {
 	TEMP_ARENA_SET
-	NFile file{};
+		NFile file{};
 	CreateNFile( &file, "res/misc/font.txt", "rb" );
 	u32 length = file.length;
 
-	char* buffer = ( char* ) TEMP_ALLOC( length );
+	char* buffer = ( char* )TEMP_ALLOC( length );
 	NFileRead( &file, buffer, length );
 
 	Parser parser( buffer, length );
@@ -635,8 +773,8 @@ void RenderLoadFontFromFile() {
 	parser.ReadToken();
 	renderer.font.numGlyphs = parser.ParseIntEqualInFront();
 
-	renderer.font.glyphs = ( BitmapGlyph* ) ScratchArenaAllocate( &globalArena, renderer.font.numGlyphs * sizeof( BitmapGlyph ) );
-	for ( int i = 0; i < renderer.font.numGlyphs; i++ ) {
+	renderer.font.glyphs = ( BitmapGlyph* )ScratchArenaAllocate( &globalArena, renderer.font.numGlyphs * sizeof( BitmapGlyph ) );
+	for (int i = 0; i < renderer.font.numGlyphs; i++) {
 		BitmapGlyph* glyph = &renderer.font.glyphs[i];
 
 		parser.ExpectedTokenString( "char" );
@@ -666,38 +804,38 @@ void RenderLoadFontFromFile() {
 		glyph->xadvance = parser.ParseIntEqualInFront();
 
 		//Double jsut to be safe. probably dont need
-		double x0 = ( double ) glyph->x / ( double ) renderer.font.imageSizeX;
-		double y0 = ( double ) glyph->y / ( double ) renderer.font.imageSizeY;
+		double x0 = ( double )glyph->x / ( double )renderer.font.imageSizeX;
+		double y0 = ( double )glyph->y / ( double )renderer.font.imageSizeY;
 
-		double x1 = ( ( double ) glyph->x + glyph->width ) / ( double ) renderer.font.imageSizeX;
-		double y1 = ( ( double ) glyph->y + glyph->height ) / ( double ) renderer.font.imageSizeY;
+		double x1 = (( double )glyph->x + glyph->width) / ( double )renderer.font.imageSizeX;
+		double y1 = (( double )glyph->y + glyph->height) / ( double )renderer.font.imageSizeY;
 
-		glyph->tMin = Vec2( ( float ) x0, ( float ) y0 );
-		glyph->tMax = Vec2( ( float ) x1, ( float ) y1 );
+		glyph->tMin = Vec2( ( float )x0, ( float )y0 );
+		glyph->tMax = Vec2( ( float )x1, ( float )y1 );
 	}
 
 }
 
 BitmapGlyph* RenderGetGlyph( char c ) {
-	for ( int i = 0; i < renderer.font.numGlyphs; i++ ) {
-		if ( renderer.font.glyphs[i].ascii == c )
+	for (int i = 0; i < renderer.font.numGlyphs; i++) {
+		if (renderer.font.glyphs[i].ascii == c)
 			return &renderer.font.glyphs[i];
 	}
-	
+
 	LOG_WARNING( LGS_RENDERER, "Could not find glpyh %c\n" );
 	return &renderer.font.glyphs[0];
 }
 
 void RenderDrawFontBatch() {
-	if ( renderer.numGlyphsBatched == 0 ) 
+	if (renderer.numGlyphsBatched == 0)
 		return;
-	
+
 	RenderSetShader( &renderer, renderer.shaders[SHADER_UI] );
 	ShaderSetInt( &renderer, renderer.shaders[SHADER_UI], "solidColor", false );
 	ShaderSetInt( &renderer, renderer.shaders[SHADER_UI], "albedo", 0 );
 	ShaderSetMat4( &renderer, renderer.shaders[SHADER_UI], "model", Mat4( 1.0 ) );
 
-	
+
 	nglActiveTexture( GL_TEXTURE0 + S2D_ALBEDO );
 	nglBindTexture( GL_TEXTURE_2D, renderer.fontTex->id );
 
@@ -709,7 +847,7 @@ void RenderDrawFontBatch() {
 }
 
 void RenderDrawChar( Vec2 pos, BitmapGlyph* glyph, float scale ) {
-	if ( renderer.numGlyphsBatched == FONT_BATCH_SIZE ) {
+	if (renderer.numGlyphsBatched == FONT_BATCH_SIZE) {
 		LOG_ERROR( LGS_RENDERER, "OUT OF ROOM FONT BATCH\N" );
 		return;
 	}
@@ -717,8 +855,8 @@ void RenderDrawChar( Vec2 pos, BitmapGlyph* glyph, float scale ) {
 	FontVert* verts = &renderer.glyphs[4 * renderer.numGlyphsBatched++];
 
 	//(hack)
-	if ( glyph->ascii == '.' )
-		pos.y += ( scale / 2.5 );
+	if (glyph->ascii == '.')
+		pos.y += (scale / 2.5);
 
 	verts[0].pos = Vec2( scale, scale ) + pos;// top right
 	verts[1].pos = Vec2( scale, 0.0 ) + pos;// bottom right
@@ -738,16 +876,16 @@ void RenderDrawText( Vec2 pos, float fontSize, const char* string ) {
 
 	float scale = fontSize / renderer.font.glyphSize;
 
-	for ( int i = 0; i < len; i++ ) {
-		if ( string[i] == '\t' ) 
+	for (int i = 0; i < len; i++) {
+		if (string[i] == '\t')
 			continue;
 
-		if ( string[i] == ' ' ) {
+		if (string[i] == ' ') {
 			pos.x += renderer.font.glyphSize * scale;
 			continue;
 		}
 
-		if ( string[i] == '\n' ) {
+		if (string[i] == '\n') {
 			pos.y += renderer.font.lineHeight * scale;
 			pos.x = startPos.x;
 			continue;
@@ -756,7 +894,7 @@ void RenderDrawText( Vec2 pos, float fontSize, const char* string ) {
 		BitmapGlyph* glyph = RenderGetGlyph( string[i] );
 		RenderDrawChar( pos, glyph, fontSize );
 
-		pos.x += ( glyph->xadvance ) * scale;
+		pos.x += (glyph->xadvance) * scale;
 	}
 }
 
@@ -770,7 +908,7 @@ void nglDrawArrays( GLenum mode, GLint first, GLsizei count ) {
 void nglDrawElements( GLenum mode, GLsizei count, GLenum type, const void* indices ) {
 	FrameInfo* info = &renderer.frameInfos[renderer.currentFrameInfo];
 	info->drawElementCalls++;
-	info->drawElementTriangleCount+= count;
+	info->drawElementTriangleCount += count;
 
 	glDrawElements( mode, count, type, indices );
 }
@@ -804,21 +942,21 @@ void nglActiveTexture( GLenum texture ) {
 }
 
 void RenderDrawAllEntities() {
-	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
+	for (int i = 0; i < MAX_ENTITIES; i++) {
 		StoredEntity* stored = &entityManager.entities[i];
 
-		if ( stored->state != ACTIVE_ACTIVE )
+		if (stored->state != ACTIVE_ACTIVE)
 			continue;
 
-		if ( stored->entity.renderModel != 0 )
+		if (stored->entity.renderModel != 0)
 			RenderDrawEntity( &stored->entity );
 	}
 }
 
 void RenderDrawAllProjectiles() {
-	for ( int i = 0; i < entityManager.numProjectiles; i++ ) {
+	for (int i = 0; i < entityManager.numProjectiles; i++) {
 		Projectile* projectile = &entityManager.projectiles[i];
-		if ( projectile->state != ACTIVE_ACTIVE || projectile->model.model == 0 )
+		if (projectile->state != ACTIVE_ACTIVE || projectile->model.model == 0)
 			continue;
 
 		Mat4 t = glm::translate( Mat4( 1.0 ), projectile->collider.offset + projectile->collider.bounds.center );
@@ -838,13 +976,13 @@ void RenderDrawGun() {
 }
 
 void RenderDrawAllRigidBodies() {
-	for ( int i = 0; i < MAX_RIGIDBODIES; i++ ) {
+	for (int i = 0; i < MAX_RIGIDBODIES; i++) {
 		RigidBody* body = &physics.rigidBodies[i];
-		if ( body->state == RB_NONE )
+		if (body->state == RB_NONE)
 			continue;
 
 		//DebugDrawSphere( body->pos, body->radius );
-		if ( body->model ) {
+		if (body->model) {
 			Mat4 t = glm::translate( Mat4( 1.0 ), body->pos + body->visualOffset );
 			Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( body->modelScale ) );
 			Mat4 trs = t * s;
@@ -853,14 +991,77 @@ void RenderDrawAllRigidBodies() {
 	}
 }
 
-ParticleEmitter* NewParticleEmitter() {
-	for ( int i = 0; i < MAX_PARTICLE_EMITTERS; i++ ) {
-		ParticleEmitter* emitter = &renderer.particleEmitters[i];
-		if ( emitter->currentTime >= emitter->lifeTime ) {
-			memset( emitter, 0, sizeof( *emitter ) );
-			return emitter;
+void RemoveEmitter( ParticleEmitter2* emitter ) {
+	emitter->emitterLifetime = 0;
+	renderer.emittersDirty = true;
+}
+
+ParticleEmitter2* NewParticleEmitter() {
+	ParticleEmitter2* emitter = &renderer.emitters.emitters[renderer.numEmitters++];
+	return emitter;
+}
+
+//Complete Hack
+void RenderDrawMuzzleFlash( Texture* texture ) {
+	Revolver* revolver = &entityManager.player->revolver;
+
+	if (revolver->muzzleFlashTime <= gameTime)
+		return;
+
+
+	Skeleton* skel = revolver->renderModel->model->skeleton;
+	Node* node = 0;
+	for (int i = 0; i < skel->numNodes; i++) {
+		if (!strcmp( skel->joints[i].name, "MuzzleFlash" )) {
+			node = &skel->joints[i];
 		}
 	}
-	LOG_WARNING( LGS_RENDERER, "No active particle emitters\n" );
-	return 0;
+
+	if (!node)
+		return;
+
+	//	Vec3 rpos = entityManager.player->pos + Vec3()
+	//		+ revolver->pos;
+	Player* player = entityManager.player;
+
+	Mat4 t = glm::translate( Mat4( 1.0 ), revolver->pos + Vec3( revolver->renderModel->pose->pose[node->index].t - Vec3( .2f, 0.35, 0 ) ) );
+	Mat4 r = glm::toMat4( player->revolver.rotation );
+	Mat4 s = glm::scale( Mat4( 1.0 ), player->revolver.renderModel->scale );
+	Mat4 model2 = t * r * s;
+	model2 = glm::inverse( renderer.camera.GetViewMatrix() ) * model2;
+
+
+	//Vec3 pos = renderer.camera.Position + renderer.camera.Front;
+	Vec3 pos = model2[3];
+	Vec3 playerPos = renderer.camera.Position;
+
+	Vec3 dirFromPlayer = pos - playerPos;
+	float theta = glm::atan( dirFromPlayer.y, dirFromPlayer.x );
+	float dist2D = glm::sqrt( dirFromPlayer.x * dirFromPlayer.x
+		+ dirFromPlayer.y * dirFromPlayer.y );
+	float phi = glm::atan( -dirFromPlayer.z, dist2D );
+
+	Mat4 model = glm::translate( Mat4( 1.0 ), pos );
+	model =
+		model * glm::eulerAngleXYZ( 0.0f, 0.0f, theta ) *
+		glm::eulerAngleXYZ( 0.0f, phi, 0.0f );
+	model = glm::scale( model, Vec3( .3f ) );
+
+
+	Shader* shader = renderer.shaders[SHADER_BILLBOARD];
+	RenderSetShader( &renderer, shader );
+	ShaderSetMat4( &renderer, shader, "model", model );
+	ShaderSetInt( &renderer, shader, "albedo", S2D_ALBEDO );
+
+	glEnable ( GL_BLEND );
+	glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+	glActiveTexture( GL_TEXTURE0 + S2D_ALBEDO );
+	glBindTexture( GL_TEXTURE_2D, renderer.muzzleFlash->id );
+
+	nglBindVertexArray( renderer.billboard.vao );
+	glDrawArrays( GL_TRIANGLES, 0, 6 );
+
+	glDisable ( GL_BLEND );
+
 }

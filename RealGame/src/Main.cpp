@@ -17,21 +17,11 @@
 #include "game/Game.h"
 
 /*
-*	Next MVP:	
-	
-	Now:
-		Add Billboards
-		Maybe dead particle list too?
-	
-	Once Idtech:
-		Check out their particle system
-		See what i should include
+	Smoke Transparencies
+		If big spheres of smoke can be all done on CPU
 
-	Navmesh?
-		Enemys are circle on navmesh, shoot rays around the navmesh to see what they hit?
-	
 	I want many little goblins running at the player
-	should be able to cause a chain reaction
+		should be able to cause a chain reaction
 
 	Quake FGD File
 		Player Spawn
@@ -117,7 +107,7 @@ int main() {
 	Timer timer;
 
 	Player* player = CreatePlayer( Vec3( 0 ) );
-	player->camera.Yaw = 180.0;
+	//player->camera.Yaw = 180.0;
 	player->camera.GetViewMatrix();
 
 	//Gibs
@@ -126,10 +116,17 @@ int main() {
 	//Model
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
 	Goblin::model->animations[0]->looping = true;
-	Goblin* goblin = CreateGoblin( Vec3( 0 ) );
+#if 1
+	Goblin* goblin = CreateGoblin(Vec3(-48, 1, -28));
+	Goblin* goblin2 = CreateGoblin(Vec3(-50, 1, -9));
+	Goblin* goblin3 = CreateGoblin(Vec3(-36, 1, 14));
+
+	Goblin* bgoblin = CreateGoblin(Vec3(-24, 1, -28));
+	Goblin* bgoblin3 = CreateGoblin(Vec3(-12, 1, 14));
+#endif
 
 	PrintAllocators( &globalArena );
-	WindowSetVsync( &window, 1 );
+	WindowSetVsync( &window,1 );
 
 	bool start = true;
 
@@ -153,10 +150,14 @@ int main() {
 		if ( !start ) continue;
 
 		timer.Restart();
-		
+
+		if (dt > 1.0f / 144.0f)
+			dt = 1.0f / 144.0f;
+
 		if ( !paused ) {
 			gameTime += dt;
 			//Movement
+			UpdateBoids();
 			UpdateEntities();
 			UpdateProjectiles();
 			PhysicsRigidBodiesUpdate();
@@ -164,11 +165,16 @@ int main() {
 			AnimateEntities();
 		}
 
+		//printf("%.2f %.2f %.2f\n", player->pos.x, player->pos.y, player->pos.z);
+
 		DebugDrawLine( Vec3( 0 ), Vec3( 10 ) );
 
+		
 		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );
 		RenderDrawFrame( &renderer, dt );
+
+		RenderDrawMuzzleFlash(renderer.blankTexture);
 
 		if ( paused )
 			RenderDrawText( Vec2( 600, 300 ), 48, "PAUSED" );

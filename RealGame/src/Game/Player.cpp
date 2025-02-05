@@ -33,6 +33,7 @@ Player* CreatePlayer( Vec3 pos ) {
 	player->revolver.renderModel->pose->pose = ( JointPose* ) ScratchArenaAllocateZero( &globalArena, revolverModel->skeleton->numNodes * sizeof( JointPose ) );
 	player->revolver.renderModel->pose->skeleton = revolverModel->skeleton;
 
+	player->revolver.maxMuzzleFlashTime = .1f;
 	player->revolver.animTimeScale = 1.0f;
 
 	player->revolver.state = REVOLVER_RELOADING;
@@ -76,10 +77,10 @@ void UpdatePlayer( Entity* entity ) {
 	wantDir *= 20.0f * dt;
 
 	
-#if 1 //Normal
+#if 0 //Normal
 	EntityMove( player, wantDir );
 #else //Noclip
-	entity->pos += velocity;
+	entity->pos += wantDir;
 	entity->bounds->offset = entity->pos;
 #endif
 
@@ -136,6 +137,7 @@ void RevolverUpdate( Player* player ) {
 		revolver->rotation = glm::rotate( revolver->rotation, -.3f, Vec3( 0, 0, -1 ) );
 		revolver->spread += 2.0f;
 		revolver->ammo--;
+		revolver->muzzleFlashTime = gameTime + revolver->maxMuzzleFlashTime;
 		return;
 	}
 

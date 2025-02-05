@@ -63,7 +63,7 @@ struct RigidBody {
 	class Model* model;
 	Vec3 visualOffset;
 	float modelScale;
-	class ParticleEmitter* emitter;
+	class ParticleEmitter2* emitter;
 };
 
 

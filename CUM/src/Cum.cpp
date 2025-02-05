@@ -259,18 +259,22 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 					DBrushVertex vertex;
 					vertex.pos = out;
 
-					Vec2 texSize = textures[face->textureIndex].size;
+					out = Vec3 ( -out.x, out.z, out.y ) / (float)scale;
 
-					double u = ( glm::dot( dVec3( face->texU ), roundedOut ) ) / ( float ) texSize.x;
+					Vec2 texSize = textures[face->textureIndex].size;
+					
+
+					//out = out / scale;
+					double u = ( glm::dot( dVec3( face->texU ), out ) ) / ( float ) texSize.x;
 					u /= face->info.z;
 					u += face->texU.w / ( float ) texSize.x;
 
-					double v = ( glm::dot( dVec3( face->texV ), roundedOut ) ) / ( float ) texSize.y;
+					double v = ( glm::dot( dVec3( face->texV ), out ) ) / ( float ) texSize.y;
 					v /= face->info.y;
 					v += face->texV.w / ( float ) texSize.y;
 
-					u /= scale;
-					v /= scale;
+					//u /= scale;
+					//v /= scale;
 
 					vertex.uv = Vec2( u, v );
 					vertex.normal = face->n;
@@ -613,9 +617,6 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	printf( "Num Vertices: %u\n", numVertices );
 	printf( "Num Indices: %u\n", numIndices );
 	printf( "BVHNodes %u\n", tree.numNodes );
-
-	for ( int i = 0; i < tree.numNodes; i++ )
-		printf( "%.2f %.2f %.2f ", tree.nodes[i].bounds.min.x, tree.nodes[i].bounds.min.y, tree.nodes[i].bounds.min.z );
 
 	return true;
 }
