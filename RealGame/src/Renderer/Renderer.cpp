@@ -101,8 +101,10 @@ void RenderCreateShaders( Renderer* renderer ) {
 	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES] );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES], SHADER_ARG_FLOAT, "dt" );
 
-	renderer->shaders[SHADER_PARTICLES2] = ShaderManagerCreateShader( &shaderManager, "res/shaders/particles/particles.vert", "res/shaders/particles/particles.frag" );
+	renderer->shaders[SHADER_PARTICLES2] = ShaderManagerCreateShader( &shaderManager, "res/shaders/particles2/particles.vert", "res/shaders/particles2/particles.frag" );
 	RenderSetShader( renderer, renderer->shaders[SHADER_PARTICLES2] );
+	ShaderAddArg ( &shaderManager, renderer->shaders[SHADER_PARTICLES2], SHADER_ARG_INT, "albedo" );
+	ShaderSetInt ( renderer, renderer->shaders[SHADER_PARTICLES2], "albedo", S2D_ALBEDO );
 
 	renderer->shaders[SHADER_COMP_CREATE_PARTICLES2] = ShaderManagerCreateComputeShader( &shaderManager, "res/shaders/particles2/createParticles.comp" );
 	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_CREATE_PARTICLES2] );
@@ -150,7 +152,7 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	renderer->whiteNoiseTex = TextureManagerLoadTextureFromFile( "res/textures/whitenoise.png" );
 	renderer->blankTexture = TextureManagerLoadTextureFromFile( "res/textures/blank.png" );
 	renderer->muzzleFlash = TextureManagerLoadTextureFromFile( "res/textures/muzzleFlash.png" );
-
+	renderer->particleAtlas = TextureManagerLoadTextureFromFile ( "res/textures/particleAtlas.png" );
 	float quadVertices[] = {
 		0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
@@ -247,19 +249,6 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 
 		CreateGLBuffer( &renderer->skybox.buffer, 36, 0, sizeof( skyboxVertices ), skyboxVertices, 0, 0, true, true );
 		GLBufferAddAttribute( &renderer->skybox.buffer, 0, 3, GL_FLOAT, 3 * sizeof( float ), ( void* )0 );
-	}
-
-
-	for (int i = 0; i < 3; i++) {
-		renderer->emitters.emitters[i].pos = Vec3 ( 0, 0, 1 );
-		renderer->emitters.emitters[i].emitterLifetime = 1.0f;
-		renderer->emitters.emitters[i].maxParticles = 3000;
-	}
-
-	for (int i = 3; i < 6; i++) {
-		renderer->emitters.emitters[i].pos = Vec3 ( 1, 1, 1 );
-		renderer->emitters.emitters[i].emitterLifetime = 3.0f;
-		renderer->emitters.emitters[i].maxParticles = 5000;
 	}
 
 	renderer->numEmitters = 6;
@@ -427,6 +416,7 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 }
 
 void RenderUpdateAndDrawParticles() {
+	//Debug Draw Emitters
 	RenderSetShader( &renderer, renderer.shaders[SHADER_UI] );
 	float particleSize = 720.0f / ( float )MAX_PARTICLES;
 
@@ -443,7 +433,7 @@ void RenderUpdateAndDrawParticles() {
 		Vec3( 1,0,1 ),
 		Vec3( 0,1,1 ),
 	};
-
+	
 	for (int i = 0; i < renderer.numEmitters; i++) {
 		float particleLength = ( float )renderer.emitters.emitters[i].maxParticles / ( float )MAX_PARTICLES * 720.0f;
 		int colorIndex = i % (sizeof( colors ) / sizeof( colors[0] ));
@@ -452,6 +442,11 @@ void RenderUpdateAndDrawParticles() {
 	}
 	//Figure out how many particles each must do
 
+	// ==============
+	//	Update And Draw Particles
+	// ==============
+
+	// Emitter Compute
 	RenderSetShader( &renderer, renderer.shaders[SHADER_COMP_CREATE_PARTICLES2] );
 
 	//Figure out how many particles to draw for each
@@ -459,60 +454,63 @@ void RenderUpdateAndDrawParticles() {
 	int firstParticle = 0;
 	for (int i = 0; i < renderer.numEmitters; i++) {
 		ParticleEmitter2* emitter = &renderer.emitters.emitters[i];
-		emitter->emitterTimeNow += dt;
+		emitter->currentEmitterLifetime += dt;
 
-		int particleCountNow = ( int )roundf( emitter->emitterTimeNow * emitter->spawnRate );
-		int emit = particleCountNow - emitter->currentParticles;
+		int particleCountNow = ( int )roundf( emitter->currentEmitterLifetime * emitter->spawnRate );
+		int emit = particleCountNow - emitter->numParticles;
 		renderer.emitters.numParticlesPerEmitter[i] = emit;
-		emitter->currentParticles = particleCountNow;
-		emitter->firstParticle = firstParticle;
+		emitter->numParticles = particleCountNow;
+		emitter->particleOffset = firstParticle;
 		firstParticle += emitter->maxParticles;
 		totalEmit += emit;
 
 		//If this is now empty, remove it after rendering
-		if (emitter->emitterTimeNow > emitter->emitterLifetime) {
+		if (emitter->currentEmitterLifetime > emitter->maxEmitterLifeTime) {
 			renderer.emittersDirty = true;
 			continue;
 		}
 	}
-
 	//Upload all emitters (Todo only do when dirtydds)
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer.particleEmitterSSBO2 );
 	glBufferSubData( GL_SHADER_STORAGE_BUFFER, 0, sizeof( renderer.emitters ), &renderer.emitters );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
 
-	//Update Particles
+	//Emit Particles
 	glDispatchCompute( totalEmit, 1, 1 ); //Creates particles
 	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
+	//Update Partiacles
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, renderer.particleSSBO2 );
 	RenderSetShader( &renderer, renderer.shaders[SHADER_COMP_UPDATE_PARTICLES2] );
 	ShaderSetFloat( &renderer, renderer.shaders[SHADER_COMP_UPDATE_PARTICLES2], "dt", dt );
 
 	glDispatchCompute( MAX_PARTICLES / 32, 1, 1 ); //updates particles
 	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
-
-	//Render Particles
+	
+	//Draw Particles
+	glEnable ( GL_BLEND );
+	glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+	
+	glActiveTexture ( GL_TEXTURE0 );
+	glBindTexture ( GL_TEXTURE_2D, renderer.particleAtlas->id );
 	RenderSetShader( &renderer, renderer.shaders[SHADER_PARTICLES2] );
-	glPointSize( 3 );
-	glDrawArrays( GL_POINTS, 0, MAX_PARTICLES );
+	//FOR NOW DO ALL PARTICLES
+	nglDrawArrays ( GL_TRIANGLES, 0, MAX_PARTICLES * 6 );
 
-	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
-
+	glDisable ( GL_BLEND );
+#if 0
 	//Clean the emitters once done
 	if (renderer.emittersDirty) {
-		
-
 		for (int i = 0; i < renderer.numEmitters; i++) {
 			ParticleEmitter2* emitter = &renderer.emitters.emitters[i];
-			if (emitter->emitterLifetime == 0 || emitter->emitterTimeNow > emitter->emitterLifetime) {
+			if (emitter->maxEmitterLifeTime == 0 || emitter->currentEmitterLifetime > emitter->maxEmitterLifeTime) {
 				int numSubtract = 1;
 				int subtractPartices = emitter->maxParticles;
 
 				//Get next ones in a row to do 1 memcpy
 				for (int n = i + 1; n < renderer.numEmitters; n++) {
 					ParticleEmitter2* emitter = &renderer.emitters.emitters[n];
-					if (emitter->emitterLifetime == 0 || emitter->emitterTimeNow > emitter->emitterLifetime) {
+					if (emitter->maxEmitterLifeTime == 0 || emitter->currentEmitterLifetime> emitter->maxEmitterLifeTime) {
 						i++;
 						numSubtract++;
 						subtractPartices += emitter->maxParticles;
@@ -538,8 +536,8 @@ void RenderUpdateAndDrawParticles() {
 
 						glBindBuffer ( GL_COPY_READ_BUFFER, renderer.particleEmitterSSBO2 );
 						glBindBuffer ( GL_COPY_WRITE_BUFFER, renderer.particleEmitterSSBO2 ); 
-						int read = emitter->firstParticle * PARTICLE_SIZE_GPU;
-						int write = (emitter->firstParticle + subtractPartices ) * PARTICLE_SIZE_GPU;
+						int read = emitter->particleOffset * PARTICLE_SIZE_GPU;
+						int write = (emitter->particleOffset + subtractPartices ) * PARTICLE_SIZE_GPU;
 						glCopyBufferSubData( GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, read, write, subtractPartices* PARTICLE_SIZE_GPU );
 						glBindBuffer ( GL_COPY_READ_BUFFER, 0 );
 						glBindBuffer ( GL_COPY_WRITE_BUFFER, 0 );
@@ -550,6 +548,7 @@ void RenderUpdateAndDrawParticles() {
 	}
 
 	glBindBuffer ( GL_SHADER_STORAGE_BUFFER, 0 );
+#endif
 }
 
 void RenderEndFrame( Renderer* renderer ) {
@@ -992,12 +991,14 @@ void RenderDrawAllRigidBodies() {
 }
 
 void RemoveEmitter( ParticleEmitter2* emitter ) {
-	emitter->emitterLifetime = 0;
+	emitter->maxEmitterLifeTime = 0;
 	renderer.emittersDirty = true;
 }
 
 ParticleEmitter2* NewParticleEmitter() {
 	ParticleEmitter2* emitter = &renderer.emitters.emitters[renderer.numEmitters++];
+	memset ( emitter, 0, sizeof ( *emitter ) );
+	emitter->scale = Vec2 ( 1 );
 	return emitter;
 }
 

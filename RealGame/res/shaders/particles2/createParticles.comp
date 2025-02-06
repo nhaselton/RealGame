@@ -1,53 +1,45 @@
 #version 440
 
-uniform float dt;
-
-float rand(vec2 co){
-    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+float prng(in vec2 co) {
+	//[0,1)
+	float a = fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+	return a * 2 - 1;
 }
-
-float rand2(vec2 co){
-    return fract(sin(dot(co, vec2(4554.9898, 78123.26565433))) * 43758.5453);
-}
-
-float rand23(vec2 co){
-    return fract(sin(dot(co, vec2(-4554.9898, 7.26565433))) * 437.5453);
-}
-
 
 struct Particle	{
 	vec4 pos;		//xyz = pos.	w = lifeTime [0,1]
-	vec4 color;		//xyz color		w: ?
-	vec4 velocity;	//xyz = vel		w = ? 
+	vec4 color;		//xyz color		w: scale.x
+	vec4 velocity;	//xyz = vel		w = scale.y 
 	vec4 acceleration;
+	vec4 UVs;
 };
 
-//Assume Spherical
 struct ParticleEmitter {
-	vec3 pos;
-	float spawnSpeed;
+	vec4 pos;
+	//.xyz = pos
+	//.w = spawn radius
+	vec4 UV;
+	//.xy = (x0,y0)
+	//.zw = (x1,y1)
 
-	vec3 colorStart;
-	float lifeTime;
+	vec4 scale;
+	//.xy = Scale(start)
+	//.zw = ?? maybe Scale(End?)
 
-	vec3 colorEnd;
-	//[0,1] all at once or evenly spread out
-	float spawnBunching;
+	vec4 acceleration;
+	//.xyz = Acceleration
 
-	vec3 initalVelocity;
-	//Max amount it can spawn
-	float NOTUSED;
+	ivec4 particleCounts;
+	//.x = particleOffset; //Where in the buffer does the emitter start
+	//.y = numParticles;
+	//.z = maxParticles;
+	//.w = t2;
 
-	vec3 pad;
-	//Particles per second
-	float spawnRate;
-
-	vec4 pad2;
-
-	int firstParticle;
-	int maxParticles;
-	int currentParticles;
-	int b;
+	vec4 spawnRate;
+	//.x = spawnRate;
+	//.y = particleLifeTime;
+	//.z = maxEmitterLifeTime;
+	//.w = currentEmitterLifetime;
 };
 
 layout(std430, binding = 3 ) buffer particleBuffer {
@@ -79,22 +71,31 @@ void main() {
 	}
 
 	if ( emitterIndex >= 0 ) {
-		int particleIndex = emitters[emitterIndex].firstParticle +
-		atomicAdd(emitters[emitterIndex].currentParticles,1);
+		int particleIndex = emitters[emitterIndex].particleCounts.x +
+		atomicAdd(emitters[emitterIndex].particleCounts.y,1);
 
 
 		//Sanity check to not go over 
-		if (true || particleIndex < emitters[emitterIndex].firstParticle + emitters[emitterIndex].maxParticles ) {
-			float a = rand( -particles[particleIndex].pos.xy  );
-			float b = rand2( particles[particleIndex].pos.xz  );
-			float c = rand23( particles[particleIndex].pos.zy );
+		if (true || 
+		particleIndex < emitters[emitterIndex].particleCounts.y + emitters[emitterIndex].particleCounts.z ) {
+			float a = prng( particles[particleIndex].pos.xy  );
+			float b = prng( particles[particleIndex].pos.xz  );
+			float c = prng( particles[particleIndex].pos.zy );
 
-			particles[particleIndex].pos.xyz = emitters[emitterIndex].pos;
-			particles[particleIndex].velocity.xyz = normalize(vec3(a,b,c)) * 6.0f;
-			particles[particleIndex].color.xyz = emitters[emitterIndex].colorStart;
+			float d = prng( vec2(particleIndex, particleIndex ));
+			float e = prng( vec2(particleIndex, particles[particleIndex].pos.z ));
+			float f = prng( vec2(particleIndex, gl_LocalInvocationID.x ));
 
+			particles[particleIndex].pos.xyz = emitters[emitterIndex].pos.xyz 
+				+ emitters[emitterIndex].pos.w * vec3(d,e,f);
+			
+			particles[particleIndex].color.w = emitters[emitterIndex].scale.x;
+			particles[particleIndex].velocity.w = emitters[emitterIndex].scale.y;
+			particles[particleIndex].velocity.xyz = vec3(a,b,c);
+			particles[particleIndex].acceleration.xyz = emitters[emitterIndex].acceleration.xyz;
+			particles[particleIndex].UVs = emitters[emitterIndex].UV;
 		}else{
-			atomicAdd(emitters[emitterIndex].currentParticles,-1);
+			atomicAdd(emitters[emitterIndex].particleCounts.y,-1);
 		}
 	}
 }

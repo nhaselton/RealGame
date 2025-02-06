@@ -9,7 +9,7 @@
 #define FONT_BATCH_SIZE 8192
 #define MAX_PARTICLES 32768 //1MB of particles. Must change compute if this changes
 #define MAX_PARTICLE_EMITTERS 64
-#define PARTICLE_SIZE_GPU 64 //pos,vel,lifetime,active?
+#define PARTICLE_SIZE_GPU 80 //pos,vel,lifetime,active?
 
 struct FontVert {
 	Vec2 pos;
@@ -40,39 +40,30 @@ enum builtInShaderList {
 	SHADER_LAST,
 };
 
+//Only type of emitter is random for now
 struct ParticleEmitter2 {
 	Vec3 pos;
-	float spawnSpeed;
+	float radius;
 
-	Vec3 colorStart;
-	float lifeTime;
+	Vec4 UV;// (x0,y0) (x1,y1)
 
-	Vec3 colorEnd;
-	//[0,1] all at once or evenly spread out
-	float spawnBunching;
-
-	Vec3 initalVelocity;
-	//Max amount it can spawn
-	float NOTUSED;
+	Vec2 scale;
+	float t0;
+	float t1;
 
 	Vec3 acceleration;
-	//Particles per second
-	float spawnRate;
+	float t3;
 
-	Vec2 pad2;
-	float emitterTimeNow;
-	float emitterLifetime;
-
-
-	//First parrticle will be changed to the correct value in render
-	//This one will be recalculated when new ones are added or removed
-	int firstParticle;
+	int particleOffset; //Where in the buffer does the emitter start
+	int numParticles;
 	int maxParticles;
-	int currentParticles;
-	int b;
+	int t2;
+
+	float spawnRate;
+	float particleLifeTime;
+	float maxEmitterLifeTime;
+	float currentEmitterLifetime;
 };
-
-
 
 //Must be sets of Vec4s
 struct ParticleEmitter {
@@ -206,6 +197,7 @@ public:
 	Texture* whiteNoiseTex;
 	Texture* blankTexture;
 	Texture* muzzleFlash;
+	Texture* particleAtlas;
 
 	GLBuffer quadBuffer;
 	BitmapFont font;

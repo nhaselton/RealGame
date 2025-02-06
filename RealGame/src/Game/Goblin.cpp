@@ -77,6 +77,17 @@ void GoblinOnHit( EntityHitInfo info ) {
 
 		Model* gibs = ModelManagerGetModel( "res/models/gib.glb" );
 
+		//Smoke Emitter
+		ParticleEmitter2* emitter = NewParticleEmitter();
+		emitter->pos = goblin->pos + Vec3(0,1,0);
+		emitter->UV = Vec4 ( .03125, 0, .03125+ .03125, .03125 );
+		emitter->maxEmitterLifeTime = 4.0f + gameTime;
+		emitter->maxParticles = 400;
+		emitter->spawnRate = 10;
+		emitter->scale = Vec2 ( 1.5f );
+		emitter->acceleration = Vec3 ( 0, 5, 0 );
+		emitter->radius = 1.0f;
+
 		for ( int i = 0; i < 3; i++ ) {
 			RigidBody* gib = NewRigidBody();
 			gib->pos = goblin->pos + Vec3(0,2,0);
@@ -86,14 +97,17 @@ void GoblinOnHit( EntityHitInfo info ) {
 			gib->radius = gibsize;
 			gib->modelScale = gibsize;
 			gib->model = gibs;
-			
+
+			//Blood Emitter
 			ParticleEmitter2* emitter = NewParticleEmitter();
 			emitter->pos = Vec3(0, 0, 1);
-			emitter->colorStart = Vec3(0.7, 0, 0);
-			emitter->initalVelocity = Vec3(0, 1, 0);
-			emitter->emitterLifetime = 3.0f + gameTime;
-			emitter->maxParticles = 600;
+			emitter->UV = Vec4 ( 0, 0, .03125, .03125 );
+			emitter->maxEmitterLifeTime = 4.0f + gameTime;
+			emitter->maxParticles = 400;
 			emitter->spawnRate = 100;
+			emitter->scale = Vec2 ( 0.6f );
+			emitter->acceleration = Vec3 ( 0, -10, 0 );
+			emitter->radius = 1.0f;
 			gib->emitter = emitter;
 		}
 		return;

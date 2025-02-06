@@ -2,11 +2,13 @@
 
 uniform float dt;
 
+
 struct Particle	{
 	vec4 pos;		//xyz = pos.	w = lifeTime [0,1]
-	vec4 color;		//xyz color		w: ?
-	vec4 velocity;	//xyz = vel		w = damping 
+	vec4 color;		//xyz color		w: scale.x
+	vec4 velocity;	//xyz = vel		w = scale.y 
 	vec4 acceleration;
+	vec4 UVs;
 };
 
 layout(std430, binding = 3 ) buffer particleBuffer {
@@ -20,6 +22,6 @@ void main() {
 	uint id = gl_GlobalInvocationID.x;
 
 	//Note: Could integrate this properly and make it less "frame dependent" but i really dont care to
-	particles[id].velocity.xyz += vec3(0,-10,0) * dt;
-	particles[id].pos += particles[id].velocity * dt ;
+	particles[id].velocity.xyz += particles[id].acceleration.xyz * dt;
+	particles[id].pos += particles[id].velocity * dt;
 }
