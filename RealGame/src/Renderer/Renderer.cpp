@@ -251,7 +251,10 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 		GLBufferAddAttribute( &renderer->skybox.buffer, 0, 3, GL_FLOAT, 3 * sizeof( float ), ( void* )0 );
 	}
 
-	renderer->numEmitters = 6;
+	//Set Up Emitters
+	for (int i = 0; i < MAX_PARTICLE_EMITTERS; i++) {
+		renderer->emitters.freeList[i] = &renderer->emitters.emitters[i];
+	}
 }
 
 void RenderInitFont() {
@@ -435,7 +438,8 @@ void RenderUpdateAndDrawParticles() {
 	};
 	
 	for (int i = 0; i < renderer.numEmitters; i++) {
-		float particleLength = ( float )renderer.emitters.emitters[i].maxParticles / ( float )MAX_PARTICLES * 720.0f;
+		ParticleEmitter2* emitter = renderer.emitters.activeList[i];
+		float particleLength = ( float )emitter->maxParticles / ( float )MAX_PARTICLES * 720.0f;
 		int colorIndex = i % (sizeof( colors ) / sizeof( colors[0] ));
 		RenderDrawQuadColored( start, Vec2( particleLength, 40 ), colors[colorIndex] );
 		start.x += particleLength;
@@ -453,11 +457,30 @@ void RenderUpdateAndDrawParticles() {
 	int totalEmit = 0;
 	int firstParticle = 0;
 	for (int i = 0; i < renderer.numEmitters; i++) {
-		ParticleEmitter2* emitter = &renderer.emitters.emitters[i];
-		emitter->currentEmitterLifetime += dt;
+		ParticleEmitter2* emitter = renderer.emitters.activeList[i];
+		if (emitter->currentEmitterLifetime > emitter->maxEmitterLifeTime)
+			continue;
+		
+		int emit = 0;
+		int particleCountNow = 0;
 
-		int particleCountNow = ( int )roundf( emitter->currentEmitterLifetime * emitter->spawnRate );
-		int emit = particleCountNow - emitter->numParticles;
+		if (emitter->emitterSpawnType == EMITTER_INSTANT) {
+		//	//Shoot all out at once
+			if (emitter->currentEmitterLifetime == 0.0f) {
+				emit = emitter->maxParticles;
+				emitter->numParticles = emit;
+			}
+			emitter->currentEmitterLifetime += dt;
+			particleCountNow = emitter->numParticles;
+		}
+		else {
+			//Figure out how far along the lifetime we are and how many more to add
+			emitter->currentEmitterLifetime += dt;
+			particleCountNow = ( int )roundf ( emitter->currentEmitterLifetime * emitter->spawnRate );
+			emit = particleCountNow - emitter->numParticles;
+		}
+		
+		//Add to proper buffers
 		renderer.emitters.numParticlesPerEmitter[i] = emit;
 		emitter->numParticles = particleCountNow;
 		emitter->particleOffset = firstParticle;
@@ -470,9 +493,17 @@ void RenderUpdateAndDrawParticles() {
 			continue;
 		}
 	}
+
+	//This is bad that it has to be recreated each frame, but ill worry about that later
+	TEMP_ARENA_SET;
+	Renderer::Emitter2* uploadEmitter = (Renderer::Emitter2*) TEMP_ALLOC ( sizeof(Renderer::Emitter2) );
+	memcpy ( uploadEmitter->numParticlesPerEmitter, renderer.emitters.numParticlesPerEmitter, MAX_PARTICLE_EMITTERS * 4 );
+	for (int i = 0; i < renderer.numEmitters; i++)
+		uploadEmitter->emitters[i] = *renderer.emitters.activeList[i];
+
 	//Upload all emitters (Todo only do when dirtydds)
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer.particleEmitterSSBO2 );
-	glBufferSubData( GL_SHADER_STORAGE_BUFFER, 0, sizeof( renderer.emitters ), &renderer.emitters );
+	glBufferSubData( GL_SHADER_STORAGE_BUFFER, 0, sizeof( renderer.emitters ), uploadEmitter );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
 
 	//Emit Particles
@@ -498,57 +529,36 @@ void RenderUpdateAndDrawParticles() {
 	nglDrawArrays ( GL_TRIANGLES, 0, MAX_PARTICLES * 6 );
 
 	glDisable ( GL_BLEND );
-#if 0
-	//Clean the emitters once done
-	if (renderer.emittersDirty) {
-		for (int i = 0; i < renderer.numEmitters; i++) {
-			ParticleEmitter2* emitter = &renderer.emitters.emitters[i];
-			if (emitter->maxEmitterLifeTime == 0 || emitter->currentEmitterLifetime > emitter->maxEmitterLifeTime) {
-				int numSubtract = 1;
-				int subtractPartices = emitter->maxParticles;
 
-				//Get next ones in a row to do 1 memcpy
-				for (int n = i + 1; n < renderer.numEmitters; n++) {
-					ParticleEmitter2* emitter = &renderer.emitters.emitters[n];
-					if (emitter->maxEmitterLifeTime == 0 || emitter->currentEmitterLifetime> emitter->maxEmitterLifeTime) {
-						i++;
-						numSubtract++;
-						subtractPartices += emitter->maxParticles;
-					}
-					else
-						break;
-				}
+	for (int i = 0; i < renderer.numEmitters; i++) {
+		ParticleEmitter2* emitter = renderer.emitters.activeList[i];
+		if (emitter->maxEmitterLifeTime == 0 || emitter->currentEmitterLifetime > emitter->maxEmitterLifeTime) {
 
-				//If these are the onyl emitters then we dont need to move any data
-				if (numSubtract == renderer.numEmitters) {
-					renderer.numEmitters = 0;
-				}
-				else {
-					u32 emittersLeft = renderer.numEmitters - i - 1;
-					//If 0 emitters left, it means we only removed off the end. do not need to move data
-					if (emittersLeft == 0) {
-						renderer.numEmitters -= emittersLeft;
-					}
-					//We have emitters left and need to move them and their particles over
-					else {
-						memcpy ( emitter, emitter + numSubtract, emittersLeft * sizeof ( ParticleEmitter2 ) );
-						renderer.numEmitters = emittersLeft;
-
-						glBindBuffer ( GL_COPY_READ_BUFFER, renderer.particleEmitterSSBO2 );
-						glBindBuffer ( GL_COPY_WRITE_BUFFER, renderer.particleEmitterSSBO2 ); 
-						int read = emitter->particleOffset * PARTICLE_SIZE_GPU;
-						int write = (emitter->particleOffset + subtractPartices ) * PARTICLE_SIZE_GPU;
-						glCopyBufferSubData( GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, read, write, subtractPartices* PARTICLE_SIZE_GPU );
-						glBindBuffer ( GL_COPY_READ_BUFFER, 0 );
-						glBindBuffer ( GL_COPY_WRITE_BUFFER, 0 );
-					}
-				}
+			//Subtract particleSize from all future emitters
+			int moveParticles = 0;
+			for (int n = i + 1; n < renderer.numEmitters; n++) {
+				ParticleEmitter2* future = &renderer.emitters.emitters[n];
+				future->particleOffset -= emitter->numParticles;
+				moveParticles += future->numParticles;
 			}
+
+			//Copy all Emitters over by one
+			for (int n = i; n < renderer.numEmitters - 1; n++) {
+				renderer.emitters.activeList[n] = renderer.emitters.activeList[n + 1];
+			}
+
+			//Todo Copy buffer data
+			glBindBuffer ( GL_COPY_READ_BUFFER, renderer.particleEmitterSSBO2 );
+			glBindBuffer ( GL_COPY_WRITE_BUFFER, renderer.particleEmitterSSBO2 );
+			int read = (emitter->particleOffset + emitter->numParticles) * PARTICLE_SIZE_GPU;
+			int write = (emitter->particleOffset) * PARTICLE_SIZE_GPU;
+			glCopyBufferSubData ( GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, read, write, moveParticles * PARTICLE_SIZE_GPU );
+			glBindBuffer ( GL_COPY_READ_BUFFER, 0 );
+			glBindBuffer ( GL_COPY_WRITE_BUFFER, 0 );
+
+			renderer.numEmitters--;
 		}
 	}
-
-	glBindBuffer ( GL_SHADER_STORAGE_BUFFER, 0 );
-#endif
 }
 
 void RenderEndFrame( Renderer* renderer ) {
@@ -990,13 +1000,24 @@ void RenderDrawAllRigidBodies() {
 	}
 }
 
+//This does not handle actually removing it. The UpdateAndDrawEmitter function does
 void RemoveEmitter( ParticleEmitter2* emitter ) {
 	emitter->maxEmitterLifeTime = 0;
 	renderer.emittersDirty = true;
 }
 
 ParticleEmitter2* NewParticleEmitter() {
-	ParticleEmitter2* emitter = &renderer.emitters.emitters[renderer.numEmitters++];
+	if (renderer.numEmitters == MAX_PARTICLE_EMITTERS) {
+		LOG_WARNING ( LGS_RENDERER, "OUT OF PARTICLE EMITTERS" );
+		return 0;
+	}
+
+	ParticleEmitter2* emitter = renderer.emitters.freeList[0];
+
+	renderer.emitters.activeList[renderer.numEmitters] = emitter;
+	renderer.emitters.freeList[0] = renderer.emitters.freeList[MAX_PARTICLE_EMITTERS - renderer.numEmitters - 1];
+	renderer.numEmitters++;
+
 	memset ( emitter, 0, sizeof ( *emitter ) );
 	emitter->scale = Vec2 ( 1 );
 	return emitter;

@@ -81,12 +81,26 @@ void GoblinOnHit( EntityHitInfo info ) {
 		ParticleEmitter2* emitter = NewParticleEmitter();
 		emitter->pos = goblin->pos + Vec3(0,1,0);
 		emitter->UV = Vec4 ( .03125, 0, .03125+ .03125, .03125 );
-		emitter->maxEmitterLifeTime = 4.0f + gameTime;
+		emitter->maxEmitterLifeTime = 1.0f ;
 		emitter->maxParticles = 400;
 		emitter->spawnRate = 10;
-		emitter->scale = Vec2 ( 1.5f );
+		emitter->scale = Vec2 ( 2.5f );
 		emitter->acceleration = Vec3 ( 0, 5, 0 );
-		emitter->radius = 1.0f;
+		emitter->radius = 2.0f;
+		emitter->emitterSpawnType = EMITTER_INSTANT;
+
+		//Explosion Emitter
+		ParticleEmitter2* emitter2 = NewParticleEmitter ();
+		emitter2->pos = goblin->pos + Vec3 ( 0, 1, 0 );
+		emitter2->UV = Vec4 ( .03125 * 2, 0, .03125 * 3, .03125 );
+		emitter2->maxEmitterLifeTime = 1.0f;
+		emitter2->maxParticles = 100;
+		emitter2->spawnRate = 10;
+		emitter2->scale = Vec2 ( 3.5f );
+		emitter2->acceleration = Vec3 ( 0, -1, 0 );
+		emitter2->radius = 4.0f;
+		emitter2->emitterSpawnType = EMITTER_INSTANT;
+
 
 		for ( int i = 0; i < 3; i++ ) {
 			RigidBody* gib = NewRigidBody();
@@ -102,12 +116,13 @@ void GoblinOnHit( EntityHitInfo info ) {
 			ParticleEmitter2* emitter = NewParticleEmitter();
 			emitter->pos = Vec3(0, 0, 1);
 			emitter->UV = Vec4 ( 0, 0, .03125, .03125 );
-			emitter->maxEmitterLifeTime = 4.0f + gameTime;
+			emitter->maxEmitterLifeTime = 3.0f;
 			emitter->maxParticles = 400;
 			emitter->spawnRate = 100;
 			emitter->scale = Vec2 ( 0.6f );
 			emitter->acceleration = Vec3 ( 0, -10, 0 );
 			emitter->radius = 1.0f;
+			emitter->emitterSpawnType = EMITTER_OVERTIME;
 			gib->emitter = emitter;
 		}
 		return;

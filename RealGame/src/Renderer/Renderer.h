@@ -40,6 +40,11 @@ enum builtInShaderList {
 	SHADER_LAST,
 };
 
+enum emitterSpawn_t : i32 {
+	EMITTER_OVERTIME, //all particles (currently) evenly over time
+	EMITTER_INSTANT //all particles at once
+};
+
 //Only type of emitter is random for now
 struct ParticleEmitter2 {
 	Vec3 pos;
@@ -54,10 +59,10 @@ struct ParticleEmitter2 {
 	Vec3 acceleration;
 	float t3;
 
-	int particleOffset; //Where in the buffer does the emitter start
-	int numParticles;
-	int maxParticles;
-	int t2;
+	i32 particleOffset; //Where in the buffer does the emitter start
+	i32 numParticles;
+	i32 maxParticles;
+	emitterSpawn_t emitterSpawnType;
 
 	float spawnRate;
 	float particleLifeTime;
@@ -214,7 +219,10 @@ public:
 	struct Emitter2 {
 		int numParticlesPerEmitter[MAX_PARTICLE_EMITTERS];
 		ParticleEmitter2 emitters[MAX_PARTICLE_EMITTERS];
+		ParticleEmitter2* activeList[MAX_PARTICLE_EMITTERS];
+		ParticleEmitter2* freeList[MAX_PARTICLE_EMITTERS];
 	};
+
 	Emitter2 emitters;
 	GLBuffer particleBuffer2;
 	bool emittersDirty = false;

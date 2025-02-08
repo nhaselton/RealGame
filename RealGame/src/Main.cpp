@@ -17,9 +17,17 @@
 #include "game/Game.h"
 
 /*
-	Smoke Transparencies
-		If big spheres of smoke can be all done on CPU
-
+*	Finish Paritcles
+*		1) Make array of Emitter**
+*			Right now when an emitter is removed, everything is shifted onver.
+*			This causes references to the emitter (gore) to use the wrong emitter
+*		2) Sort particles
+*			Add all partices to new array free list
+*			Sort by center in new compute then draw
+*		3) Indirect Drawing
+*			Have particles write num particles alive to new buffer and draw indirect it
+* 
+* 
 	I want many little goblins running at the player
 		should be able to cause a chain reaction
 
@@ -126,7 +134,7 @@ int main() {
 #endif
 
 	PrintAllocators( &globalArena );
-	WindowSetVsync( &window,1 );
+	WindowSetVsync( &window, 0 );
 
 	bool start = true;
 
