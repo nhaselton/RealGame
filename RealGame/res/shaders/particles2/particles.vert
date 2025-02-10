@@ -12,6 +12,11 @@ layout(std430, binding = 3 ) buffer particleBuffer {
 	Particle particles[];
 };
 
+layout(std430, binding = 5 ) buffer sortedBuffer {
+	int sortCount;
+	uint sortIndices[];
+};
+
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
@@ -61,7 +66,12 @@ void main() {
 	uint vertexID = index % 6;
 	uint instanceID = index / 6;
 
+	if ( instanceID > uint(sortCount))
+		instanceID =0;
+
+	//instanceID = sortIndices[instanceID];
 	Particle particle = particles[instanceID];
+
 	vec3 quadPos = billboard[vertexID];
 	quadPos.x *= particles[instanceID].color.w;
 	quadPos.y *= particles[instanceID].velocity.w;
@@ -69,11 +79,8 @@ void main() {
 	vec3 realPos = particle.pos.xyz + quadPos;
 
 	vtex = CorrectUVs(index);
-
 	mat4 viewModel = view * model;
 
-	
 	realPos = particle.pos.xyz + ( quadPos * mat3(viewModel) );
-
 	gl_Position = projection * view * model * vec4(realPos, 1.0);
 }

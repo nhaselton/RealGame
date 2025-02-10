@@ -8,26 +8,31 @@
 #include "Resources\ModelManager.h"
 #include "Resources\ShaderManager.h"
 #include "Resources\Shader.h"
+#include "Resources\SoundManager.h"
 #include "Resources\TextureManager.h"
-#include "Renderer\Renderer.h"
 #include "Resources\Level.h"
+
+#include "Renderer\Renderer.h"
 #include "Renderer\DebugRenderer.h"
 
 #include "Physics\Physics.h"
 #include "game/Game.h"
-
 /*
-*	Finish Paritcles
-*		1) Make array of Emitter**
-*			Right now when an emitter is removed, everything is shifted onver.
-*			This causes references to the emitter (gore) to use the wrong emitter
-*		2) Sort particles
-*			Add all partices to new array free list
-*			Sort by center in new compute then draw
-*		3) Indirect Drawing
-*			Have particles write num particles alive to new buffer and draw indirect it
-* 
-* 
+*	Sound:
+*		Sound Resource Manager
+			Sound Source pool
+*		Sound Mixer Thread
+*			Figure out how to add sounds together
+*
+*
+*
+*	Sound:
+*		Play Sound
+			Shoot
+		Add Directional Sound
+			Explosion
+			Gib
+*
 	I want many little goblins running at the player
 		should be able to cause a chain reaction
 
@@ -37,12 +42,12 @@
 		Goblins
 
 * Animation
-*	Animation Events		
+*	Animation Events
 *		Should be able to add a new channel for events
 *		This may mean it is time to add the decl format.
-*	Properly loopign animataions 
+*	Properly loopign animataions
 *	Figure out where to store hud textures
-*	Add a default texture for failing to get them. 
+*	Add a default texture for failing to get them.
 		stop asserting and start warning
 
 	Actual Revolver Spread
@@ -51,9 +56,9 @@
 *	Physics:
 *		EntityColliders to be able to detect if they intersect each other
 *		Im fine if they clip each i think, i can have a collision resolve stage?
-* 
+*
 * 	Possible Optimizations:
-		Sparse List for entities. Right now it loops over all 1000, which shouldn't be 
+		Sparse List for entities. Right now it loops over all 1000, which shouldn't be
 		too bad however each entity is 2K and that will not be cache coherent at all
 
 	Graphics
@@ -61,6 +66,14 @@
 *			Cull Brushes with AABB from camera
 *				Can probably use the convex hucll BVH for this
 *				Dont worry about individual faces, quicker to just cull entire brushes
+
+*	Finish Paritcles
+*		2) Sort particles
+*			Add all partices to new array free list
+*			Sort by center in new compute then draw
+*		3) Indirect Drawing
+*			Have particles write num particles alive to new buffer and draw indirect it
+*		4) Fadeout over time
 
 */
 
@@ -74,6 +87,8 @@ Window window;
 ModelManager modelManager;
 Renderer renderer;
 
+SoundManager soundManager;
+
 ScratchArena globalArena;
 StackArena tempArena;
 
@@ -82,7 +97,6 @@ TextureManager textureManager;
 
 Physics physics;
 EntityManager entityManager;
-
 Level level;
 
 float dt;
@@ -108,6 +122,12 @@ int main() {
 	CreateDebugRenderer( &renderer, ScratchArenaAllocate( &globalArena, DEBUG_RENDERER_SIZE ), DEBUG_RENDERER_SIZE );
 
 	PhysicsInit();
+	CreateSoundManager();
+	//CreateSoundSystem ( &soundDevice, &soundContext );
+	Sound sound{};
+	LoadWavFile( &sound, "res/sounds/ShotgunFire3.wav" );
+	//StartSound ( &sound, Vec3 ( 0 ) );
+
 	CreateEntityManager();
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
@@ -125,12 +145,12 @@ int main() {
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
 	Goblin::model->animations[0]->looping = true;
 #if 1
-	Goblin* goblin = CreateGoblin(Vec3(-48, 1, -28));
-	Goblin* goblin2 = CreateGoblin(Vec3(-50, 1, -9));
-	Goblin* goblin3 = CreateGoblin(Vec3(-36, 1, 14));
+	Goblin* goblin = CreateGoblin( Vec3( -48, 1, -28 ) );
+	Goblin* goblin2 = CreateGoblin( Vec3( -50, 1, -9 ) );
+	Goblin* goblin3 = CreateGoblin( Vec3( -36, 1, 14 ) );
 
-	Goblin* bgoblin = CreateGoblin(Vec3(-24, 1, -28));
-	Goblin* bgoblin3 = CreateGoblin(Vec3(-12, 1, 14));
+	Goblin* bgoblin = CreateGoblin( Vec3( -24, 1, -28 ) );
+	Goblin* bgoblin3 = CreateGoblin( Vec3( -12, 1, 14 ) );
 #endif
 
 	PrintAllocators( &globalArena );
@@ -140,29 +160,36 @@ int main() {
 
 	renderer.drawStats = true;
 
-	while ( !WindowShouldClose( &window ) ) {
+	AudioSource* source = NewAudioSource();
+	while( !WindowShouldClose( &window ) ) {
 		//PROFILE( "Frame" );
 		KeysUpdate();
 		WindowPollInput( &window );
+		UpdateSounds();
 
-		if ( KeyPressed( KEY_P ) )
+		if( KeyPressed( KEY_P ) ) {
 			paused = !paused;
+		}
+
+		if( KeyPressed( KEY_SPACE ) ) {
+			PlaySound( source, &sound );
+		}
 
 		timer.Tick();
 		dt = timer.GetTimeSeconds();
 
-		if ( KeyDown( KEY_T ) ) {
+		if( KeyDown( KEY_T ) ) {
 			start = true;
 			dt = 1.0f / 144.0f;
 		}
-		if ( !start ) continue;
+		if( !start ) continue;
 
 		timer.Restart();
 
-		if (dt > 1.0f / 144.0f)
+		if( dt > 1.0f / 144.0f )
 			dt = 1.0f / 144.0f;
 
-		if ( !paused ) {
+		if( !paused ) {
 			gameTime += dt;
 			//Movement
 			UpdateBoids();
@@ -177,14 +204,14 @@ int main() {
 
 		DebugDrawLine( Vec3( 0 ), Vec3( 10 ) );
 
-		
+
 		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );
 		RenderDrawFrame( &renderer, dt );
 
-		RenderDrawMuzzleFlash(renderer.blankTexture);
+		RenderDrawMuzzleFlash( renderer.blankTexture );
 
-		if ( paused )
+		if( paused )
 			RenderDrawText( Vec2( 600, 300 ), 48, "PAUSED" );
 
 		RenderEndFrame( &renderer );

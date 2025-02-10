@@ -69,6 +69,25 @@ void GoblinOnHit( EntityHitInfo info ) {
 		RemoveEntity( goblin );	
 		RemoveBoid( goblin );
 
+		//Explode
+		for (int i = 0; i < entityManager.numEntities; i++) {
+			if (entityManager.entities[i].state != ACTIVE_ACTIVE)
+				continue;
+			Entity* other = &entityManager.entities[i].entity;
+
+			if (glm::length ( other->pos - goblin->pos ) > 10.0f )
+				continue;
+
+			if (other->OnHit != 0) {
+				EntityHitInfo info{};
+				info.attacker = goblin;
+				info.victim = other;
+				info.damage = 10.0f;
+				other->OnHit ( info );
+			}
+		}
+
+
 		Vec3 velocities []{
 			Vec3( -5,10,3 ),
 			Vec3( 10,10,-7 ),
@@ -78,27 +97,28 @@ void GoblinOnHit( EntityHitInfo info ) {
 		Model* gibs = ModelManagerGetModel( "res/models/gib.glb" );
 
 		//Smoke Emitter
+#if 1
 		ParticleEmitter2* emitter = NewParticleEmitter();
 		emitter->pos = goblin->pos + Vec3(0,1,0);
 		emitter->UV = Vec4 ( .03125, 0, .03125+ .03125, .03125 );
 		emitter->maxEmitterLifeTime = 1.0f ;
-		emitter->maxParticles = 400;
+		emitter->maxParticles = 200;
 		emitter->spawnRate = 10;
-		emitter->scale = Vec2 ( 2.5f );
+		emitter->scale = Vec2 ( 1.0f );
 		emitter->acceleration = Vec3 ( 0, 5, 0 );
-		emitter->radius = 2.0f;
+		emitter->radius = 6.0f;
 		emitter->emitterSpawnType = EMITTER_INSTANT;
-
+#endif	
 		//Explosion Emitter
 		ParticleEmitter2* emitter2 = NewParticleEmitter ();
 		emitter2->pos = goblin->pos + Vec3 ( 0, 1, 0 );
 		emitter2->UV = Vec4 ( .03125 * 2, 0, .03125 * 3, .03125 );
-		emitter2->maxEmitterLifeTime = 1.0f;
-		emitter2->maxParticles = 100;
+		emitter2->maxEmitterLifeTime = 3.0f;
+		emitter2->maxParticles = 60;
 		emitter2->spawnRate = 10;
-		emitter2->scale = Vec2 ( 3.5f );
+		emitter2->scale = Vec2 ( 2.5f );
 		emitter2->acceleration = Vec3 ( 0, -1, 0 );
-		emitter2->radius = 4.0f;
+		emitter2->radius = 2.0f;
 		emitter2->emitterSpawnType = EMITTER_INSTANT;
 
 
@@ -113,6 +133,7 @@ void GoblinOnHit( EntityHitInfo info ) {
 			gib->model = gibs;
 
 			//Blood Emitter
+#if 1
 			ParticleEmitter2* emitter = NewParticleEmitter();
 			emitter->pos = Vec3(0, 0, 1);
 			emitter->UV = Vec4 ( 0, 0, .03125, .03125 );
@@ -124,6 +145,7 @@ void GoblinOnHit( EntityHitInfo info ) {
 			emitter->radius = 1.0f;
 			emitter->emitterSpawnType = EMITTER_OVERTIME;
 			gib->emitter = emitter;
+#endif
 		}
 		return;
 	}

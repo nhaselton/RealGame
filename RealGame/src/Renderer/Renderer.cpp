@@ -144,7 +144,7 @@ void RenderCreateShaders( Renderer* renderer ) {
 void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	Mat4 view( 1.0 );
 	renderer->projection = glm::perspective( glm::radians( 90.0f ), 16.0f / 9.0f, .1f, 2048.0f );
-	renderer->orthographic = glm::ortho( 0.0f, ( float )window.width, ( float )window.height, 0.0f, -1.0f, 1.0f );
+	renderer->orthographic = glm::ortho( 0.0f, ( float )1280.0f, ( float )720.0f, 0.0f, -1.0f, 1.0f );
 	Vec4 color( 1, 0, 0, 1 );
 
 	renderer->cube = ModelManagerAllocate( &modelManager, "res/models/cube.glb" );
@@ -182,6 +182,12 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof( renderer->emitters ), 0, GL_DYNAMIC_DRAW );
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 4, renderer->particleEmitterSSBO2 );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+
+	glGenBuffers ( 1, &renderer->particleSortSSBO );
+	glBindBuffer ( GL_SHADER_STORAGE_BUFFER, renderer->particleSortSSBO );
+	glBufferData ( GL_SHADER_STORAGE_BUFFER, MAX_PARTICLES * sizeof ( u32 ), 0, GL_DYNAMIC_DRAW );
+	glBindBufferBase ( GL_SHADER_STORAGE_BUFFER, 5, renderer->particleSortSSBO );
+	glBindBuffer ( GL_SHADER_STORAGE_BUFFER, 0 );
 
 	//Billboard
 	float veritcesarr[]{
@@ -372,7 +378,6 @@ void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture ) {
 	Shader* shader = renderer.shaders[SHADER_UI];
 	RenderSetShader( &renderer, shader );
 
-	Mat4 projection = glm::ortho( 0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f );
 	Mat4 t = glm::translate( Mat4( 1.0 ), Vec3( pos, 0 ) );
 	Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( size, 1.0f ) );
 	Mat4 trs = t * s;

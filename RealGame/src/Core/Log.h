@@ -16,7 +16,8 @@ enum subSystem_t {
 	LGS_IO = 0b1000,
 	LGS_RENDERER = 0b10000,
 	LGS_GAME = 0b100000,
-	LGS_PHYSICS = 0b1000000
+	LGS_PHYSICS = 0b1000000,
+	LGS_SOUND = 0b10000000,
 };
 
 //Which subsystems do we care about, starts as all 

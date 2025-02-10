@@ -7,7 +7,8 @@
 
 #define MAX_FRAME_INFOS 1000
 #define FONT_BATCH_SIZE 8192
-#define MAX_PARTICLES 32768 //1MB of particles. Must change compute if this changes
+//1MB of particles. Must change compute if this changes
+#define MAX_PARTICLES 32768 //Must be power of 2
 #define MAX_PARTICLE_EMITTERS 64
 #define PARTICLE_SIZE_GPU 80 //pos,vel,lifetime,active?
 
@@ -215,6 +216,7 @@ public:
 	
 	u32 particleSSBO2;
 	u32 particleEmitterSSBO2;
+	u32 particleSortSSBO;
 
 	struct Emitter2 {
 		int numParticlesPerEmitter[MAX_PARTICLE_EMITTERS];

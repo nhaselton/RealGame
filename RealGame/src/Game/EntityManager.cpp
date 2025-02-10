@@ -24,6 +24,8 @@ Entity* NewEntity() {
 		StoredEntity* stored = &entityManager.entities[i];
 		if ( stored->state != ACTIVE_INACTIVE )
 			continue;
+
+		entityManager.numEntities++;
 		memset( &stored->entity, 0, MAX_ENTITY_SIZE );
 
 		stored->entity.rotation = Quat( 1, 0, 0, 0 );

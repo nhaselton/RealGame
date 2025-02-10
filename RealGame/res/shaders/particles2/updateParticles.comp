@@ -15,6 +15,10 @@ layout(std430, binding = 3 ) buffer particleBuffer {
 	Particle particles[];
 };
 
+layout(std430, binding = 5 ) buffer sortedBuffer {
+	int sortCount;
+	uint sortIndices[];
+};
 
 layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
@@ -24,4 +28,7 @@ void main() {
 	//Note: Could integrate this properly and make it less "frame dependent" but i really dont care to
 	particles[id].velocity.xyz += particles[id].acceleration.xyz * dt;
 	particles[id].pos += particles[id].velocity * dt;
+	
+	int sortIndex = atomicAdd(sortCount,1);
+	sortIndices[sortIndex] = id;
 }

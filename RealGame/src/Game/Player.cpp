@@ -77,7 +77,7 @@ void UpdatePlayer( Entity* entity ) {
 	wantDir *= 20.0f * dt;
 
 	
-#if 0 //Normal
+#if 1 //Normal
 	EntityMove( player, wantDir );
 #else //Noclip
 	entity->pos += wantDir;
@@ -153,8 +153,10 @@ void PlayerOnHit( EntityHitInfo info ) {
 	printf( "ouch!" );
 
 	info.victim->health--;
-	if ( info.victim->health <= 0 )
-		exit( 0 );
+	if (info.victim->health <= 0) {
+		LOG_INFO ( LGS_GAME, "PLAYER DEAD!" );
+		//exit( 0 );
+	}
 
 	return;
 }
