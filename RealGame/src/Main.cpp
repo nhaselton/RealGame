@@ -18,28 +18,27 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-*	Sound:
-*		Sound Resource Manager
-			Sound Source pool
-*		Sound Mixer Thread
-*			Figure out how to add sounds together
-*
-*
-*
-*	Sound:
-*		Play Sound
-			Shoot
-		Add Directional Sound
-			Explosion
-			Gib
-*
-	I want many little goblins running at the player
-		should be able to cause a chain reaction
-
 	Quake FGD File
 		Player Spawn
 		Ogre
 		Goblins
+		Wizard
+
+	Ranged Enemy
+
+	MVP:
+		1 Ranged ememy who acts like headless soldier in SeriousSam
+			Tries to get LOS but not run up to melee range
+		Kamakazi Enemies
+
+		Single 2 or 3 room level (Start of karnack pretty much)
+			that starts in small room with Ragned guys
+			Goes outdoors into field that has kamakazi and ranged guys
+
+
+	CPU Flipbooks
+		Explosion, etc
+			These are not particles but just a static image
 
 * Animation
 *	Animation Events
@@ -99,6 +98,8 @@ Physics physics;
 EntityManager entityManager;
 Level level;
 
+Sound explosion;
+
 float dt;
 float gameTime = 0;
 bool paused = false;
@@ -125,8 +126,8 @@ int main() {
 	CreateSoundManager();
 	//CreateSoundSystem ( &soundDevice, &soundContext );
 	Sound sound{};
-	LoadWavFile( &sound, "res/sounds/ShotgunFire3.wav" );
-	//StartSound ( &sound, Vec3 ( 0 ) );
+	LoadWavFile( &sound, "res/sounds/RevolverShoot.wav" );
+	LoadWavFile( &explosion, "res/sounds/Explosion.wav" );
 
 	CreateEntityManager();
 
@@ -141,10 +142,14 @@ int main() {
 	//Gibs
 	ModelManagerAllocate( &modelManager, "res/models/gib.glb" );
 
-	//Model
+	//Wizard Model
+	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizard.glb" );
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
+
+	//Model
 	Goblin::model->animations[0]->looping = true;
-#if 1
+	Wizard::model->animations[0]->looping = true;
+#if 0
 	Goblin* goblin = CreateGoblin( Vec3( -48, 1, -28 ) );
 	Goblin* goblin2 = CreateGoblin( Vec3( -50, 1, -9 ) );
 	Goblin* goblin3 = CreateGoblin( Vec3( -36, 1, 14 ) );
@@ -152,6 +157,8 @@ int main() {
 	Goblin* bgoblin = CreateGoblin( Vec3( -24, 1, -28 ) );
 	Goblin* bgoblin3 = CreateGoblin( Vec3( -12, 1, 14 ) );
 #endif
+
+	Wizard* wizard = CreateWizard( Vec3(-37.4,-3.5,-10.6) );
 
 	PrintAllocators( &globalArena );
 	WindowSetVsync( &window, 0 );
@@ -199,8 +206,9 @@ int main() {
 			EntityManagerCleanUp();
 			AnimateEntities();
 		}
-
-		//printf("%.2f %.2f %.2f\n", player->pos.x, player->pos.y, player->pos.z);
+		char buffer[2048]{};
+		sprintf_s( buffer, 2048, "Player pos: %.2f %.2f %.2f\n", player->pos.x, player->pos.y, player->pos.z );
+		RenderDrawText( Vec2( 0, 360 ), 16, buffer );
 
 		DebugDrawLine( Vec3( 0 ), Vec3( 10 ) );
 

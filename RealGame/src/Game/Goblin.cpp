@@ -3,9 +3,10 @@
 #include "Resources/ModelManager.h"
 #include "Renderer\DebugRenderer.h"
 #include "Renderer\Renderer.h"
-
+#include "Resources/SoundManager.h"
 Model* Goblin::model = 0;
 
+extern Sound explosion;
 Goblin* CreateGoblin( Vec3 pos ) {
 	//Todo Better Solution
 	Goblin* goblin = ( Goblin* ) NewEntity();
@@ -86,7 +87,7 @@ void GoblinOnHit( EntityHitInfo info ) {
 				other->OnHit ( info );
 			}
 		}
-
+		CreateTempAudioSource( &explosion );
 
 		Vec3 velocities []{
 			Vec3( -5,10,3 ),

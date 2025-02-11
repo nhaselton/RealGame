@@ -155,6 +155,7 @@
     <ClCompile Include="src\Game\Goblin.cpp" />
     <ClCompile Include="src\Game\Ogre.cpp" />
     <ClCompile Include="src\Game\Player.cpp" />
+    <ClCompile Include="src\Game\Wizard.cpp" />
     <ClCompile Include="src\glad.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Core\NMemory.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="src\Game\Goblin.h" />
     <ClInclude Include="src\Game\Ogre.h" />
     <ClInclude Include="src\Game\Player.h" />
+    <ClInclude Include="src\Game\Wizard.h" />
     <ClInclude Include="src\Physics\Colliders.h" />
     <ClInclude Include="src\Physics\Physics.h" />
     <ClInclude Include="src\Renderer\Camera.h" />

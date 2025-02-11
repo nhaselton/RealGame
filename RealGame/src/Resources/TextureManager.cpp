@@ -32,7 +32,7 @@ Texture* TextureManagerLoadTextureFromMemory( u8* memory, u32 size, const char* 
 
 	//Now Upload it to opengl
 	if ( !data ) {
-		LOG_ASSERT( LGS_IO, "Could not load texture from memory" );
+		LOG_ERROR( LGS_IO, "Could not load texture from memory" );
 		return 0;
 	}
 	if ( !info ) {

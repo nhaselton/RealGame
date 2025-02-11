@@ -93,6 +93,14 @@ void LoadWavFile ( Sound* sound, const char* path ) {
 	memset ( sound->data, 0, wav.dataSize );
 }
 
+AudioSource* CreateTempAudioSource( Sound* sound ) {
+    AudioSource* source = NewAudioSource();
+    source->sound = sound;
+    source->flags = AUDIO_SOURCE_TEMP;
+    PlaySound( source, sound );
+    return source;
+}
+
 AudioSource* NewAudioSource () {
     if (soundManager.numSources == MAX_AUDIO_SOURCES) {
 		LOG_WARNING ( LGS_SOUND, "Can't create new audio sources\n" );
@@ -102,6 +110,7 @@ AudioSource* NewAudioSource () {
 	AudioSource* source = ( AudioSource* )PoolArenaAllocate ( &soundManager.AudioSourceArena );
     source->active = false;
     source->sound = 0;
+    source->flags = 0;
 
     alSourcef( source->alSourceIndex, AL_PITCH, 1 );
     alSourcef( source->alSourceIndex, AL_GAIN, 1.0f );

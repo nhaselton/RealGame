@@ -4,6 +4,8 @@
 //Entity
 #include "Entity.h"
 #include "EntityManager.h"
+#include "Player.h"
+
 #include "Goblin.h"
 #include "Ogre.h"
-#include "Player.h"
+#include "Wizard.h"

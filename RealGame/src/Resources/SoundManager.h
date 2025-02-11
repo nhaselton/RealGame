@@ -3,6 +3,11 @@
 class ALCdevice;
 class ALCcontext;
 
+enum audioSourceFlags_t {
+	AUDIO_SOURCE_NONE,
+	AUDIO_SOURCE_TEMP = 0x1
+};
+
 struct WavFile {
 	char chunkID[4];
 	int chunkSize;
@@ -37,6 +42,7 @@ struct AudioSource {
 	int alState;
 	//Make sure this is at least 8bytes into struct so pointer does not override
 	u32 alSourceIndex;
+	u32 flags;
 };
 
 class SoundManager {
@@ -57,6 +63,8 @@ public:
 extern SoundManager soundManager;
 
 AudioSource* NewAudioSource ();
+//Audio source that will remove itself once the sound is done
+AudioSource* CreateTempAudioSource( Sound* sound );
 void RemoveAudioSource ( AudioSource* source );
 void SoundSetListenerPosition ( const Vec3& pos );
 //If sound != 0, will change sound

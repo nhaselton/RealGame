@@ -17,6 +17,7 @@ enum goblinAnimations {
 class Goblin : public Entity{
 public:
 	static Model* model;
+	struct AudioSource* audioSource;
 };
 
 Goblin* CreateGoblin( Vec3 pos );
