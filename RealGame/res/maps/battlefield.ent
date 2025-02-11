@@ -1,0 +1,15 @@
+{
+"classname" "info_player_start"
+"origin" "-512 -224 -152"
+"abc" "def"
+}
+// entity 2
+{
+"classname" "info_goblin_start"
+"origin" "73 135 -144"
+}
+// entity 3
+{
+"classname" "info_wizard_start"
+"origin" "73 -153 -125"
+}

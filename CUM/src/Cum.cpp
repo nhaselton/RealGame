@@ -55,6 +55,17 @@ bool Compile( const char* input, const char* output ) {
 		printf( "[FATAL ERROR] Could not load map %s\n", input );
 		return false;
 	}
+
+	char entityPath[MAX_PATH_LENGTH];
+	int entLen = strlen( output );
+	strcpy_s( entityPath, MAX_PATH_LENGTH, output );
+	entityPath[entLen - 3] = 'e';
+	entityPath[entLen - 2] = 'n';
+	entityPath[entLen - 1] = 't';
+	
+	FILE* entityFile = 0;
+	fopen_s( &entityFile, entityPath, "wb" );
+
 	//Setup allocators
 	fseek( file, 0, SEEK_END );
 	u32 len = ftell( file );
@@ -74,19 +85,32 @@ bool Compile( const char* input, const char* output ) {
 
 	Token tok = parser.GetCurrent();
 	while ( ( parser.GetCurrent().type != TT_EOF ) ) {
+		u32 start = parser.Cursor() - 1;
+
 		parser.ExpectedTokenTypePunctuation( '{' );
 		//Figure out what to make from this
 		if ( parser.GetCurrent().StringEquals( ( char* ) "mapversion" ) ) {
 			bool ws = LoadWorldSpawn( &parser, output );
 			if ( !ws )
 				return false;
-			break;
+		}
+		//For now just copy anything that isnt worldspawn into an entity file
+		else if( parser.GetCurrent().StringEquals( ( char* ) "classname" ) ) {
+			while( parser.GetCurrent().subType != '}' ) {
+				tok = parser.ReadToken();
+			}
+
+			tok = parser.ReadToken(); // }
+			u32 end = parser.Cursor();
+
+			fwrite( parser.Data() + start, 1, end - start - 1, entityFile );
 		}
 		else {
-			return true;
+			printf( "Bad Entity File\n" );
 		}
 	}
 
+	fclose( entityFile );
 	return true;
 }
 
@@ -763,4 +787,3 @@ BVHTree ConstructBVH( std::vector<NPBrush>& brushes ) {
 	free( workingSet );
 	return tree;
 }
-

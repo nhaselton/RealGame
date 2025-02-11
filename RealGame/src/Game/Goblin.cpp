@@ -29,6 +29,7 @@ Goblin* CreateGoblin( Vec3 pos ) {
 
 	goblin->Update = GoblinUpdate;
 	goblin->OnHit = GoblinOnHit;
+
 	return goblin;
 }
 

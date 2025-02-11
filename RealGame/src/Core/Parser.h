@@ -85,7 +85,8 @@ public:
 	float ParseFloat();
 	float ParseFloatFromQuotes();//same as part float but wont throw error
 	void ParseString( char* buffer, u32 bufferSize );
-
+	u32 Cursor() { return cursor; }
+	char* Data() { return buffer; }
 	//Parse float of size and place inside of dests
 	void ParseVec( float* dest, int VecSize, bool hasParenthesesSurrounding );
 	bool AtEndOfFile();

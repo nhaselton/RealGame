@@ -22,7 +22,5 @@ Wizard* CreateWizard( Vec3 pos ) {
 	wizard->bounds->offset = wizard->pos;
 	wizard->renderModel->scale = Vec3(3);
 
-	DebugDrawCharacterCollider( wizard->bounds, Vec3(0,1,0), true, true, 10000.0f );
-
 	return wizard;
 }

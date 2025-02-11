@@ -123,6 +123,8 @@ int main() {
 	CreateDebugRenderer( &renderer, ScratchArenaAllocate( &globalArena, DEBUG_RENDERER_SIZE ), DEBUG_RENDERER_SIZE );
 
 	PhysicsInit();
+
+
 	CreateSoundManager();
 	//CreateSoundSystem ( &soundDevice, &soundContext );
 	Sound sound{};
@@ -130,6 +132,10 @@ int main() {
 	LoadWavFile( &explosion, "res/sounds/Explosion.wav" );
 
 	CreateEntityManager();
+
+	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizard.glb" );
+	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
+
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
 	LoadLevel( &level, "res/maps/battlefield.cum" );
@@ -142,9 +148,6 @@ int main() {
 	//Gibs
 	ModelManagerAllocate( &modelManager, "res/models/gib.glb" );
 
-	//Wizard Model
-	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizard.glb" );
-	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
 
 	//Model
 	Goblin::model->animations[0]->looping = true;
@@ -156,9 +159,9 @@ int main() {
 
 	Goblin* bgoblin = CreateGoblin( Vec3( -24, 1, -28 ) );
 	Goblin* bgoblin3 = CreateGoblin( Vec3( -12, 1, 14 ) );
-#endif
 
 	Wizard* wizard = CreateWizard( Vec3(-37.4,-3.5,-10.6) );
+#endif
 
 	PrintAllocators( &globalArena );
 	WindowSetVsync( &window, 0 );

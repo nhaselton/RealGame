@@ -43,3 +43,4 @@ extern double scale;
 extern bool fixNormals;
 bool Compile( const char* input, const char* output);
 bool LoadWorldSpawn( class Parser* parser, const char* output );
+

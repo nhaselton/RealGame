@@ -9,3 +9,5 @@
 #include "Goblin.h"
 #include "Ogre.h"
 #include "Wizard.h"
+
+void GameLoadEntities( const char* path );

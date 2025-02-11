@@ -60,3 +60,18 @@
 ( 2320 -1488 -544 ) ( 2320 -1488 -528 ) ( 2320 752 -544 ) prototype/jpg128_blue_2 [ 0 1 0 0 ] [ 0 0 -1 16 ] 0 1 1
 }
 }
+// entity 1
+{
+"classname" "info_player_start"
+"origin" "-512 -224 -152"
+}
+// entity 2
+{
+"classname" "info_goblin_start"
+"origin" "73 135 -144"
+}
+// entity 3
+{
+"classname" "info_wizard_start"
+"origin" "73 -153 -125"
+}

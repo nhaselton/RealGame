@@ -5,6 +5,15 @@
 struct BoundsHalfWidth;
 struct SkeletonPose;
 
+enum entityType_t {
+	ENT_NONE,
+	ENT_PLAYER,
+	ENT_OGRE,
+	ENT_GOBLIN,
+	ENT_WIZARD,
+
+};
+
 enum activeState_t {
 	ACTIVE_INACTIVE = 0,
 	ACTIVE_WAIT_FOR_REMOVE = 1, //removed at end of frame

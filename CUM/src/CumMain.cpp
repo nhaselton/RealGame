@@ -36,7 +36,7 @@ int main( int argc, const char** argv ) {
 	if ( argc == 1 ) {
 		input = ( char* ) malloc( 1000 );
 		memset( input, 0, 1000 );
-		strcpy_s( input, 1000, "C:\\Workspace\\Cpp\\RealGame\\RealGame\\res\\maps\\blank.map" );
+		strcpy_s( input, 1000, "C:\\Workspace\\Cpp\\RealGame\\RealGame\\res\\maps\\battlefield.map" );
 	}else
 		input = (char*) argv[1];
 #else
