@@ -1000,7 +1000,7 @@ void RenderDrawAllRigidBodies() {
 			Mat4 t = glm::translate( Mat4( 1.0 ), body->pos + body->visualOffset );
 			Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( body->modelScale ) );
 			Mat4 trs = t * s;
-			RenderDrawModel( &renderer, body->model, trs );
+			RenderDrawModel( &renderer, body->model, trs, body->pose );
 		}
 	}
 }

@@ -50,10 +50,18 @@ public:
 	//RenderModel
 };
 
+struct State {
+	void ( *OnEnter ) ( class Entity* entity );
+	void ( *OnUpdate ) ( class Entity* entity );
+	void ( *OnExit ) ( class Entity* entity );
+};
+
 class Entity {
 public:
 	Vec3 pos;
 	Quat rotation;
+
+	Vec3 target;
 
 	Vec3 boidVelocity;
 

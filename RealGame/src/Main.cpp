@@ -18,15 +18,24 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-	Quake FGD File
-		Player Spawn
-		Ogre
-		Goblins
-		Wizard
+	Wizard:
+		Gameplay
+			Figure out how to handle skeletal dead bodies
+				Implement Proper Dying
+					Remove entity and replace with dead body gib.
 
-	Ranged Enemy
+		Triggers
+			Brushes are triggers, 
+				Must be AABB (Will just yell at you during map load)
+					OR CAN I DO COMPILE TIME??
+			Trigger can start encounter
+				Or just spawn single enemy
+
+		Encounters
 
 	MVP:
+		Triggers for stuff
+
 		1 Ranged ememy who acts like headless soldier in SeriousSam
 			Tries to get LOS but not run up to melee range
 		Kamakazi Enemies
@@ -35,6 +44,8 @@
 			that starts in small room with Ragned guys
 			Goes outdoors into field that has kamakazi and ranged guys
 
+
+	.def files
 
 	CPU Flipbooks
 		Explosion, etc
@@ -55,6 +66,8 @@
 *	Physics:
 *		EntityColliders to be able to detect if they intersect each other
 *		Im fine if they clip each i think, i can have a collision resolve stage?
+*		Customizable Boid settings (avoidance, interest in target etc.)
+*			Combine this with AABB collisions and it should be swag
 *
 * 	Possible Optimizations:
 		Sparse List for entities. Right now it loops over all 1000, which shouldn't be
@@ -80,6 +93,7 @@
 //Todo STB_Malloc, Realloc, Free
 //Todo look into a precompiled header like doom 3 bfg's
 //Todo decide how to automate shader args
+//Fxi dead body not replacing perfectly
 
 
 Window window;
@@ -136,6 +150,15 @@ int main() {
 	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizard.glb" );
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
 
+	//Generate Deadpose
+	Wizard::deadPose = ( SkeletonPose* ) ScratchArenaAllocate( &globalArena, sizeof( SkeletonPose ) );
+	Wizard::deadPose->globalPose = ( Mat4*  ) ScratchArenaAllocate( &globalArena, sizeof(Mat4) * Wizard::model->skeleton->numBones );
+	Wizard::deadPose->pose = ( JointPose* ) ScratchArenaAllocate( &globalArena, sizeof( Mat4 ) * Wizard::model->skeleton->numNodes );
+	Wizard::deadPose->skeleton = Wizard::model->skeleton;
+	AnimatePose( Wizard::model->animations[WIZARD_ANIM_DEATH]->duration - .001f, Wizard::model->animations[WIZARD_ANIM_DEATH], Wizard::deadPose );
+	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
+
+
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
 	LoadLevel( &level, "res/maps/battlefield.cum" );
@@ -150,8 +173,8 @@ int main() {
 
 
 	//Model
-	Goblin::model->animations[0]->looping = true;
-	Wizard::model->animations[0]->looping = true;
+	Goblin::model->animations[GOBLIN_ANIM_RUN]->looping = true;
+	Wizard::model->animations[WIZARD_ANIM_RUN]->looping = true;
 #if 0
 	Goblin* goblin = CreateGoblin( Vec3( -48, 1, -28 ) );
 	Goblin* goblin2 = CreateGoblin( Vec3( -50, 1, -9 ) );

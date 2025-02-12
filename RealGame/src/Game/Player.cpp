@@ -76,8 +76,7 @@ void UpdatePlayer( Entity* entity ) {
 
 	wantDir *= 20.0f * dt;
 
-	
-#if 1 //Normal
+#if 0 //Normal
 	EntityMove( player, wantDir );
 #else //Noclip
 	entity->pos += wantDir;

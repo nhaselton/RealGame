@@ -64,6 +64,7 @@ struct RigidBody {
 	Vec3 visualOffset;
 	float modelScale;
 	class ParticleEmitter2* emitter;
+	struct SkeletonPose* pose; //CAN be null
 };
 
 
@@ -136,6 +137,7 @@ void RemoveBoid( class Entity* entity );
 void UpdateBoids();
 
 bool PhysicsRaycastDynamic( Vec3 start, Vec3 velocity, HitInfo* info );
+bool PhysicsRaycastStaticFast( Vec3 start, Vec3 velocity );
 bool BruteCastSphere( Vec3 pos, Vec3 velocity, Vec3 r, SweepInfo* outInfo );
 bool CastSphere( Vec3 pos, Vec3 velocity, Brush* brush, Vec3 r, SweepInfo* outInfo );
 //Should the characterController offset be moved to the new position

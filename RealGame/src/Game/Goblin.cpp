@@ -45,10 +45,12 @@ void GoblinUpdate( Entity* entity ) {
 void GoblinChase( Goblin* goblin ) {
 	EntityLookAtPlayer( goblin );
 
-	Vec3 velocity = entityManager.player->pos - goblin->pos;
-	velocity.y = 0;
+	goblin->target = entityManager.player->pos;
+	goblin->target.y = goblin->pos.y;
+	//Vec3 velocity = entityManager.player->pos - goblin->pos;
+	//velocity.y = 0;
 
-	velocity = goblin->boidVelocity;
+	Vec3 velocity = goblin->boidVelocity;
 	if ( glm::length2( velocity ) != 0 ) {
 		velocity = glm::normalize( velocity ) * 10.0f * dt;
 		EntityMove( goblin, velocity );

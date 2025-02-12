@@ -45,6 +45,7 @@ Entity* NewEntity() {
 	return 0;
 }
 
+//Note: Make sure you manually remove boids.
 void RemoveEntity( Entity* e ) {
 	StoredEntity* storedEntity = ( StoredEntity* ) e;
 	storedEntity->state = ACTIVE_WAIT_FOR_REMOVE;

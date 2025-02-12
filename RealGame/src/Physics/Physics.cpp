@@ -120,6 +120,9 @@ Vec3 MoveAndSlide( CharacterCollider* cc, Vec3 velocity, int maxBounces, bool ad
 	//DebugDrawAABB( pos, Vec3( 1, 2, 1 ), 0, GREEN );
 	//DebugDrawCharacterCollider( characterController, GREEN );
 
+	if( glm::length( cc->offset - finalPos ) < .0001f )
+		return cc->offset;
+
 	if ( adjustCharacterController )
 		cc->offset = finalPos;
 
@@ -527,6 +530,16 @@ bool RaycastAABB( const Vec3& start, const Vec3& velocity, const BoundsHalfWidth
 
 }
 
+bool PhysicsRaycastStaticFast( Vec3 start, Vec3 velocity ) {
+	HitInfo bestStatic{};
+	for( int i = 0; i < physics.numBrushes; i++ ) {
+		if( PhysicsRaycastHull( start, velocity, &physics.brushes[i], &bestStatic ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool PhysicsQueryRaycast( Vec3 start, Vec3 velocity, HitInfo* best ) {
 	memset( best, 0, sizeof( *best ) );
 
@@ -677,7 +690,7 @@ void UpdateBoids() {
 	Vec3 playerPos = entityManager.player->pos;
 	for (int i = 0; i < physics.numBoids; i++) {
 		Entity* entity = physics.boids[i];
-		Vec3 targetVelocity = glm::normalize(Vec3(playerPos - entity->pos));
+		Vec3 targetDirection = glm::normalize(Vec3(entity->target - entity->pos));
 		Vec3 avoidVelocity = Vec3(0);
 		int numToAvoid = 0;
 
@@ -691,19 +704,26 @@ void UpdateBoids() {
 			if (dir == Vec3(0))
 				continue;
 			
-			float dist = glm::length(dir);
-			dir /= dist;
 
+			float dist = glm::length(dir);
+			if( dist > 8.0f )
+				continue;
+
+			dir /= dist;
 			avoidVelocity += dir / dist;
 			numToAvoid++;
 		}
 		
 		if (numToAvoid > 0) {
 			avoidVelocity /= (float)numToAvoid;
-			avoidVelocity *= 15.0f;
+			avoidVelocity *= 30.0f;
 		}
+		//TEMP
+		float speed = 10.0f;
 
-		entity->boidVelocity = -avoidVelocity + (targetVelocity * 10.0f);
+		float avoidLength = glm::length( avoidVelocity );
+		//speed = glm::max( 0.0f, speed - avoidLength );
+		entity->boidVelocity = -avoidVelocity + ( targetDirection * speed );
 		entity->boidVelocity.y = 0;
 	}
 }

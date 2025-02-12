@@ -1,5 +1,6 @@
 #include "def.h"
 #include "game.h"
+#include "renderer/DebugRenderer.h"
 
 Vec3 StringToVec3( const char* value ) {
 	Vec3 v(0);
@@ -35,7 +36,6 @@ bool TryEntityField( Entity* entity, const char* key, const char* value ) {
 		entity->bounds->offset = entity->pos;
 		return true;
 	}
-
 	return false;
 }
 
@@ -67,12 +67,13 @@ void GameLoadEntities( const char* path ) {
 		//Todo find better way to do this later
 		if( !strcmp( className, "info_player_start" ) ) {
 			entity = CreatePlayer( Vec3( 0 ) );
+			entityManager.player = (Player*) entity;
 		}
 		else if( !strcmp( className, "info_goblin_start" ) ) {
 			entity = CreateGoblin( Vec3( 0, 0, 0 ) );
 		}
 		else if( !strcmp( className, "info_wizard_start" ) ) {
-			entity = CreateWizard( Vec3( 0, -2, 0 ) );
+			entity = CreateWizard( Vec3( 0, -1.5, 0 ) );
 		}
 
 		//Find all fields
