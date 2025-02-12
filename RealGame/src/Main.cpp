@@ -19,9 +19,15 @@
 #include "game/Game.h"
 /*
 	Triggers
-		Brushes are triggers, 
-			Must be AABB (Will just yell at you during map load)
-				OR CAN I DO COMPILE TIME??
+		Trigger List
+		OnTrigger() Function
+
+	Encounter
+		SpawnSingleAI
+		SpawnMultiAI
+			MaxAlive
+		Pause
+
 		Trigger can start encounter
 			Or just spawn single enemy
 

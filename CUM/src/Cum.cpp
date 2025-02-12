@@ -128,8 +128,8 @@ void ParseBrushEnt( Parser* parser, BoundsMinMax* bounds ) {
 		}
 	}
 
-	bounds->min = min * (float) scale; 
-	bounds->max = max * (float) scale;
+	bounds->min = min; 
+	bounds->max = max;
 
 	parser->ExpectedTokenTypePunctuation( '}' );
 }

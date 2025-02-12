@@ -41,6 +41,33 @@ bool TryEntityField( Entity* entity, const char* key, const char* value ) {
 	return false;
 }
 
+bool TryTriggerField( Trigger* trigger, const char* key, const char* value ) {
+	if( !strcmp( key, "target" ) ) {
+		strcpy( trigger->target, value );
+		return true;
+	}
+
+	if( !strcmp( key, "targetname" ) ) {
+		strcpy( trigger->targetName, value );
+		return true;
+	}
+
+	if( !strcmp( key, "bounds" ) ) {
+		return true;
+	}
+
+	if( !strcmp( key, "boundsmin" ) ) {
+		trigger->bounds.min = StringToVec3( value );
+		return true;
+	}
+
+	if( !strcmp( key, "boundsmax" ) ) {
+		trigger->bounds.max= StringToVec3( value );
+		return true;
+	}
+	return false;
+}
+
 void GameLoadEntities( const char* path ) {
 	TEMP_ARENA_SET;
 
@@ -64,6 +91,8 @@ void GameLoadEntities( const char* path ) {
 		char className[MAX_NAME_LENGTH]{};
 		parser.ParseString( className, MAX_NAME_LENGTH );
 
+		bool isTrigger = false;
+		Trigger trigger{};
 		Entity* entity = 0;
 
 		//Todo find better way to do this later
@@ -79,31 +108,33 @@ void GameLoadEntities( const char* path ) {
 		}
 		else if( !strcmp( className, "trigger_once" ) ) {
 			//Trigger
+			isTrigger = true;
 		}
 
 		//Find all fields
 		while( 1 ) {
-			//It's A Brush Entity
-			if( parser.PeekNext().subType == '{' ) {
-				return;
+			char key[MAX_NAME_LENGTH]{};
+			char value[MAX_NAME_LENGTH]{};
+
+			parser.ParseString( key, MAX_NAME_LENGTH );
+			parser.ParseString( value, MAX_NAME_LENGTH );
+
+			if( isTrigger ) {
+				if( !TryTriggerField( &trigger, key, value ) ) {
+					LOG_WARNING( LGS_GAME, "Unkown Trigger Key Value %s \n", key );
+				}
 			}
-			//It's a Normal Entity
 			else {
-				char key[MAX_NAME_LENGTH]{};
-				char value[MAX_NAME_LENGTH]{};
-
-				parser.ParseString( key, MAX_NAME_LENGTH );
-				parser.ParseString( value, MAX_NAME_LENGTH );
-
 				if( !TryEntityField( entity, key, value ) ) {
 					LOG_WARNING( LGS_GAME, "Unkown Enity Key Value %s \n", key );
 				}
+			}
 
-				if( parser.GetCurrent().subType == '}' ) {
-					parser.ReadToken();
-					break;
-				}
+			if( parser.GetCurrent().subType == '}' ) {
+				parser.ReadToken();
+				break;
 			}
 		}
 	}
+
 }

@@ -5,10 +5,9 @@
 // entity 2
 {
 "classname" "trigger_once"
-"sounds" "3"
-"delay" "4400"
-"message" "Balls"
+"target" "Target"
+"targetname" "Targetname"
 "bounds" "true"
-"boundsmin" "-1.50 -11.50 -5.50"
-"boundsmax" "10.00 0.00 2.50"
+"boundsmin" "-48.00 -368.00 -176.00"
+"boundsmax" "320.00 0.00 80.00"
 }

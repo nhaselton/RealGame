@@ -20,6 +20,14 @@ enum activeState_t {
 	ACTIVE_ACTIVE = 2,
 };
 
+struct Trigger {
+	//Target must be assigned to something with a targetname of the same name
+	char target[MAX_PATH_LENGTH];
+	//If something triggers this, it will call this name
+	char targetName[MAX_PATH_LENGTH];
+	BoundsMinMax bounds;
+};
+
 struct RenderModel {
 	class Model* model;
 	SkeletonPose* pose;
