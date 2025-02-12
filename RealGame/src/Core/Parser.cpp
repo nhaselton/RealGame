@@ -461,11 +461,13 @@ Token Parser::ReadPath( char* buffer, u32 pathbufferLen ) {
 	}
 }
 
-//Todo: This is going to get rid of the space and newline flags. probably just check each and if there then --? or - until find them?
+//This is very slow. Try not to use it
+//Too much state to properly nuke and regain. Look into later i suppose
+//One thing it loses are the flags, that caused me a pretty bad headache for half an hour
 Token Parser::PeekNext() {
-	Token current = GetCurrent();
+	//Copy Entire parser
+	Parser parser2 = *this;
 	Token t = ReadToken();
-	cursor -= t.length;
-	this->current = current;
+	*this = parser2;
 	return t;
 }

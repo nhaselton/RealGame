@@ -101,7 +101,6 @@ public:
 	//Starts with the current token.
 	//If Path does not fit, It will reading tokens until its suppose to stop but will no tadd them to the buffer
 	Token ReadPath(char* buffer, u32 bufferLen);
-private:
 	//Next token to parse
 	Token current;
 

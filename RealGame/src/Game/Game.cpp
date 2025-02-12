@@ -32,6 +32,8 @@ bool TryEntityField( Entity* entity, const char* key, const char* value ) {
 	if( !strcmp( key, "origin" ) ) {
 		//All entity positions are set to their correct offset,
 		//so adding the new position allows for per entity offsets so their feet are on the ground
+		Vec3 pos( 0 );
+
 		entity->pos += StringToVec3( value );
 		entity->bounds->offset = entity->pos;
 		return true;
@@ -75,22 +77,32 @@ void GameLoadEntities( const char* path ) {
 		else if( !strcmp( className, "info_wizard_start" ) ) {
 			entity = CreateWizard( Vec3( 0, -1.5, 0 ) );
 		}
+		else if( !strcmp( className, "trigger_once" ) ) {
+			//Trigger
+		}
 
 		//Find all fields
 		while( 1 ) {
-			char key[MAX_NAME_LENGTH]{};
-			char value[MAX_NAME_LENGTH]{};
-
-			parser.ParseString( key, MAX_NAME_LENGTH );
-			parser.ParseString( value, MAX_NAME_LENGTH );
-
-			if( !TryEntityField( entity, key, value ) ) {
-				LOG_WARNING( LGS_GAME, "Unkown Enity Key Value %s : %s\n", key, value );
+			//It's A Brush Entity
+			if( parser.PeekNext().subType == '{' ) {
+				return;
 			}
+			//It's a Normal Entity
+			else {
+				char key[MAX_NAME_LENGTH]{};
+				char value[MAX_NAME_LENGTH]{};
 
-			if( parser.GetCurrent().subType == '}' ) {
-				parser.ReadToken();
-				break;
+				parser.ParseString( key, MAX_NAME_LENGTH );
+				parser.ParseString( value, MAX_NAME_LENGTH );
+
+				if( !TryEntityField( entity, key, value ) ) {
+					LOG_WARNING( LGS_GAME, "Unkown Enity Key Value %s \n", key );
+				}
+
+				if( parser.GetCurrent().subType == '}' ) {
+					parser.ReadToken();
+					break;
+				}
 			}
 		}
 	}

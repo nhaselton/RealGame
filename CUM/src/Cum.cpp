@@ -48,6 +48,92 @@ static bool IsUnique( NPFace* face, const dVec3& check, const std::vector<DBrush
 	return true;
 }
 
+void ParseBrushEnt( Parser* parser, BoundsMinMax* bounds ) {
+	//Get to brush
+
+	parser->ExpectedTokenTypePunctuation( '{' );//Class {
+
+	//Get to Brush
+	while( parser->GetCurrent().subType != '{' )
+		parser->ReadToken();
+	parser->ExpectedTokenTypePunctuation('{');
+
+	DPlane planes[6]{};
+	//Get plane information
+	for( int i = 0; i < 6; i++ ) {
+		Vec3 p[3]{};
+		parser->ParseVec( &p[0][0], 3, true );
+		parser->ParseVec( &p[1][0], 3, true );
+		parser->ParseVec( &p[2][0], 3, true );
+
+		planes[i].n = glm::normalize( glm::cross( p[2] - p[0], p[1] - p[0] ) );
+		planes[i].d = -glm::dot( ( Vec3 ) planes[i].n, p[0] );
+		
+		Vec4 temp;
+		char tempPath[MAX_PATH_LENGTH]{};
+		parser->ReadPath(tempPath,MAX_PATH_LENGTH);
+		parser->ParseVec( &temp.x, 4, true );
+		parser->ParseVec( &temp.x, 4, true );
+		parser->ParseVec( &temp.x, 3, false );
+	}
+	
+	if( !parser->ExpectedTokenTypePunctuation( '}' ) ) {
+		printf( "[FATAL ERROR] Brush Entities MUST be AABBs" );
+		exit( 0 );
+		return;
+	}
+
+	dVec3 vertices[64];
+	int numVertices = 0;
+	//Get Vertices from intersections
+	for( int i = 0; i < 6; i++ ) {
+		for( int n = 0; n < 6; n++ ) {
+			for( int k = 0; k < 6; k++ ) {
+				if( ( i == n ) || ( i == k ) || ( n == k ) ) continue;
+				dVec3 out;
+				if( ThreePlaneIntersection( &planes[i], &planes[n], &planes[k], &out ) ) {
+
+					//Make sure out isnt already in vertices
+					bool found = false;
+					for( int j = 0; j < numVertices; j++ ) {
+						if( vertices[j] == out ) {
+							found = true;
+							break;
+						}
+					}
+
+					if( !found ) {
+						vertices[numVertices++] = out;
+					}
+				}
+			}
+		}
+	}
+	Vec3 min( FLT_MAX );
+	Vec3 max( FLT_MIN );
+
+	if( numVertices != 8 ) {
+		printf( "[WARNING] COULD NOT MAKE PROPER AABB WITH 8 VERTICES. HAD %d\n", numVertices );
+		min = Vec3( 0 );
+		max = Vec3( 1 );
+	}
+
+	for( int i = 0; i < 8; i++ ) {
+		for( int n = 0; n < 3; n++ ) {
+			if( vertices[i][n] > max[n] )
+				max[n] = vertices[i][n];
+
+			if( vertices[i][n] < min[n] )
+				min[n] = vertices[i][n];
+		}
+	}
+
+	bounds->min = min * (float) scale; 
+	bounds->max = max * (float) scale;
+
+	parser->ExpectedTokenTypePunctuation( '}' );
+}
+
 bool Compile( const char* input, const char* output ) {
 	FILE* file = 0;
 	fopen_s( &file, input, "rb" );
@@ -86,6 +172,7 @@ bool Compile( const char* input, const char* output ) {
 	Token tok = parser.GetCurrent();
 	while ( ( parser.GetCurrent().type != TT_EOF ) ) {
 		u32 start = parser.Cursor() - 1;
+		u32 brushStart = 0;
 
 		parser.ExpectedTokenTypePunctuation( '{' );
 		//Figure out what to make from this
@@ -96,14 +183,61 @@ bool Compile( const char* input, const char* output ) {
 		}
 		//For now just copy anything that isnt worldspawn into an entity file
 		else if( parser.GetCurrent().StringEquals( ( char* ) "classname" ) ) {
+			bool brush = false;
+
 			while( parser.GetCurrent().subType != '}' ) {
-				tok = parser.ReadToken();
+				//If theres a bracket inside of the entity it has to be a brush
+				if( parser.GetCurrent().subType == '{' ) {
+					brushStart = parser.Cursor();
+					brush = true;
+
+					while( parser.GetCurrent().subType != '}' )
+						parser.ReadToken();
+				}
+				parser.ReadToken();
 			}
+
+			//parser.LeaveCurrentBrackets( 1 );
 
 			tok = parser.ReadToken(); // }
 			u32 end = parser.Cursor();
+			if( !brush) {
+				fwrite( parser.Data() + start, 1, end - start - 1, entityFile );
+			}
+			else {
+				//Write Entity part
 
-			fwrite( parser.Data() + start, 1, end - start - 1, entityFile );
+				//Remove the comment and first { (Parser can not really do that)
+				for( int i = brushStart; i >= 0; i-- ) {
+					if( parser.buffer[i] == '/' ) {
+						brushStart = i - 1;
+						break;
+					}
+				}
+
+				fwrite( parser.Data() + start, 1, brushStart - start, entityFile );
+				BoundsMinMax bounds;
+
+				//Write Brush Part
+				parser.cursor = start;
+				parser.ReadToken();
+				ParseBrushEnt( &parser, &bounds );
+
+				const char* boundsTxt = "\"bounds\" \"true\"\n";
+				fwrite( boundsTxt, strlen( boundsTxt ), 1, entityFile );
+
+				char buffer[2048]{};
+				sprintf_s( buffer, "\"boundsmin\" \"%.2f %.2f %.2f\"\n\"boundsmax\" \"%.2f %.2f %.2f\"\n}\n",
+					bounds.min.x,bounds.min.y,bounds.min.z, bounds.max.x,bounds.max.y,bounds.max.z );
+				fwrite( buffer, strlen( buffer), 1, entityFile );
+
+				
+
+
+				
+
+			}
+
 		}
 		else {
 			printf( "Bad Entity File\n" );

@@ -18,20 +18,14 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-	Wizard:
-		Gameplay
-			Figure out how to handle skeletal dead bodies
-				Implement Proper Dying
-					Remove entity and replace with dead body gib.
+	Triggers
+		Brushes are triggers, 
+			Must be AABB (Will just yell at you during map load)
+				OR CAN I DO COMPILE TIME??
+		Trigger can start encounter
+			Or just spawn single enemy
 
-		Triggers
-			Brushes are triggers, 
-				Must be AABB (Will just yell at you during map load)
-					OR CAN I DO COMPILE TIME??
-			Trigger can start encounter
-				Or just spawn single enemy
-
-		Encounters
+	Encounters
 
 	MVP:
 		Triggers for stuff
