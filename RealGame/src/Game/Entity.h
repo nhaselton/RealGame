@@ -20,11 +20,16 @@ enum activeState_t {
 	ACTIVE_ACTIVE = 2,
 };
 
+enum trigger_t {
+	TRIGGER_NONE = 0,
+	TRIGGER_PRINT_MESSAGE = 1,
+	TRIGGER_START_ENCOUNTER = 2,
+};
+
 struct Trigger {
-	//Target must be assigned to something with a targetname of the same name
-	char target[MAX_PATH_LENGTH];
-	//If something triggers this, it will call this name
-	char targetName[MAX_PATH_LENGTH];
+	trigger_t type;
+	char willTrigger[MAX_PATH_LENGTH];
+	char myName[MAX_PATH_LENGTH];
 	BoundsMinMax bounds;
 };
 

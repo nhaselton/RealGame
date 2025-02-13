@@ -84,9 +84,21 @@ void UpdatePlayer( Entity* entity ) {
 #endif
 
 	player->camera.Position = player->pos + Vec3( 0, 1, 0 );
-
-
 	RevolverUpdate(player);
+
+	//Check Triggers
+	Vec3 center = player->bounds->bounds.center + player->pos;
+	BoundsMinMax playerBounds{
+	playerBounds.min =  center - player->bounds->bounds.width,
+	playerBounds.max = center + player->bounds->bounds.width,
+	};
+	
+	for( int i = 0; i < entityManager.numTriggers; i++ ) {
+		Trigger* trigger = &entityManager.triggers[i];
+		if( FastAABB( playerBounds, trigger->bounds ) ) {
+			TriggerTrigger(trigger);
+		}
+	}
 }
 
 void RevolverUpdate( Player* player ) {

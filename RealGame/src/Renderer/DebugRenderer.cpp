@@ -170,7 +170,6 @@ void DebugRendererFrame( Mat4 view, Mat4 projection, float dt ) {
 
 	DebugPrim* prim = drenderer.prims;
 	while ( prim != nullptr ) {
-
 		glDepthFunc( GL_LESS );
 		glLineWidth( (float) prim->lineWidth * .1 );
 
@@ -194,7 +193,10 @@ void DebugRendererFrame( Mat4 view, Mat4 projection, float dt ) {
 			RenderSetShader( &renderer, renderer.shaders[SHADER_XYZRGB] );
 			ShaderSetMat4( &renderer, renderer.shaders[SHADER_XYZRGB], "model", trs );
 			ShaderSetVec3( &renderer, renderer.shaders[SHADER_XYZRGB], "color", prim->color );
-			RenderDrawModel( &renderer, renderer.cube,trs );
+			nglBindVertexArray( renderer.cube->meshes[0].buffer.vao);
+			nglDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, ( void* ) 0 );
+
+			//RenderDrawModel( &renderer, renderer.cube,trs );
 		}break;
 
 		case DP_SPHERE:

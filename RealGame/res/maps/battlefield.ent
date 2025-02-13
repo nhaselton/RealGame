@@ -7,7 +7,26 @@
 "classname" "trigger_once"
 "target" "Target"
 "targetname" "Targetname"
+"triggertype" "2"
+"willtrigger" "test"
 "bounds" "true"
-"boundsmin" "-48.00 -368.00 -176.00"
-"boundsmax" "320.00 0.00 80.00"
+"boundsmin" "-11.00 -5.50 -27.50"
+"boundsmax" "-3.00 2.50 1.50"
 }
+{
+"classname" "spawner"
+"origin" "1272 -712 -168"
+"myname" "spawn1"
+}
+// entity 4
+{
+"classname" "spawner"
+"origin" "1368 40 -168"
+"myname" "spawn2"
+}
+// entity 5
+{
+"classname" "spawner"
+"origin" "1000 -376 -168"
+"myname" "spawn3"
+}

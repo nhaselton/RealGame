@@ -66,15 +66,25 @@ void ParseBrushEnt( Parser* parser, BoundsMinMax* bounds ) {
 		parser->ParseVec( &p[1][0], 3, true );
 		parser->ParseVec( &p[2][0], 3, true );
 
-		planes[i].n = glm::normalize( glm::cross( p[2] - p[0], p[1] - p[0] ) );
-		planes[i].d = -glm::dot( ( Vec3 ) planes[i].n, p[0] );
-		
 		Vec4 temp;
 		char tempPath[MAX_PATH_LENGTH]{};
 		parser->ReadPath(tempPath,MAX_PATH_LENGTH);
 		parser->ParseVec( &temp.x, 4, true );
 		parser->ParseVec( &temp.x, 4, true );
 		parser->ParseVec( &temp.x, 3, false );
+
+		//Reorient and scale trigger
+		Vec3 normal = glm::cross( p[2] - p[0], p[1] - p[0] );
+		normal = glm::normalize( normal );
+		float dist = -glm::dot( normal, p[0] );
+		
+		dist *= scale;
+		
+		if( fixNormals )
+			normal = Vec3( -normal.x, normal.z, normal.y );
+		
+		planes[i].n = normal;
+		planes[i].d = dist;
 	}
 	
 	if( !parser->ExpectedTokenTypePunctuation( '}' ) ) {
@@ -110,7 +120,7 @@ void ParseBrushEnt( Parser* parser, BoundsMinMax* bounds ) {
 		}
 	}
 	Vec3 min( FLT_MAX );
-	Vec3 max( FLT_MIN );
+	Vec3 max( -FLT_MAX );
 
 	if( numVertices != 8 ) {
 		printf( "[WARNING] COULD NOT MAKE PROPER AABB WITH 8 VERTICES. HAD %d\n", numVertices );
@@ -127,6 +137,8 @@ void ParseBrushEnt( Parser* parser, BoundsMinMax* bounds ) {
 				min[n] = vertices[i][n];
 		}
 	}
+
+	
 
 	bounds->min = min; 
 	bounds->max = max;
@@ -230,14 +242,7 @@ bool Compile( const char* input, const char* output ) {
 				sprintf_s( buffer, "\"boundsmin\" \"%.2f %.2f %.2f\"\n\"boundsmax\" \"%.2f %.2f %.2f\"\n}\n",
 					bounds.min.x,bounds.min.y,bounds.min.z, bounds.max.x,bounds.max.y,bounds.max.z );
 				fwrite( buffer, strlen( buffer), 1, entityFile );
-
-				
-
-
-				
-
 			}
-
 		}
 		else {
 			printf( "Bad Entity File\n" );

@@ -10,4 +10,6 @@
 #include "Ogre.h"
 #include "Wizard.h"
 
+#include "Encounter.h"
+
 void GameLoadEntities( const char* path );

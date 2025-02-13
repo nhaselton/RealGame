@@ -117,8 +117,12 @@ void EntityManagerCleanUp() {
 	for ( int i = 0; i < entityManager.numRemoveProjectiles; i++ )
 		entityManager.projectiles[entityManager.removeProjectiles[i]].state = ACTIVE_INACTIVE;
 
-	for ( int i = 0; i < entityManager.numRemoveEntities; i++ )
+	for( int i = 0; i < entityManager.numRemoveEntities; i++ ) {
 		entityManager.removeEntities[i]->state = ACTIVE_INACTIVE;
+		entityManager.numEntities--;
+	}
+	
+	entityManager.numRemoveEntities = 0;
 }
 
 void RemoveProjectile( Projectile* projectile ) {
@@ -149,4 +153,26 @@ void AnimateEntities() {
 		if ( stored->entity.renderModel != 0 )
 			EntityAnimationUpdate( &stored->entity, dt );
 	}
+}
+
+void TriggerTrigger( Trigger* trigger ) {
+	switch( trigger->type ) {
+		case TRIGGER_PRINT_MESSAGE:
+			printf( "Message" );
+		break;
+		case TRIGGER_START_ENCOUNTER: {
+			for( int i = 0; i < entityManager.numEncounters; i++ ) {
+				Encounter* encounter = &entityManager.encounters[i];
+				if( !strcmp( encounter->name, trigger->willTrigger ) ) {
+					StartEncounter( encounter );
+				}
+			}
+		} break;
+
+		default:
+		LOG_WARNING( LGS_GAME, "UNKOWN TRIGGER TYPE %d\n", trigger->type );
+	}
+
+	//Remove Trigger
+	entityManager.triggers[0] = entityManager.triggers[--entityManager.numTriggers];
 }

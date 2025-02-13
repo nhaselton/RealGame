@@ -1,6 +1,7 @@
 #pragma once
 #include "def.h"
 #include "Entity.h"
+#include "Encounter.h"
 
 //Rather than just storing an entity,
 //Store the entity and then an extra buffer of MAX_ENTITIY_SIZE
@@ -10,6 +11,18 @@ struct StoredEntity {
 	char entityExtra[MAX_ENTITY_SIZE - sizeof( Entity )];
 	activeState_t state;
 	u32 index; //Quick lookup of index.
+};
+
+enum spawnTarget_t {
+	NONE,
+	SPAWN_TARGET_POINT,
+	SPAWN_TARGET_ZONE
+};
+struct SpawnTarget {
+	spawnTarget_t type;
+	char name[32];
+	Vec3 pos;
+	Vec3 size; //Incase of SPAWN_ZONE
 };
 
 class EntityManager {
@@ -32,8 +45,17 @@ public:
 	StoredEntity* removeEntities[MAX_ENTITIES];
 	int numRemoveEntities;
 
+	Trigger triggers[MAX_TRIGGERS];
+	u32 numTriggers;
+
 	//Quick access to player
 	class Player* player;
+
+	SpawnTarget spawnTargets[128];
+	int numSpawnTargets;
+
+	Encounter encounters[128];
+	int numEncounters;
 };
 extern EntityManager entityManager;
 
@@ -51,3 +73,5 @@ void UpdateProjectiles();
 //Removes all inactive projectiles & (todo) entities
 void EntityManagerCleanUp();
 void AnimateEntities();
+
+void TriggerTrigger( Trigger* trigger );

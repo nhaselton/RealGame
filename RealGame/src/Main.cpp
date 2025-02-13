@@ -18,10 +18,6 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-	Triggers
-		Trigger List
-		OnTrigger() Function
-
 	Encounter
 		SpawnSingleAI
 		SpawnMultiAI
@@ -32,6 +28,10 @@
 			Or just spawn single enemy
 
 	Encounters
+
+	Super basic directional Lighting
+		Small ambient + directional light
+		fix rotated skeletal meshes not lighting properly
 
 	MVP:
 		Triggers for stuff
@@ -50,6 +50,12 @@
 	CPU Flipbooks
 		Explosion, etc
 			These are not particles but just a static image
+
+	Console:
+		Commands:
+			noclip
+			showtriggers
+			drawphysics
 
 * Animation
 *	Animation Events
@@ -80,9 +86,6 @@
 *				Dont worry about individual faces, quicker to just cull entire brushes
 
 *	Finish Paritcles
-*		2) Sort particles
-*			Add all partices to new array free list
-*			Sort by center in new compute then draw
 *		3) Indirect Drawing
 *			Have particles write num particles alive to new buffer and draw indirect it
 *		4) Fadeout over time
@@ -138,7 +141,6 @@ int main() {
 
 	PhysicsInit();
 
-
 	CreateSoundManager();
 	//CreateSoundSystem ( &soundDevice, &soundContext );
 	Sound sound{};
@@ -158,16 +160,11 @@ int main() {
 	AnimatePose( Wizard::model->animations[WIZARD_ANIM_DEATH]->duration - .001f, Wizard::model->animations[WIZARD_ANIM_DEATH], Wizard::deadPose );
 	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
 
-
-
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
 	LoadLevel( &level, "res/maps/battlefield.cum" );
 	Timer timer;
 
-	Player* player = CreatePlayer( Vec3( 0 ) );
-	//player->camera.Yaw = 180.0;
-	player->camera.GetViewMatrix();
-
+	Player* player = (Player*) entityManager.player;
 	//Gibs
 	ModelManagerAllocate( &modelManager, "res/models/gib.glb" );
 
@@ -175,16 +172,6 @@ int main() {
 	//Model
 	Goblin::model->animations[GOBLIN_ANIM_RUN]->looping = true;
 	Wizard::model->animations[WIZARD_ANIM_RUN]->looping = true;
-#if 0
-	Goblin* goblin = CreateGoblin( Vec3( -48, 1, -28 ) );
-	Goblin* goblin2 = CreateGoblin( Vec3( -50, 1, -9 ) );
-	Goblin* goblin3 = CreateGoblin( Vec3( -36, 1, 14 ) );
-
-	Goblin* bgoblin = CreateGoblin( Vec3( -24, 1, -28 ) );
-	Goblin* bgoblin3 = CreateGoblin( Vec3( -12, 1, 14 ) );
-
-	Wizard* wizard = CreateWizard( Vec3(-37.4,-3.5,-10.6) );
-#endif
 
 	PrintAllocators( &globalArena );
 	WindowSetVsync( &window, 0 );
@@ -193,7 +180,27 @@ int main() {
 
 	renderer.drawStats = true;
 
+	Encounter& encounter = entityManager.encounters[entityManager.numEncounters++];
+	strcpy( encounter.name, "test" );
+
+	EncounterAction& action = encounter.actions[encounter.totalActions++];
+	action.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
+	action.ai = ENCOUNTER_AI_GOBLIN;
+	strcpy(action.spawnTarget, "spawn1");
+
+	EncounterAction& action2 = encounter.actions[encounter.totalActions++];
+	action2.type = ENCOUNTER_ACTION_WAIT_FOR_SECONDS_BLOCK;
+	action2.waitTime = 3.0f;
+
+	EncounterAction& action3 = encounter.actions[encounter.totalActions++];
+	action3.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
+	action3.ai = ENCOUNTER_AI_GOBLIN;
+	strcpy( action3.spawnTarget, "spawn1" );
+
+
 	AudioSource* source = NewAudioSource();
+
+	bool triggered = false;
 	while( !WindowShouldClose( &window ) ) {
 		//PROFILE( "Frame" );
 		KeysUpdate();
@@ -202,6 +209,10 @@ int main() {
 
 		if( KeyPressed( KEY_P ) ) {
 			paused = !paused;
+		}
+
+		if( KeyPressed( KEY_T ) ) {
+			triggered = true;
 		}
 
 		if( KeyPressed( KEY_SPACE ) ) {
@@ -221,6 +232,20 @@ int main() {
 
 		if( dt > 1.0f / 144.0f )
 			dt = 1.0f / 144.0f;
+
+		for( int i = 0; i < entityManager.numTriggers; i++ ) {
+			Trigger* trigger = &entityManager.triggers[i];
+			//DebugDrawBoundsMinMax( &entityManager.triggers[i].bounds, RED,0,false );
+			DebugDrawAABB( trigger->bounds.min, Vec3( .75f ), 0, GREEN );
+			DebugDrawAABB( trigger->bounds.max, Vec3( .75f ), 0, GREEN );
+
+			Vec3 center = ( trigger->bounds.min + trigger->bounds.max ) / 2.0f;
+			Vec3 size = ( trigger->bounds.max - trigger->bounds.min ) / 2.0f;
+			DebugDrawAABB( center, size );
+		}
+
+		if ( encounter.active )
+			UpdateEncounter( &encounter );
 
 		if( !paused ) {
 			gameTime += dt;

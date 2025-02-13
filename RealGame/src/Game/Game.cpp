@@ -2,7 +2,7 @@
 #include "game.h"
 #include "renderer/DebugRenderer.h"
 
-Vec3 StringToVec3( const char* value ) {
+Vec3 StringToVec3( const char* value, bool fix ) {
 	Vec3 v(0);
 	int len = strlen( value );
 
@@ -21,8 +21,8 @@ Vec3 StringToVec3( const char* value ) {
 		//move past space
 		o++;
 	}
-
-	v = Vec3( -v.x, v.z, v.y ) / 32.0f;
+	if ( fix )
+		v = Vec3( -v.x, v.z, v.y ) / 32.0f;
 	return v;
 }
 
@@ -34,7 +34,7 @@ bool TryEntityField( Entity* entity, const char* key, const char* value ) {
 		//so adding the new position allows for per entity offsets so their feet are on the ground
 		Vec3 pos( 0 );
 
-		entity->pos += StringToVec3( value );
+		entity->pos += StringToVec3( value, true );
 		entity->bounds->offset = entity->pos;
 		return true;
 	}
@@ -42,13 +42,13 @@ bool TryEntityField( Entity* entity, const char* key, const char* value ) {
 }
 
 bool TryTriggerField( Trigger* trigger, const char* key, const char* value ) {
-	if( !strcmp( key, "target" ) ) {
-		strcpy( trigger->target, value );
+	if( !strcmp( key, "willtrigger" ) ) {
+		strcpy( trigger->willTrigger, value );
 		return true;
 	}
 
-	if( !strcmp( key, "targetname" ) ) {
-		strcpy( trigger->targetName, value );
+	if( !strcmp( key, "myname" ) ) {
+		strcpy( trigger->myName, value );
 		return true;
 	}
 
@@ -56,13 +56,18 @@ bool TryTriggerField( Trigger* trigger, const char* key, const char* value ) {
 		return true;
 	}
 
+	if( !strcmp( key, "triggertype" ) ) {
+		trigger->type = ( trigger_t ) atoi( value );
+		return true;
+	}
+
 	if( !strcmp( key, "boundsmin" ) ) {
-		trigger->bounds.min = StringToVec3( value );
+		trigger->bounds.min = StringToVec3( value, false );
 		return true;
 	}
 
 	if( !strcmp( key, "boundsmax" ) ) {
-		trigger->bounds.max= StringToVec3( value );
+		trigger->bounds.max = StringToVec3( value, false );
 		return true;
 	}
 	return false;
@@ -92,7 +97,8 @@ void GameLoadEntities( const char* path ) {
 		parser.ParseString( className, MAX_NAME_LENGTH );
 
 		bool isTrigger = false;
-		Trigger trigger{};
+		bool isSpawner = false;
+		Trigger* trigger = 0;
 		Entity* entity = 0;
 
 		//Todo find better way to do this later
@@ -106,13 +112,40 @@ void GameLoadEntities( const char* path ) {
 		else if( !strcmp( className, "info_wizard_start" ) ) {
 			entity = CreateWizard( Vec3( 0, -1.5, 0 ) );
 		}
+		else if( !strcmp( className, "encounter" ) ) {
+		}
+		else if( !strcmp( className, "spawner" ) ) {
+			isSpawner = true;
+
+			char key1[MAX_NAME_LENGTH]{};
+			char value1[MAX_NAME_LENGTH]{};
+			parser.ParseString( key1, MAX_NAME_LENGTH );
+			parser.ParseString( value1, MAX_NAME_LENGTH );
+			char key2[MAX_NAME_LENGTH]{};
+			char value2[MAX_NAME_LENGTH]{};
+			parser.ParseString( key2, MAX_NAME_LENGTH );
+			parser.ParseString( value2, MAX_NAME_LENGTH );
+			parser.ExpectedTokenTypePunctuation( '}' );
+
+			SpawnTarget* spawner = &entityManager.spawnTargets[entityManager.numSpawnTargets++];
+			spawner->pos = StringToVec3( value1, true );
+			strcpy( spawner->name, value2 );
+		}
 		else if( !strcmp( className, "trigger_once" ) ) {
 			//Trigger
+			trigger = &entityManager.triggers[entityManager.numTriggers++];
 			isTrigger = true;
+		}
+		else {
+			printf( "Unkown Entity type %s\n", className );
+			__debugbreak();
 		}
 
 		//Find all fields
 		while( 1 ) {
+			if( isSpawner )
+				break;
+
 			char key[MAX_NAME_LENGTH]{};
 			char value[MAX_NAME_LENGTH]{};
 
@@ -120,7 +153,7 @@ void GameLoadEntities( const char* path ) {
 			parser.ParseString( value, MAX_NAME_LENGTH );
 
 			if( isTrigger ) {
-				if( !TryTriggerField( &trigger, key, value ) ) {
+				if( !TryTriggerField( trigger, key, value ) ) {
 					LOG_WARNING( LGS_GAME, "Unkown Trigger Key Value %s \n", key );
 				}
 			}
@@ -137,4 +170,5 @@ void GameLoadEntities( const char* path ) {
 		}
 	}
 
+	NFileClose( &file );
 }
