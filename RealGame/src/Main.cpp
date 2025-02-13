@@ -18,34 +18,65 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-	Encounter
-		SpawnSingleAI
+* 
+* ======================
+*	Triggers
+* ===================
+		SpawnGroups
 		SpawnMultiAI
-			MaxAlive
-		Pause
+			Impulse
+				Do all at once
+			OverTime
+				Do over time
+			MinimumTime()
+			MaxAlive()
+			MinAlive()
+				Will ignore MinimumTime()??
+		
+		SpawnTags for enemies
+			Each enemy can have a group (Probably use int instead of string)
+			ENCOUNTER_ACTION_WAIT_FOR_SPAWN_TAG_KILLS
+				group
+				count
 
-		Trigger can start encounter
-			Or just spawn single enemy
+		Trigger Type to Spawn Single Enemy
+			Enemy Type
+			SpawnPoint
+		Trigger Type to Spawn Multiple Enemies
+			Types of enemies
+			SpawnGroup (Only 1) 
+			Count
 
-	Encounters
+	=====================
+			AI
+	=====================
+	Dont walk off edges
+	IDLE state until they see / hear player
+	Wizard require LOS
 
+	===================
+			Game
+	===================
+	Pistol shooting should hit static geo
+
+	====================
+			Rendering
+	====================
 	Super basic directional Lighting
 		Small ambient + directional light
 		fix rotated skeletal meshes not lighting properly
 
 	MVP:
-		Triggers for stuff
-
-		1 Ranged ememy who acts like headless soldier in SeriousSam
-			Tries to get LOS but not run up to melee range
-		Kamakazi Enemies
-
 		Single 2 or 3 room level (Start of karnack pretty much)
 			that starts in small room with Ragned guys
 			Goes outdoors into field that has kamakazi and ranged guys
 
 
 	.def files
+	Encounter files / GUI
+
+		Fix Spawn Loading Code
+		Its super hacked in.
 
 	CPU Flipbooks
 		Explosion, etc
@@ -148,6 +179,7 @@ int main() {
 	LoadWavFile( &explosion, "res/sounds/Explosion.wav" );
 
 	CreateEntityManager();
+	CreateEncounters();
 
 	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizard.glb" );
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
@@ -161,13 +193,12 @@ int main() {
 	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
-	LoadLevel( &level, "res/maps/battlefield.cum" );
+	LoadLevel( &level, "res/maps/demo.cum" );
 	Timer timer;
 
 	Player* player = (Player*) entityManager.player;
 	//Gibs
 	ModelManagerAllocate( &modelManager, "res/models/gib.glb" );
-
 
 	//Model
 	Goblin::model->animations[GOBLIN_ANIM_RUN]->looping = true;
@@ -179,24 +210,6 @@ int main() {
 	bool start = true;
 
 	renderer.drawStats = true;
-
-	Encounter& encounter = entityManager.encounters[entityManager.numEncounters++];
-	strcpy( encounter.name, "test" );
-
-	EncounterAction& action = encounter.actions[encounter.totalActions++];
-	action.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-	action.ai = ENCOUNTER_AI_GOBLIN;
-	strcpy(action.spawnTarget, "spawn1");
-
-	EncounterAction& action2 = encounter.actions[encounter.totalActions++];
-	action2.type = ENCOUNTER_ACTION_WAIT_FOR_SECONDS_BLOCK;
-	action2.waitTime = 3.0f;
-
-	EncounterAction& action3 = encounter.actions[encounter.totalActions++];
-	action3.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-	action3.ai = ENCOUNTER_AI_GOBLIN;
-	strcpy( action3.spawnTarget, "spawn1" );
-
 
 	AudioSource* source = NewAudioSource();
 
@@ -262,7 +275,6 @@ int main() {
 		RenderDrawText( Vec2( 0, 360 ), 16, buffer );
 
 		DebugDrawLine( Vec3( 0 ), Vec3( 10 ) );
-
 
 		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );

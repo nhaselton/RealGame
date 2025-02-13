@@ -21,12 +21,19 @@ void EncounterAddActions( Encounter* encounter ) {
 		switch( action->type ) {
 			case ENCOUNTER_ACTION_SPAWN_SINGLE_AI: {
 				printf( "Encounter Spawn AI\n" );
+				bool found = false;
 				for( int n = 0; n < entityManager.numSpawnTargets; n++ ) {
-					SpawnTarget* target = &entityManager.spawnTargets[n];
-					if( !strcmp( target->name, action->spawnTarget ) ) {
-						SpawnEnemy( action->ai, target->pos );
+					SpawnTarget* currentTarget = &entityManager.spawnTargets[n];
+					if( !strcmp( currentTarget->name, action->spawnTarget ) ) {
+						SpawnEnemy( action->ai, currentTarget->pos);
+						found = true;
+						break;
 					}
 				}
+				if( !found ) {
+					LOG_WARNING( LGS_GAME,"Encounter could not spawn enemy at %s\n", action->spawnTarget );
+				}
+
 			} break;
 			case ENCOUNTER_ACTION_WAIT_FOR_SECONDS_BLOCK:
 			{
@@ -65,5 +72,27 @@ void UpdateEncounter( Encounter* encounter ) {
 			break;
 		}
 	}
+}
+
+void CreateEncounters() {
+	// ===================== //
+	// 	 First Encounter	 //
+	// ===================== //
+	Encounter& encounter = entityManager.encounters[entityManager.numEncounters++];
+	//strcpy( encounter.name, "test" );
+
+	EncounterAction& action = encounter.actions[encounter.totalActions++];
+	action.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
+	action.ai = ENCOUNTER_AI_WIZARD;
+	strcpy( action.spawnTarget, "spawn1" );
+
+	EncounterAction& action2 = encounter.actions[encounter.totalActions++];
+	action2.type = ENCOUNTER_ACTION_WAIT_FOR_SECONDS_BLOCK;
+	action2.waitTime = 3.0f;
+
+	EncounterAction& action3 = encounter.actions[encounter.totalActions++];
+	action3.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
+	action3.ai = ENCOUNTER_AI_WIZARD;
+	strcpy( action3.spawnTarget, "spawn2" );
 
 }

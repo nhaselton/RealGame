@@ -159,7 +159,7 @@ void WizardMelee( Wizard* wizard ) {
 		emitter->scale = Vec3( .2f );
 		emitter->acceleration = Vec3( 0, -20, 0 );
 		emitter->emitterSpawnType = EMITTER_INSTANT;
-		emitter->maxEmitterLifeTime = 5.0f;
+		emitter->maxEmitterLifeTime = 1.5f;
 		emitter->particleLifeTime = 3.0f;
 		emitter->radius = 2.0f;
 		emitter->UV = Vec4( .09375, 0, 0.125, .03125 );

@@ -1,0 +1,30 @@
+{
+"classname" "info_player_start"
+"origin" "400 -32 56"
+}
+// entity 2
+{
+"classname" "encounter"
+"origin" "-120 728 280"
+"targetname" "first"
+}
+// entity 3
+{
+"classname" "trigger_once"
+"target" "first"
+"triggertype" "2"
+"bounds" "true"
+"boundsmin" "-1.00 -0.00 4.00"
+"boundsmax" "6.00 9.50 6.50"
+}
+{
+"classname" "spawner"
+"origin" "-136 1016 200"
+"targetname" "spawn1"
+}
+// entity 5
+{
+"classname" "spawner"
+"origin" "552 1016 200"
+"targetname" "spawn2"
+}

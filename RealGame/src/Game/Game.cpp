@@ -42,12 +42,12 @@ bool TryEntityField( Entity* entity, const char* key, const char* value ) {
 }
 
 bool TryTriggerField( Trigger* trigger, const char* key, const char* value ) {
-	if( !strcmp( key, "willtrigger" ) ) {
+	if( !strcmp( key, "target" ) ) {
 		strcpy( trigger->willTrigger, value );
 		return true;
 	}
 
-	if( !strcmp( key, "myname" ) ) {
+	if( !strcmp( key, "targetname" ) ) {
 		strcpy( trigger->myName, value );
 		return true;
 	}
@@ -113,6 +113,20 @@ void GameLoadEntities( const char* path ) {
 			entity = CreateWizard( Vec3( 0, -1.5, 0 ) );
 		}
 		else if( !strcmp( className, "encounter" ) ) {
+			//Origin
+			char key0[MAX_NAME_LENGTH]{};
+			char value0[MAX_NAME_LENGTH]{};
+			parser.ParseString( key0, MAX_NAME_LENGTH );
+			parser.ParseString( value0, MAX_NAME_LENGTH );
+			//Name
+			char key1[MAX_NAME_LENGTH]{};
+			char value1[MAX_NAME_LENGTH]{};
+			parser.ParseString( key1, MAX_NAME_LENGTH );
+			parser.ParseString( value1, MAX_NAME_LENGTH );
+			strcpy( entityManager.encounters[0].name, value1 );
+			parser.ExpectedTokenTypePunctuation( '}' );
+
+			isSpawner = true;
 		}
 		else if( !strcmp( className, "spawner" ) ) {
 			isSpawner = true;
@@ -143,7 +157,7 @@ void GameLoadEntities( const char* path ) {
 
 		//Find all fields
 		while( 1 ) {
-			if( isSpawner )
+			if( isSpawner  )
 				break;
 
 			char key[MAX_NAME_LENGTH]{};

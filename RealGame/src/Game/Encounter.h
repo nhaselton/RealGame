@@ -47,3 +47,6 @@ public:
 void StartEncounter( Encounter* encounter );
 void UpdateEncounter( Encounter* encounter );
 void CompleteEncounter( Encounter* encounter );
+
+//These are hardcoded in engine right now
+void CreateEncounters();
