@@ -974,7 +974,9 @@ void RenderDrawAllProjectiles() {
 			continue;
 
 		Mat4 t = glm::translate( Mat4( 1.0 ), projectile->collider.offset + projectile->collider.bounds.center );
-		RenderDrawModel( &renderer, projectile->model.model, t );
+		Mat4 s = glm::scale( Mat4( 1.0 ), projectile->model.scale );
+		Mat4 trs = t * s;
+		RenderDrawModel( &renderer, projectile->model.model, trs );
 	}
 }
 

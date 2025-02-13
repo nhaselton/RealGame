@@ -831,6 +831,8 @@ BVHTree ConstructBVH( std::vector<NPBrush>& brushes ) {
 	BVHTree tree{};
 	tree.numNodes = 2 * brushes.size();
 	tree.nodes = ( BVHNode* ) malloc( tree.numNodes * sizeof( BVHNode ) );
+	memset( tree.nodes, 0, tree.numNodes * sizeof( BVHNode ) );
+
 	BVHNode** workingSet = ( BVHNode** ) malloc( tree.numNodes * sizeof( BVHNode* ) );
 	int nodesCreated = 0;
 	int numWorkingSet = 0;

@@ -81,12 +81,26 @@ void UpdateProjectiles( ) {
 				projectile->OnCollision( projectile, query.entity );
 			}
 		}
+
+		if( projectile->isLinear && projectile->staticImpactTime <= gameTime ) {
+			if ( projectile->OnCollision )
+				projectile->OnCollision( projectile, 0 );
+		}
 	}
 
 	entityManager.lastProjectileIndex = currentMaxProjectile;
 }
 
-Projectile* NewProjectile() {
+void ProjSweep(Vec3 pos, Vec3 vel, Vec3 bounds) {
+	SweepInfo best{};
+
+	//for( int i = 0; i < physics.numBrushes; i++ ) {
+	//	if ( Sweep )
+	//}
+
+}
+
+Projectile* NewProjectile( Vec3 pos, Vec3 velocity, Vec3 radius, bool linear ) {
 	if ( entityManager.numProjectiles == MAX_PROJECTILES ) {
 		LOG_WARNING( LGS_GAME, "Can not spawn more projectiles.\n" );
 		return 0;
@@ -95,8 +109,10 @@ Projectile* NewProjectile() {
 	for ( int i = 0; i < MAX_PROJECTILES; i++ ) {
 		Projectile* projectile = &entityManager.projectiles[i];
 		//Get Non active projectile
-		if ( !projectile->state == ACTIVE_ACTIVE )
+		if ( projectile->state == ACTIVE_ACTIVE )
 			continue;
+
+		memset( projectile, 0, sizeof( *projectile ) );
 
 		projectile->state = ACTIVE_ACTIVE;
 		entityManager.numProjectiles++;
@@ -105,6 +121,31 @@ Projectile* NewProjectile() {
 		if ( i > entityManager.lastProjectileIndex )
 			entityManager.lastProjectileIndex = i;
 
+		projectile->collider.offset = pos;
+		projectile->collider.bounds.width = radius;
+		projectile->collider.bounds.center = Vec3( 0 );
+		projectile->velocity = velocity; 
+		projectile->spawnTime = gameTime;
+
+		if( linear ) {
+			SweepInfo info{};
+			DebugDrawLine( pos, pos + glm::normalize( velocity ) * 200.0f, RED, 3.0f , true,0,10000.0f);
+			if( PhysicsQuerySweepStatic( pos, glm::normalize(velocity) * 200.0f, radius * 2.0f, &info) ) {
+				projectile->isLinear = true;
+				Vec3 fromTo = info.r3Point - pos;
+				float dist = glm::length( fromTo  );
+				Vec3 normal = fromTo / dist;
+
+				float speed = glm::dot( velocity , normal );
+				float time = info.eSpaceNearestDist / speed;
+				projectile->staticImpactTime = gameTime + time;
+			}
+			else {
+				//Dont let projectiles live forver
+				projectile->staticImpactTime = gameTime + 10.0f;
+				printf( "Fail" );
+			}
+		}
 
 		return projectile;
 	}
@@ -123,6 +164,7 @@ void EntityManagerCleanUp() {
 	}
 	
 	entityManager.numRemoveEntities = 0;
+	entityManager.numRemoveProjectiles = 0;
 }
 
 void RemoveProjectile( Projectile* projectile ) {

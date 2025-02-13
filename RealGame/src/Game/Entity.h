@@ -56,9 +56,13 @@ public:
 
 	CharacterCollider collider;
 	void ( *OnCollision ) ( Projectile* projectile, Entity* entity );
+	float spawnTime;
 
 	RenderModel model;
 
+	//Linear Functions
+	bool isLinear;
+	float staticImpactTime;
 	//todo float impactTime
 	//hitCallback?
 	//Damage?
@@ -107,3 +111,7 @@ void EntityAnimationUpdate( Entity* entity, float dt );
 //Runtime
 void EntityMove( Entity* entity, Vec3 velocity );
 void EntityLookAtPlayer( Entity* entity );
+
+inline Vec3 EntityForward( Entity* entity ) {
+	return glm::normalize(entity->rotation * Vec4( 0, 0, 1, 0 ));
+}

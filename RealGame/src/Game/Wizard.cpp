@@ -6,6 +6,7 @@
 #include "Renderer/DebugRenderer.h"
 #include "renderer/Renderer.h"
 Model* Wizard::model;
+Model* Wizard::projectileModel;
 SkeletonPose* Wizard::deadPose;
 
 void WizardStartShoot( Wizard* wizard ) {
@@ -60,16 +61,23 @@ Wizard* CreateWizard( Vec3 pos ) {
 
 	wizard->Update = WizardUpdate;
 	wizard->OnHit = WizardOnHit;
+
+	wizard->rotation = glm::normalize(Quat( 1, 0, 0, 0 ));
 	
+	//wizard->state = WIZARD_IDLE;
+	//EntityStartAnimation( wizard, WIZARD_ANIM_RUN );
 	WizardStartRepositioning( wizard );
 	return wizard;
 }
 
 void WizardUpdate( Entity* entity ) {
 	Wizard* wizard = ( Wizard* ) entity;
+	Vec3 gravity = Vec3( 0, -10 * dt, 0 );
+	wizard->pos = MoveAndSlide( wizard->bounds, gravity, 0, true );
 
 	switch( wizard->state ) {
 		case WIZARD_IDLE:
+		WizardIdle( wizard );
 		break;
 		case WIZARD_MELEE:
 		WizardMelee( wizard );
@@ -89,23 +97,38 @@ void WizardUpdate( Entity* entity ) {
 	}
 }
 
+void WizardIdle( Wizard* wizard ) {
+	Vec3 forward = EntityForward( wizard );
+	forward.y = 0;
+	Vec3 playerPos = entityManager.player->pos;
+	playerPos.y = 0;
 
+	//Check if player In Front
+	float cosAngle = glm::dot( forward, playerPos - forward );
+	if( cosAngle < 0 ) 
+		return;
+
+	HitInfo info{};
+	if( PhysicsQueryRaycast( wizard->pos, entityManager.player->pos - wizard->pos, &info ) ) {
+		if( info.entity == entityManager.player )
+			WizardStartRepositioning( wizard );
+	}
+
+}
 
 void WizardShoot( Wizard* wizard ) {
 	EntityLookAtPlayer( wizard );
 
 	if( wizard->currentAnimationPercent >= 0.5f && !wizard->hasShot ) {
-		Projectile* orb = NewProjectile();
+		Vec3 orbPos = wizard->pos + Vec3( 0, 3, 0 );
+		Vec3 velocity = glm::normalize( ( entityManager.player->pos - orbPos ) ) * 20.0f;
+		Projectile* orb = NewProjectile( orbPos, velocity, Vec3( .5f ), true );
 		if( orb ) {
-			orb->collider.offset = wizard->pos + Vec3( 0, .25, 0 );
-			orb->collider.bounds.width = Vec3( 2.0f );
-			orb->collider.bounds.center = Vec3( 0 );
 			orb->collider.owner = wizard;
-			orb->velocity = glm::normalize( ( entityManager.player->pos - orb->collider.offset ) ) * 20.0f;
-			orb->model.model = Wizard::model;
-			orb->model.scale = Vec3( .25f );
+			orb->model.model = Wizard::projectileModel;
+			orb->model.scale = Vec3( .5f );
 			orb->model.translation = Vec3( 0 );
-			orb->OnCollision = 0;
+			orb->OnCollision = WizardBallCallback;
 			wizard->hasShot = true;
 			return;
 		}
@@ -120,6 +143,8 @@ void WizardShoot( Wizard* wizard ) {
 }
 
 void WizardReposition( Wizard* wizard ) {
+	WizardStartShoot( wizard );
+
 	EntityLookAtPlayer( wizard );
 
 	if( wizard->nextMelee <= gameTime 
@@ -144,7 +169,15 @@ void WizardReposition( Wizard* wizard ) {
 	Vec3 velocity = wizard->boidVelocity;
 	if( glm::length2( velocity ) != 0 ) {
 		velocity = glm::normalize( velocity ) * 10.0f * dt;
-		EntityMove( wizard, velocity );
+		//EntityMove( wizard, velocity );
+
+		Vec3 wantMove =  MoveAndSlide( wizard->bounds, velocity, 3, false );
+		SweepInfo info{};
+		if ( PhysicsRaycastStaticFast(wantMove,Vec3(0,-3,0)) ){
+			//if( PhysicsQuerySweepStatic( wantMove, Vec3( 0, -5, 0 ), wizard->bounds->bounds.width * .75f, &info ) ) {
+			wizard->pos = wantMove;
+			wizard->bounds->offset = wizard->pos;
+		}
 	}
 }
 
@@ -221,4 +254,28 @@ void WizardStagger( Wizard* wizard ) {
 		WizardStartRepositioning( wizard );
 		return;
 	}
+}
+
+void WizardBallCallback( class Projectile* projectile, class Entity* entity ) {
+	if( entity && entity != projectile->owner && entity->OnHit ) {
+		EntityHitInfo info{};
+		info.attacker = projectile->owner;
+		info.victim = entity;
+		info.projectile = projectile;
+		info.damage = 1;
+		entity->OnHit( info );
+	}
+
+	RemoveProjectile( projectile );
+	ParticleEmitter2* emitter = NewParticleEmitter();
+	emitter->numParticles = 300;
+	emitter->maxParticles = 300;
+	emitter->scale = Vec3( .2f );
+	emitter->acceleration = Vec3( 0, -20, 0 );
+	emitter->emitterSpawnType = EMITTER_INSTANT;
+	emitter->maxEmitterLifeTime = 1.5f;
+	emitter->particleLifeTime = 3.0f;
+	emitter->radius = 2.0f;
+	emitter->UV = Vec4( .09375, 0, 0.125, .03125 );
+	emitter->pos = projectile->collider.offset;	
 }

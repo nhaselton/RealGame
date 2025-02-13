@@ -1,0 +1,36 @@
+// Game: Generic
+// Format: Valve
+// entity 0
+{
+"mapversion" "220"
+"classname" "worldspawn"
+"_tb_textures" "textures/prototype"
+// brush 0
+{
+( -64 -64 -16 ) ( -64 -63 -16 ) ( -64 -64 -15 ) prototype/jpg128_blue_2 [ 0 -1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( -64 -752 -16 ) ( -64 -752 -15 ) ( -63 -752 -16 ) prototype/jpg128_blue_2 [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( -64 -64 -16 ) ( -63 -64 -16 ) ( -64 -63 -16 ) prototype/jpg128_blue_2 [ -1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 64 64 16 ) ( 64 65 16 ) ( 65 64 16 ) prototype/jpg128_blue_2 [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 64 64 16 ) ( 65 64 16 ) ( 64 64 17 ) prototype/jpg128_blue_2 [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 816 64 16 ) ( 816 64 17 ) ( 816 65 16 ) prototype/jpg128_blue_2 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+}
+// brush 1
+{
+( 400 -384 16 ) ( 400 -383 16 ) ( 400 -384 17 ) prototype/jpg128_blue_2 [ 0 -1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 576 -528 16 ) ( 576 -528 17 ) ( 577 -528 16 ) prototype/jpg128_blue_2 [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 576 -384 16 ) ( 577 -384 16 ) ( 576 -383 16 ) prototype/jpg128_blue_2 [ -1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 688 -272 304 ) ( 688 -271 304 ) ( 689 -272 304 ) prototype/jpg128_blue_2 [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 688 -192 32 ) ( 689 -192 32 ) ( 688 -192 33 ) prototype/jpg128_blue_2 [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 784 -272 32 ) ( 784 -272 33 ) ( 784 -271 32 ) prototype/jpg128_blue_2 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+}
+}
+// entity 1
+{
+"classname" "info_player_start"
+"origin" "16 -400 64"
+}
+// entity 2
+{
+"classname" "info_wizard_start"
+"origin" "617 -329 403"
+}

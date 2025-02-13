@@ -55,6 +55,8 @@ inline Vec3 ProjectOnPlane( const Vec3& planeNormal, const Vec3& vector ) {
 
 }
 
+
+
 //https://www.peroxide.dk/papers/collision/collision.pdf
 //https ://arxiv.org/pdf/1211.0059
 //https://www.youtube.com/watch?v=YR6Q7dUz2uk&t=425s
@@ -403,9 +405,10 @@ bool AABBSweep( const BoundsMinMax& a, const BoundsMinMax& b, Vec3 velocity ) {
 	return true;
 }
 
+
 bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo* bestSweep ) {
 	TEMP_ARENA_SET;
-	memset( bestSweep, 0, sizeof( *bestSweep) );
+	memset( bestSweep, 0, sizeof( *bestSweep ) );
 	int aabbChecks = 0;
 
 	int polyChecks = 0;
@@ -419,12 +422,13 @@ bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo*
 		start + radius
 	};
 
-	BoundsMinMax AABB2 {
+	BoundsMinMax AABB2{
 		start - radius * 2.0f,
 		start + velocity + radius * 2.0f
 	};
+	fastBounds = AABB2;
 
-	while ( numStack > 0 ) {
+	while( numStack > 0 ) {
 		BVHNode* node = stack[--numStack];
 		aabbChecks++;
 
@@ -432,17 +436,21 @@ bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo*
 		// This means extra triangles but it seems to be fine
 		//In the future I should look into
 		//if ( !AABBSweep( fastBounds, node->bounds, velocity )  )
-		if ( !FastAABB( AABB2, node->bounds ) )
-			continue;
-
+		
+		//THIS IS BROKEN!!! TODO FIX
+#if 0
+		if( !FastAABB( AABB2, node->bounds ) )
+		continue;
+#endif 
 		//If leaf then get the actual object
-		if ( node->isLeaf ) {
+		if( node->isLeaf ) {
 			//Collide with the map geometry (Already done if it's a leaf aabb)
-			if ( node->object >= 0 ) {
+			if( node->object >= 0 ) {
 				SweepInfo info{};
 				polyChecks += physics.brushes[node->object].numPolygons;
-				if ( CastSphere( start, velocity, &physics.brushes[node->object], radius, &info ) ) {
-					if ( info.t < bestSweep->t || !bestSweep->foundCollision ) {
+
+				if( CastSphere( start, velocity, &physics.brushes[node->object], radius, &info ) ) {
+					if( info.t < bestSweep->t || !bestSweep->foundCollision ) {
 						*bestSweep = info;
 					}
 				}
@@ -453,9 +461,9 @@ bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo*
 		}
 
 		//If not just add children
-		if ( node->child1 != -1 )
+		if( node->child1 != -1 )
 			stack[numStack++] = &physics.staticBVH.nodes[node->child1];
-		if ( node->child2 != -1 )
+		if( node->child2 != -1 )
 			stack[numStack++] = &physics.staticBVH.nodes[node->child2];
 	}
 	return bestSweep->foundCollision;

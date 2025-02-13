@@ -67,7 +67,7 @@ Entity* NewEntity();
 void RemoveEntity( Entity* entity );
 void UpdateEntities();
 
-Projectile* NewProjectile();
+Projectile* NewProjectile( Vec3 pos, Vec3 velocity, Vec3 radius, bool linear );
 void RemoveProjectile( Projectile* projectile );
 void UpdateProjectiles();
 

@@ -1,6 +1,6 @@
 {
 "classname" "info_player_start"
-"origin" "400 -32 56"
+"origin" "-64 -48 56"
 }
 // entity 2
 {
@@ -49,8 +49,8 @@
 "target" "second"
 "triggertype" "2"
 "bounds" "true"
-"boundsmin" "-20.00 -0.00 22.00"
-"boundsmax" "-0.00 9.50 24.50"
+"boundsmin" "-20.00 -0.00 14.00"
+"boundsmax" "-0.00 9.50 16.50"
 }
 {
 "classname" "trigger_once"

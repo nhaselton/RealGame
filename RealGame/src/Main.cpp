@@ -21,11 +21,6 @@
 	=====================
 			AI
 	=====================
-	Dont walk off edges
-	IDLE state until they see / hear player
-	Wizard require LOS
-	Polish Wizard
-		Projecitle model
 		Sounds
 	Polish Goblin
 		Sounds
@@ -191,6 +186,7 @@ int main() {
 	CreateEncounters();
 
 	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizard.glb" );
+	Wizard::projectileModel = ModelManagerAllocate( &modelManager, "res/models/WizardBall.glb" );
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
 
 	//Generate Deadpose
@@ -239,6 +235,19 @@ int main() {
 
 		if( KeyPressed( KEY_SPACE ) ) {
 			PlaySound( source, &sound );
+		}
+
+		if( KeyPressed( KEY_L ) ) {
+			Vec3 orbPos = entityManager.player->pos;//+ Vec3( 0, 3, 0 );
+			Vec3 velocity = player->camera.Front* 20.0f;
+			Projectile* orb = NewProjectile( orbPos, velocity, Vec3( .5f ), true );
+			if( orb ) {
+				orb->model.model = Wizard::projectileModel;
+				orb->model.scale = Vec3( .5f );
+				orb->model.translation = Vec3( 0 );
+				orb->OnCollision = WizardBallCallback;
+		}
+
 		}
 
 		timer.Tick();

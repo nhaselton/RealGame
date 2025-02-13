@@ -137,19 +137,20 @@ void OgreThrow( Entity* entity ) {
 	if ( entity->currentAnimationPercent > .37 && !ogre->hasThrownRock ) {
 		ogre->hasThrownRock = true;
 		
-		Projectile* rock = NewProjectile();
 		Vec3 rockSpawn = entity->pos + Vec3( 0, 4, 0 );;
+		Vec3 velocity = glm::normalize( ( ogre->player->pos - rockSpawn ) ) * 10.0f;
+		Vec3 bounds = Vec3( 2.0f );
 
-		rock->collider.offset = rockSpawn;
-		rock->collider.bounds.width = Vec3( 2.0f );
-		rock->collider.bounds.center = Vec3( 0 );
-		rock->collider.owner = entity;
-		rock->velocity = glm::normalize( ( ogre->player->pos - rockSpawn ) ) * 10.0f;
-		rock->owner = ogre;
-		rock->model.model = rockModel;
-		rock->model.scale = Vec3( 1 );
-		rock->model.translation = Vec3( 0 );
-		rock->OnCollision = OgreRockCallback;
+		Projectile* rock = NewProjectile( rockSpawn, velocity, bounds, true);
+
+		if( rock ) {
+			rock->collider.owner = entity;
+			rock->owner = ogre;
+			rock->model.model = rockModel;
+			rock->model.scale = Vec3( 1 );
+			rock->model.translation = Vec3( 0 );
+			rock->OnCollision = OgreRockCallback;
+		}
 	}
 
 	if ( entity->currentAnimationPercent == 1.0f ) {

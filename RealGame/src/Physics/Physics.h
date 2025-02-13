@@ -130,6 +130,7 @@ void PhysicsRigidBodiesUpdate();
 
 bool PhysicsQueryRaycast( Vec3 start, Vec3 velocity, HitInfo* best );
 bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo* bestSweep );
+bool PhysicsQuerySweepStatic2( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo* bestSweep );
 bool PhysicsQueryIntersectEntities( CharacterCollider* cc, EntityCollisonQuery* outQuery );
 
 void CreateBoid( class Entity* entity );

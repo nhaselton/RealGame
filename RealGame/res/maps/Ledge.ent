@@ -1,0 +1,9 @@
+{
+"classname" "info_player_start"
+"origin" "16 -400 64"
+}
+// entity 2
+{
+"classname" "info_wizard_start"
+"origin" "617 -329 403"
+}

@@ -23,7 +23,6 @@ enum wizardAnimations_t {
 
 class Wizard : public Entity {
 public:
-	static Model* model;
 	float nextShootTime;
 	float shootCooldown;
 	float nextMelee;
@@ -31,6 +30,8 @@ public:
 	bool hasShot;
 	bool hasMelee;
 
+	static Model* model;
+	static Model* projectileModel;
 	static SkeletonPose* deadPose;
 };
 
@@ -38,9 +39,13 @@ void WizardUpdate( Entity* entity );
 void WizardOnHit( EntityHitInfo info );
 
 Wizard* CreateWizard( Vec3 pos );
+
+void WizardIdle( Wizard* wizard );
 void WizardReposition( Wizard* wizard );
 void WizardShoot( Wizard* wizard );
 void WizardStagger( Wizard* wizard );
 void WizardStartStagger( Wizard* wizard );
 void WizardMelee( Wizard* wizard );
 void WizardDie( Wizard* wizard );
+
+void WizardBallCallback( class Projectile* projectile, class Entity* entity );
