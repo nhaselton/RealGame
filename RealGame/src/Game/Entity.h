@@ -91,6 +91,9 @@ public:
 	int health;
 	int maxHealth;
 
+	char spawnTag[MAX_TAG_LENGTH];
+	class Encounter* encounter;
+
 	void ( *Update ) ( class Entity* entity );
 	void ( *OnHit ) ( struct EntityHitInfo info );
 };

@@ -27,4 +27,20 @@
 "classname" "spawner"
 "origin" "552 1016 200"
 "targetname" "spawn2"
-}
+}
+// entity 6
+{
+"classname" "trigger_once"
+"target" "second"
+"triggertype" "2"
+"bounds" "true"
+"boundsmin" "-15.00 -0.00 21.50"
+"boundsmax" "5.00 9.50 24.00"
+}
+{
+"classname" "spawn_zone"
+"targetname" "zone0"
+"bounds" "true"
+"boundsmin" "-15.00 -0.00 29.00"
+"boundsmax" "2.50 3.50 34.50"
+}

@@ -16,6 +16,7 @@ typedef nlohmann::json JSON;
 #include "stb_image.h"
 
 #define U32MAX UINT32_MAX
+#define MAX_TAG_LENGTH 16
 #define MAX_NAME_LENGTH 32
 #define MAX_PATH_LENGTH 64
 

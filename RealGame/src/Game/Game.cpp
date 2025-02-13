@@ -123,7 +123,7 @@ void GameLoadEntities( const char* path ) {
 			char value1[MAX_NAME_LENGTH]{};
 			parser.ParseString( key1, MAX_NAME_LENGTH );
 			parser.ParseString( value1, MAX_NAME_LENGTH );
-			strcpy( entityManager.encounters[0].name, value1 );
+			//strcpy( entityManager.encounters[0].name, value1 );
 			parser.ExpectedTokenTypePunctuation( '}' );
 
 			isSpawner = true;
@@ -142,6 +142,7 @@ void GameLoadEntities( const char* path ) {
 			parser.ExpectedTokenTypePunctuation( '}' );
 
 			SpawnTarget* spawner = &entityManager.spawnTargets[entityManager.numSpawnTargets++];
+			spawner->type = SPAWN_TARGET_POINT;
 			spawner->pos = StringToVec3( value1, true );
 			strcpy( spawner->name, value2 );
 		}
@@ -149,6 +150,35 @@ void GameLoadEntities( const char* path ) {
 			//Trigger
 			trigger = &entityManager.triggers[entityManager.numTriggers++];
 			isTrigger = true;
+		}
+		else if( !strcmp( className, "spawn_zone" ) ) {
+			SpawnTarget* spawner = &entityManager.spawnTargets[entityManager.numSpawnTargets++];
+
+			//Bounds True
+			char key1[MAX_NAME_LENGTH]{};
+			char value1[MAX_NAME_LENGTH]{};
+			parser.ParseString( key1, MAX_NAME_LENGTH );
+			parser.ParseString( value1, MAX_NAME_LENGTH );
+			strcpy( spawner->name, value1 );
+
+			parser.ParseString( key1, MAX_NAME_LENGTH );
+			parser.ParseString( value1, MAX_NAME_LENGTH );
+
+			parser.ParseString( key1, MAX_NAME_LENGTH );
+			parser.ParseString( value1, MAX_NAME_LENGTH );
+			Vec3 min = StringToVec3( value1, false );
+
+			parser.ParseString( key1, MAX_NAME_LENGTH );
+			parser.ParseString( value1, MAX_NAME_LENGTH );
+			Vec3 max = StringToVec3( value1, false );
+
+			spawner->type = SPAWN_TARGET_ZONE;
+			spawner->pos = ( max + min ) / 2.0f;
+			spawner->size = ( max - min ) / 2.0f;
+			
+			isSpawner = true;
+			parser.ExpectedTokenTypePunctuation( '}' );
+
 		}
 		else {
 			printf( "Unkown Entity type %s\n", className );

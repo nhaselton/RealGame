@@ -179,6 +179,7 @@ void WizardMelee( Wizard* wizard ) {
 void WizardStartDeath(Wizard* wizard) {
 	EntityStartAnimation( wizard, WIZARD_ANIM_DEATH );
 	wizard->state = WIZARD_DEATH;
+	EncounterNotifyOnDeath( wizard->encounter, wizard );
 
 	RemoveBoid( wizard );
 }

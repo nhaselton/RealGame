@@ -72,6 +72,8 @@ void GoblinOnHit( EntityHitInfo info ) {
 	if ( goblin->health <= 0 ) {
 		RemoveEntity( goblin );	
 		RemoveBoid( goblin );
+		EncounterNotifyOnDeath( goblin->encounter, goblin );
+
 
 		//Explode
 		for (int i = 0; i < entityManager.numEntities; i++) {

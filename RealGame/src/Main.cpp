@@ -22,30 +22,13 @@
 * ======================
 *	Triggers
 * ===================
-		SpawnGroups
-		SpawnMultiAI
-			Impulse
-				Do all at once
-			OverTime
-				Do over time
-			MinimumTime()
-			MaxAlive()
-			MinAlive()
-				Will ignore MinimumTime()??
-		
-		SpawnTags for enemies
-			Each enemy can have a group (Probably use int instead of string)
-			ENCOUNTER_ACTION_WAIT_FOR_SPAWN_TAG_KILLS
-				group
-				count
-
-		Trigger Type to Spawn Single Enemy
-			Enemy Type
-			SpawnPoint
-		Trigger Type to Spawn Multiple Enemies
-			Types of enemies
-			SpawnGroup (Only 1) 
-			Count
+	Trigger Type to Spawn Single Enemy
+		Enemy Type
+		SpawnPoint
+	Trigger Type to Spawn Multiple Enemies
+		Types of enemies
+		SpawnGroup (Only 1) 
+		Count
 
 	=====================
 			AI
@@ -53,6 +36,11 @@
 	Dont walk off edges
 	IDLE state until they see / hear player
 	Wizard require LOS
+	Polish Wizard
+		Projecitle model
+		Sounds
+	Polish Goblin
+		Sounds
 
 	===================
 			Game
@@ -66,17 +54,50 @@
 		Small ambient + directional light
 		fix rotated skeletal meshes not lighting properly
 
+	=====================
+			Sounds
+	=====================
+	Wizard Notice Player
+	Wizard Pain 
+	Wizard Shoot
+	Wizard Orb Explode
+
+	Goblin Notice Player
+	Goblin Pain
+
+	Goblin Scream
+	Footsteps
+	Music
+	Spawn Sound
+
+
+	=====================
+			VFX
+	=====================
+	Enemy Spawn
+
+	=====================
+			Art
+	=====================
+	Wizard Orb Model
+
 	MVP:
 		Single 2 or 3 room level (Start of karnack pretty much)
 			that starts in small room with Ragned guys
 			Goes outdoors into field that has kamakazi and ranged guys
 
 
+	==================================
+		Whats Next
+	==================================
 	.def files
 	Encounter files / GUI
+		One File for all encounters
+		could generate a .cpp file?
+			But then no hot reloading
 
-		Fix Spawn Loading Code
-		Its super hacked in.
+	Fix Spawn Loading Code
+	Its super hacked in.
 
 	CPU Flipbooks
 		Explosion, etc
@@ -257,8 +278,12 @@ int main() {
 			DebugDrawAABB( center, size );
 		}
 
-		if ( encounter.active )
-			UpdateEncounter( &encounter );
+		for( int i = 0; i < entityManager.numEncounters; i++ ) {
+			Encounter& encounter = entityManager.encounters[i];
+			if( encounter.active )
+				UpdateEncounter( &encounter );
+		}
+
 
 		if( !paused ) {
 			gameTime += dt;
