@@ -141,18 +141,23 @@ void GameLoadEntities( const char* path ) {
 			parser.ParseString( key2, MAX_NAME_LENGTH );
 			parser.ParseString( value2, MAX_NAME_LENGTH );
 
-			if ( parser.PeekNext().subType == '}' )
-				parser.ExpectedTokenTypePunctuation( '}' );
-			else {
-				parser.ParseString( key2, MAX_NAME_LENGTH );
-				//parser.ParseString( value2, MAX_NAME_LENGTH );
-				spawner->enemies = (encounterEnemies_t) parser.ParseInt();
-				parser.ExpectedTokenTypePunctuation( '}' );
-			}
-
 			spawner->type = SPAWN_TARGET_POINT;
 			spawner->pos = StringToVec3( value1, true );
 			strcpy( spawner->name, value2 );
+
+			if ( parser.GetCurrent().subType == '}' )
+				parser.ExpectedTokenTypePunctuation( '}' );
+			else {
+				parser.ParseString( key2, MAX_NAME_LENGTH );
+				memset( value2, 0, MAX_NAME_LENGTH );
+				parser.ParseString( value2, MAX_NAME_LENGTH );
+
+				spawner->enemies = ( encounterEnemies_t ) atoi( value2 );
+				//parser.ParseString( key2, MAX_NAME_LENGTH );
+				parser.ExpectedTokenTypePunctuation( '}' );
+			}
+
+
 		}
 		else if( !strcmp( className, "trigger_once" ) ) {
 			//Trigger

@@ -131,17 +131,23 @@
 }
 // entity 2
 {
+"classname" "encounter"
+"origin" "-120 728 280"
+"targetname" "first"
+}
+// entity 3
+{
 "classname" "spawner"
 "origin" "-136 1016 200"
 "targetname" "spawn1"
 }
-// entity 3
+// entity 4
 {
 "classname" "spawner"
 "origin" "552 1016 200"
 "targetname" "spawn2"
 }
-// entity 4
+// entity 5
 {
 "classname" "spawn_zone"
 "targetname" "zone0"
@@ -155,14 +161,14 @@
 ( 448 1104 16 ) ( 448 1104 17 ) ( 448 1105 16 ) Util/SpawnZone [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
 }
 }
-// entity 5
+// entity 6
 {
 "classname" "spawner"
-"origin" "56 424 8"
+"origin" "248 488 8"
 "targetname" "spawnguy"
 "types" "2"
 }
-// entity 6
+// entity 7
 {
 "classname" "trigger_once"
 "target" "spawnguy"
@@ -178,22 +184,22 @@
 ( 32 192 16 ) ( 32 192 17 ) ( 32 193 16 ) Util/Trigger [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
 }
 }
-// entity 7
+// entity 8
 {
 "classname" "trigger_once"
 "target" "second"
 "triggertype" "2"
 // brush 0
 {
-( 0 544 0 ) ( 0 545 0 ) ( 0 544 1 ) Util/Trigger [ 0 -1 0 -96 ] [ 0 0 -1 0 ] 0 1 1
-( 0 544 0 ) ( 0 544 1 ) ( 1 544 0 ) Util/Trigger [ 1 0 0 64 ] [ 0 0 -1 0 ] 0 1 1
-( 0 544 0 ) ( 1 544 0 ) ( 0 545 0 ) Util/Trigger [ -1 0 0 -64 ] [ 0 -1 0 -96 ] 0 1 1
-( 224 624 304 ) ( 224 625 304 ) ( 225 624 304 ) Util/Trigger [ 1 0 0 64 ] [ 0 -1 0 -96 ] 0 1 1
-( 224 624 16 ) ( 225 624 16 ) ( 224 624 17 ) Util/Trigger [ -1 0 0 -64 ] [ 0 0 -1 0 ] 0 1 1
-( 640 624 16 ) ( 640 624 17 ) ( 640 625 16 ) Util/Trigger [ 0 1 0 96 ] [ 0 0 -1 0 ] 0 1 1
+( 0 480 0 ) ( 0 481 0 ) ( 0 480 1 ) Util/Trigger [ 0 -1 0 -160 ] [ 0 0 -1 0 ] 0 1 1
+( 0 480 0 ) ( 0 480 1 ) ( 1 480 0 ) Util/Trigger [ 1 0 0 64 ] [ 0 0 -1 0 ] 0 1 1
+( 0 480 0 ) ( 1 480 0 ) ( 0 481 0 ) Util/Trigger [ -1 0 0 -64 ] [ 0 -1 0 -160 ] 0 1 1
+( 224 560 304 ) ( 224 561 304 ) ( 225 560 304 ) Util/Trigger [ 1 0 0 64 ] [ 0 -1 0 -160 ] 0 1 1
+( 224 560 16 ) ( 225 560 16 ) ( 224 560 17 ) Util/Trigger [ -1 0 0 -64 ] [ 0 0 -1 0 ] 0 1 1
+( 640 560 16 ) ( 640 560 17 ) ( 640 561 16 ) Util/Trigger [ 0 1 0 160 ] [ 0 0 -1 0 ] 0 1 1
 }
 }
-// entity 8
+// entity 9
 {
 "classname" "trigger_once"
 "target" "first"
@@ -207,14 +213,4 @@
 ( -192 784 16 ) ( -191 784 16 ) ( -192 784 17 ) Util/Trigger [ -1 0 0 -224 ] [ 0 0 -1 0 ] 0 1 1
 ( -192 784 16 ) ( -192 784 17 ) ( -192 785 16 ) Util/Trigger [ 0 1 0 -64 ] [ 0 0 -1 0 ] 0 1 1
 }
-}
-// entity 9
-{
-"classname" "info_goblin_start"
-"origin" "89 873 32"
-}
-// entity 10
-{
-"classname" "info_goblin_start"
-"origin" "249 809 32"
 }

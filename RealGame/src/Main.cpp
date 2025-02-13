@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "stb_image.h"
+#include <AL/al.h>
 
 #include "def.h"
 #include "Resources\ModelManager.h"
@@ -19,25 +20,6 @@
 #include "game/Game.h"
 /*
 	=====================
-			AI
-	=====================
-		Sounds
-	Polish Goblin
-		Sounds
-
-	===================
-			Game
-	===================
-	Pistol shooting should hit static geo
-
-	====================
-			Rendering
-	====================
-	Super basic directional Lighting
-		Small ambient + directional light
-		fix rotated skeletal meshes not lighting properly
-
-	=====================
 			Sounds
 	=====================
 	Wizard Notice Player
@@ -53,16 +35,19 @@
 	Music
 	Spawn Sound
 
+	Hitmarker sound?
+	====================
+		Rendering
+	====================
+	Super basic directional Lighting
+		Small ambient + directional light
+		fix rotated skeletal meshes not lighting properly
 
 	=====================
 			VFX
 	=====================
 	Enemy Spawn
-
-	=====================
-			Art
-	=====================
-	Wizard Orb Model
+		3D Model?
 
 	MVP:
 		Single 2 or 3 room level (Start of karnack pretty much)
@@ -187,6 +172,14 @@ int main() {
 
 	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizard.glb" );
 	Wizard::projectileModel = ModelManagerAllocate( &modelManager, "res/models/WizardBall.glb" );
+
+	LoadWavFile( &Wizard::shootSound, "res/sounds/WizardShoot.wav" );
+	LoadWavFile( &Wizard::ballExplosionSound, "res/sounds/ballExplode.wav" );
+	LoadWavFile( &Wizard::spotSound, "res/sounds/seeWizard.wav" );
+	LoadWavFile( &Wizard::deathSound, "res/sounds/dieWizard.wav" );
+	LoadWavFile( &Wizard::staggerSound, "res/sounds/stgWizard.wav" );
+
+	LoadWavFile( &Goblin::staggerSound, "res/sounds/StgGoblin.wav" );
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
 
 	//Generate Deadpose
@@ -217,6 +210,7 @@ int main() {
 	renderer.drawStats = true;
 
 	AudioSource* source = NewAudioSource();
+	alSourcef( source->alSourceIndex, AL_GAIN, .25f );
 
 	bool triggered = false;
 	while( !WindowShouldClose( &window ) ) {
@@ -233,8 +227,21 @@ int main() {
 			triggered = true;
 		}
 
+		float dir[6];
+		dir[0] = renderer.camera.Front.x;
+		dir[1] = renderer.camera.Front.y;
+		dir[2] = renderer.camera.Front.z;
+
+
+		dir[3] = renderer.camera.Up.x;
+		dir[4] = renderer.camera.Up.y;
+		dir[5] = renderer.camera.Up.z;
+
+		SoundSetListenerPosition( player->camera.Position );
+		alListenerfv( AL_ORIENTATION, dir );
+		 source->pos = player->camera.Position;
 		if( KeyPressed( KEY_SPACE ) ) {
-			PlaySound( source, &sound );
+		//	PlaySound( source, &sound );
 		}
 
 		if( KeyPressed( KEY_L ) ) {

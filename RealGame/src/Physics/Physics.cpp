@@ -557,7 +557,7 @@ bool PhysicsQueryRaycast( Vec3 start, Vec3 velocity, HitInfo* best ) {
 	for ( int i = 0; i < physics.numBrushes; i++ ) {
 		HitInfo thisInfo{};
 		if ( PhysicsRaycastHull( start, velocity, &physics.brushes[i], &thisInfo ) ) {
-			if ( thisInfo.didHit < bestStatic.dist ) {
+			if ( thisInfo.didHit < bestStatic.dist || !bestStatic.didHit) {
 				bestStatic = thisInfo;
 			}
 		}
@@ -567,8 +567,8 @@ bool PhysicsQueryRaycast( Vec3 start, Vec3 velocity, HitInfo* best ) {
 	if ( PhysicsRaycastDynamic( start, velocity, &bestDynamic ) )
 		*best = bestDynamic;
 	
-	//if ( bestStatic.didHit && bestStatic.dist < bestDynamic.dist )
-	//	*best = bestStatic;
+	if ( bestStatic.didHit && bestStatic.dist < bestDynamic.dist )
+		*best = bestStatic;
 
 	if ( best->didHit )
 		best->point = start + velocity * best->dist;

@@ -1,6 +1,7 @@
 #pragma once
 #include "def.h"
 #include "game/entity.h"
+#include "Resources/SoundManager.h"
 
 enum wizardStates_t {
 	WIZARD_IDLE = 0,
@@ -29,9 +30,18 @@ public:
 	float startMovingTime;
 	bool hasShot;
 	bool hasMelee;
+	class AudioSource* audioSource;
+
 
 	static Model* model;
 	static Model* projectileModel;
+
+	static class Sound shootSound;
+	static class Sound ballExplosionSound;
+	static class Sound spotSound;
+	static class Sound staggerSound;
+	static class Sound deathSound;
+
 	static SkeletonPose* deadPose;
 };
 

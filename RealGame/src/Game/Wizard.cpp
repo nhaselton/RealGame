@@ -5,9 +5,17 @@
 #include "Resources/ModelManager.h"
 #include "Renderer/DebugRenderer.h"
 #include "renderer/Renderer.h"
+
+#include <AL/al.h>
+
 Model* Wizard::model;
 Model* Wizard::projectileModel;
 SkeletonPose* Wizard::deadPose;
+Sound Wizard::shootSound;
+Sound Wizard::ballExplosionSound;
+Sound Wizard::spotSound;
+Sound Wizard::staggerSound;
+Sound Wizard::deathSound;
 
 void WizardStartShoot( Wizard* wizard ) {
 	wizard->state = WIZARD_SHOOT;
@@ -19,6 +27,7 @@ void WizardStartRepositioning( Wizard* wizard ) {
 	wizard->hasMelee = false;
 	wizard->state = WIZARD_REPOSITION;
 	wizard->startMovingTime = gameTime;
+
 	EntityStartAnimation( wizard, WIZARD_ANIM_RUN );
 
 	//Find New Target position
@@ -63,15 +72,23 @@ Wizard* CreateWizard( Vec3 pos ) {
 	wizard->OnHit = WizardOnHit;
 
 	wizard->rotation = glm::normalize(Quat( 1, 0, 0, 0 ));
+
+	wizard->audioSource = NewAudioSource();
+	if( wizard->audioSource ) {
+		alSourcef( wizard->audioSource->alSourceIndex, AL_REFERENCE_DISTANCE, 3.5f );
+		alSourcef( wizard->audioSource->alSourceIndex, AL_ROLLOFF_FACTOR, 1.0f );
+	}
 	
-	//wizard->state = WIZARD_IDLE;
-	//EntityStartAnimation( wizard, WIZARD_ANIM_RUN );
-	WizardStartRepositioning( wizard );
+	wizard->state = WIZARD_IDLE;
+	EntityStartAnimation( wizard, WIZARD_ANIM_RUN );
+//	WizardStartRepositioning( wizard );
 	return wizard;
 }
 
 void WizardUpdate( Entity* entity ) {
 	Wizard* wizard = ( Wizard* ) entity;
+	wizard->audioSource->pos = wizard->pos;
+
 	Vec3 gravity = Vec3( 0, -10 * dt, 0 );
 	wizard->pos = MoveAndSlide( wizard->bounds, gravity, 0, true );
 
@@ -110,6 +127,8 @@ void WizardIdle( Wizard* wizard ) {
 
 	HitInfo info{};
 	if( PhysicsQueryRaycast( wizard->pos, entityManager.player->pos - wizard->pos, &info ) ) {
+		//Look into global timer so this doesnt happen too much maybe?
+		//PlaySound( wizard->audioSource, &Wizard::spotSound );
 		if( info.entity == entityManager.player )
 			WizardStartRepositioning( wizard );
 	}
@@ -129,6 +148,7 @@ void WizardShoot( Wizard* wizard ) {
 			orb->model.scale = Vec3( .5f );
 			orb->model.translation = Vec3( 0 );
 			orb->OnCollision = WizardBallCallback;
+			//PlaySound( wizard->audioSource, &Wizard::shootSound );
 			wizard->hasShot = true;
 			return;
 		}
@@ -210,10 +230,16 @@ void WizardMelee( Wizard* wizard ) {
 }
 
 void WizardStartDeath(Wizard* wizard) {
+	AudioSource* death = CreateTempAudioSource( &Wizard::deathSound );
+	death->pos = wizard->pos;
+	alSourcef( death->alSourceIndex, AL_GAIN, 2.0f );
+
+
+
 	EntityStartAnimation( wizard, WIZARD_ANIM_DEATH );
 	wizard->state = WIZARD_DEATH;
 	EncounterNotifyOnDeath( wizard->encounter, wizard );
-
+	RemoveAudioSource( wizard->audioSource );
 	RemoveBoid( wizard );
 }
 
@@ -246,6 +272,7 @@ void WizardOnHit( EntityHitInfo info ) {
 
 void WizardStartStagger( Wizard* wizard ) {
 	EntityStartAnimation( wizard, WIZARD_ANIM_STAGGER );
+	PlaySound( wizard->audioSource, &Wizard::staggerSound );
 	wizard->state = WIZARD_STAGGER;
 }
 
@@ -278,4 +305,5 @@ void WizardBallCallback( class Projectile* projectile, class Entity* entity ) {
 	emitter->radius = 2.0f;
 	emitter->UV = Vec4( .09375, 0, 0.125, .03125 );
 	emitter->pos = projectile->collider.offset;	
+	CreateTempAudioSource( &Wizard::ballExplosionSound );
 }

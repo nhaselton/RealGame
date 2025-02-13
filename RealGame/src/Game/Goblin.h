@@ -1,7 +1,7 @@
 #pragma once
 #include "def.h"
 #include "Entity.h"
-
+#include "Resources/SoundManager.h"
 enum goblinStates_t {
 	GOBLIN_CHASE = 0,
 	GOBLIN_STAGGER = 1,
@@ -17,7 +17,8 @@ enum goblinAnimations {
 class Goblin : public Entity{
 public:
 	static Model* model;
-	struct AudioSource* audioSource;
+	AudioSource* audioSource;
+	static Sound staggerSound;
 };
 
 Goblin* CreateGoblin( Vec3 pos );

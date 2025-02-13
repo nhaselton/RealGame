@@ -4,37 +4,31 @@
 }
 // entity 2
 {
-"classname" "encounter"
-"origin" "-120 728 280"
-"targetname" "first"
-}
-// entity 3
-{
 "classname" "spawner"
 "origin" "-136 1016 200"
 "targetname" "spawn1"
 }
-// entity 4
+// entity 3
 {
 "classname" "spawner"
 "origin" "552 1016 200"
 "targetname" "spawn2"
 }
-// entity 5
+// entity 4
 {
 "classname" "spawn_zone"
 "targetname" "zone0"
 "bounds" "true"
-"boundsmin" "-15.00 -0.00 29.00"
-"boundsmax" "2.50 3.50 34.50"
+"boundsmin" "-14.00 0.50 29.00"
+"boundsmax" "1.50 3.50 34.50"
 }
 {
 "classname" "spawner"
-"origin" "248 488 8"
+"origin" "56 424 8"
 "targetname" "spawnguy"
 "types" "2"
 }
-// entity 7
+// entity 6
 {
 "classname" "trigger_once"
 "target" "spawnguy"
@@ -49,8 +43,8 @@
 "target" "second"
 "triggertype" "2"
 "bounds" "true"
-"boundsmin" "-20.00 -0.00 14.00"
-"boundsmax" "-0.00 9.50 16.50"
+"boundsmin" "-20.00 -0.00 17.00"
+"boundsmax" "-0.00 9.50 19.50"
 }
 {
 "classname" "trigger_once"
@@ -60,3 +54,12 @@
 "boundsmin" "6.00 -0.00 22.00"
 "boundsmax" "13.00 9.50 24.50"
 }
+{
+"classname" "info_goblin_start"
+"origin" "89 873 32"
+}
+// entity 10
+{
+"classname" "info_goblin_start"
+"origin" "249 809 32"
+}

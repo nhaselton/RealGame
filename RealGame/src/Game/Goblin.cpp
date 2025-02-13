@@ -4,7 +4,9 @@
 #include "Renderer\DebugRenderer.h"
 #include "Renderer\Renderer.h"
 #include "Resources/SoundManager.h"
+#include <AL/al.h>
 Model* Goblin::model = 0;
+Sound Goblin::staggerSound;
 
 extern Sound explosion;
 Goblin* CreateGoblin( Vec3 pos ) {
@@ -15,7 +17,7 @@ Goblin* CreateGoblin( Vec3 pos ) {
 	goblin->pos = pos;
 	goblin->currentAnimation = goblin->renderModel->model->animations[0];
 	goblin->state = GOBLIN_CHASE;
-	goblin->health = 1;
+	goblin->health = 2;
 	goblin->maxHealth = 5;
 	goblin->currentAnimation = Goblin::model->animations[0];
 	goblin->renderModel->scale = Vec3( .45 );
@@ -30,11 +32,18 @@ Goblin* CreateGoblin( Vec3 pos ) {
 	goblin->Update = GoblinUpdate;
 	goblin->OnHit = GoblinOnHit;
 
+	goblin->audioSource = NewAudioSource();
+	if( goblin->audioSource ) {
+		alSourcef( goblin->audioSource->alSourceIndex, AL_REFERENCE_DISTANCE, 3.5f );
+		alSourcef( goblin->audioSource->alSourceIndex, AL_ROLLOFF_FACTOR, 1.0f );
+	}
+
 	return goblin;
 }
 
 void GoblinUpdate( Entity* entity ) {
 	Goblin* goblin = ( Goblin* ) entity;
+	goblin->audioSource->pos = goblin->pos;
 
 	switch ( (goblinStates_t) goblin->state ) {
 		case GOBLIN_CHASE: GoblinChase( goblin ); break;
@@ -64,9 +73,8 @@ void GoblinStagger( Goblin* goblin ) {
 	}
 }
 
-
 void GoblinOnHit( EntityHitInfo info ) {
-	Entity* goblin = info.victim;
+	Goblin* goblin = (Goblin*) info.victim;
 
 	goblin->health--;
 	if ( goblin->health <= 0 ) {
@@ -155,7 +163,9 @@ void GoblinOnHit( EntityHitInfo info ) {
 		}
 		return;
 	}
-
+	else {
+		PlaySound( goblin->audioSource, &Goblin::staggerSound );
+	}
 	EntityStartAnimation( goblin, GOBLIN_ANIM_STAGGER );
 	goblin->state = GOBLIN_STAGGER;
 }

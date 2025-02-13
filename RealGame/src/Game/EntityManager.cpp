@@ -129,7 +129,6 @@ Projectile* NewProjectile( Vec3 pos, Vec3 velocity, Vec3 radius, bool linear ) {
 
 		if( linear ) {
 			SweepInfo info{};
-			DebugDrawLine( pos, pos + glm::normalize( velocity ) * 200.0f, RED, 3.0f , true,0,10000.0f);
 			if( PhysicsQuerySweepStatic( pos, glm::normalize(velocity) * 200.0f, radius * 2.0f, &info) ) {
 				projectile->isLinear = true;
 				Vec3 fromTo = info.r3Point - pos;
