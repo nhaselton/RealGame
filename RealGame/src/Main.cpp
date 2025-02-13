@@ -18,18 +18,6 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-* 
-* ======================
-*	Triggers
-* ===================
-	Trigger Type to Spawn Single Enemy
-		Enemy Type
-		SpawnPoint
-	Trigger Type to Spawn Multiple Enemies
-		Types of enemies
-		SpawnGroup (Only 1) 
-		Count
-
 	=====================
 			AI
 	=====================

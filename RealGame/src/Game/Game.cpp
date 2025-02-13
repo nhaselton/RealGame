@@ -129,6 +129,7 @@ void GameLoadEntities( const char* path ) {
 			isSpawner = true;
 		}
 		else if( !strcmp( className, "spawner" ) ) {
+			SpawnTarget* spawner = &entityManager.spawnTargets[entityManager.numSpawnTargets++];
 			isSpawner = true;
 
 			char key1[MAX_NAME_LENGTH]{};
@@ -139,9 +140,16 @@ void GameLoadEntities( const char* path ) {
 			char value2[MAX_NAME_LENGTH]{};
 			parser.ParseString( key2, MAX_NAME_LENGTH );
 			parser.ParseString( value2, MAX_NAME_LENGTH );
-			parser.ExpectedTokenTypePunctuation( '}' );
 
-			SpawnTarget* spawner = &entityManager.spawnTargets[entityManager.numSpawnTargets++];
+			if ( parser.PeekNext().subType == '}' )
+				parser.ExpectedTokenTypePunctuation( '}' );
+			else {
+				parser.ParseString( key2, MAX_NAME_LENGTH );
+				//parser.ParseString( value2, MAX_NAME_LENGTH );
+				spawner->enemies = (encounterEnemies_t) parser.ParseInt();
+				parser.ExpectedTokenTypePunctuation( '}' );
+			}
+
 			spawner->type = SPAWN_TARGET_POINT;
 			spawner->pos = StringToVec3( value1, true );
 			strcpy( spawner->name, value2 );

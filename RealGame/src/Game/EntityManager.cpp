@@ -144,35 +144,13 @@ void UpdateEntities() {
 }
 
 void AnimateEntities() {
-	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
+	for( int i = 0; i < MAX_ENTITIES; i++ ) {
 		StoredEntity* stored = &entityManager.entities[i];
 
-		if ( stored->state != ACTIVE_ACTIVE )
+		if( stored->state != ACTIVE_ACTIVE )
 			continue;
 
-		if ( stored->entity.renderModel != 0 )
+		if( stored->entity.renderModel != 0 )
 			EntityAnimationUpdate( &stored->entity, dt );
 	}
-}
-
-void TriggerTrigger( Trigger* trigger ) {
-	switch( trigger->type ) {
-		case TRIGGER_PRINT_MESSAGE:
-			printf( "Message" );
-		break;
-		case TRIGGER_START_ENCOUNTER: {
-			for( int i = 0; i < entityManager.numEncounters; i++ ) {
-				Encounter* encounter = &entityManager.encounters[i];
-				if( !strcmp( encounter->name, trigger->willTrigger ) ) {
-					StartEncounter( encounter );
-				}
-			}
-		} break;
-
-		default:
-		LOG_WARNING( LGS_GAME, "UNKOWN TRIGGER TYPE %d\n", trigger->type );
-	}
-
-	//Remove Trigger
-	entityManager.triggers[0] = entityManager.triggers[--entityManager.numTriggers];
 }

@@ -20,6 +20,7 @@ enum spawnTarget_t {
 };
 struct SpawnTarget {
 	spawnTarget_t type;
+	encounterEnemies_t enemies; //Can be blank if only called from encounter
 	char name[32];
 	Vec3 pos;
 	Vec3 size; //Incase of SPAWN_ZONE

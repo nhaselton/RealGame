@@ -10,37 +10,53 @@
 }
 // entity 3
 {
-"classname" "trigger_once"
-"target" "first"
-"triggertype" "2"
-"bounds" "true"
-"boundsmin" "-1.00 -0.00 4.00"
-"boundsmax" "6.00 9.50 6.50"
-}
-{
 "classname" "spawner"
 "origin" "-136 1016 200"
 "targetname" "spawn1"
 }
-// entity 5
+// entity 4
 {
 "classname" "spawner"
 "origin" "552 1016 200"
 "targetname" "spawn2"
 }
-// entity 6
-{
-"classname" "trigger_once"
-"target" "second"
-"triggertype" "2"
-"bounds" "true"
-"boundsmin" "-15.00 -0.00 21.50"
-"boundsmax" "5.00 9.50 24.00"
-}
+// entity 5
 {
 "classname" "spawn_zone"
 "targetname" "zone0"
 "bounds" "true"
 "boundsmin" "-15.00 -0.00 29.00"
 "boundsmax" "2.50 3.50 34.50"
+}
+{
+"classname" "spawner"
+"origin" "248 488 8"
+"targetname" "spawnguy"
+"types" "2"
+}
+// entity 7
+{
+"classname" "trigger_once"
+"target" "spawnguy"
+"triggertype" "4"
+"targetname" "spawnone"
+"bounds" "true"
+"boundsmin" "-1.00 -0.00 5.50"
+"boundsmax" "6.00 9.50 6.00"
+}
+{
+"classname" "trigger_once"
+"target" "second"
+"triggertype" "2"
+"bounds" "true"
+"boundsmin" "-20.00 -0.00 22.00"
+"boundsmax" "-0.00 9.50 24.50"
+}
+{
+"classname" "trigger_once"
+"target" "first"
+"triggertype" "2"
+"bounds" "true"
+"boundsmin" "6.00 -0.00 22.00"
+"boundsmax" "13.00 9.50 24.50"
 }

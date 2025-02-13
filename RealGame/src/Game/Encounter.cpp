@@ -308,6 +308,38 @@ void CreateEncounters() {
 		action3.ai = ENCOUNTER_AI_WIZARD;
 		strcpy( action3.spawnTarget, "spawn1" );
 	}
+}
+
+void TriggerTrigger( Trigger* trigger ) {
+	switch( trigger->type ) {
+		case TRIGGER_PRINT_MESSAGE:
+		printf( "Message" );
+		break;
+		case TRIGGER_START_ENCOUNTER: {
+			for( int i = 0; i < entityManager.numEncounters; i++ ) {
+				Encounter* encounter = &entityManager.encounters[i];
+				if( !strcmp( encounter->name, trigger->willTrigger ) ) {
+					StartEncounter( encounter );
+				}
+			}
+		} break;
+		case TRIGGER_SPAWN_SINGLE_AI:
+		{
+			SpawnTarget* target = FindSpawnTarget( trigger->willTrigger );
+			if( target ) {
+				SpawnEnemy( 0, target->enemies, target->pos, 0 );
+			}
+			else
+				LOG_WARNING( LGS_GAME, "Trigger can not spawn target at %s\n", trigger->willTrigger );
+		}break;
 
 
+
+		default:
+		LOG_WARNING( LGS_GAME, "UNKOWN TRIGGER TYPE %d\n", trigger->type );
+	}
+
+	//Remove Trigger
+	int triggerIndex = trigger - entityManager.triggers;
+	entityManager.triggers[triggerIndex] = entityManager.triggers[--entityManager.numTriggers];
 }
