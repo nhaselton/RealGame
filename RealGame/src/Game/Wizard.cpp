@@ -230,7 +230,7 @@ void WizardMelee( Wizard* wizard ) {
 }
 
 void WizardStartDeath(Wizard* wizard) {
-	AudioSource* death = CreateTempAudioSource( &Wizard::deathSound );
+	AudioSource* death = CreateTempAudioSource( wizard->pos, &Wizard::deathSound );
 	death->pos = wizard->pos;
 	alSourcef( death->alSourceIndex, AL_GAIN, 2.0f );
 
@@ -305,5 +305,5 @@ void WizardBallCallback( class Projectile* projectile, class Entity* entity ) {
 	emitter->radius = 2.0f;
 	emitter->UV = Vec4( .09375, 0, 0.125, .03125 );
 	emitter->pos = projectile->collider.offset;	
-	CreateTempAudioSource( &Wizard::ballExplosionSound );
+	CreateTempAudioSource( emitter->pos, &Wizard::ballExplosionSound );
 }

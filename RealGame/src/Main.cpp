@@ -19,23 +19,6 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-	=====================
-			Sounds
-	=====================
-	Wizard Notice Player
-	Wizard Pain 
-	Wizard Shoot
-	Wizard Orb Explode
-
-	Goblin Notice Player
-	Goblin Pain
-
-	Goblin Scream
-	Footsteps
-	Music
-	Spawn Sound
-
-	Hitmarker sound?
 	====================
 		Rendering
 	====================
@@ -163,9 +146,6 @@ int main() {
 
 	CreateSoundManager();
 	//CreateSoundSystem ( &soundDevice, &soundContext );
-	Sound sound{};
-	LoadWavFile( &sound, "res/sounds/RevolverShoot.wav" );
-	LoadWavFile( &explosion, "res/sounds/Explosion.wav" );
 
 	CreateEntityManager();
 	CreateEncounters();
@@ -173,6 +153,9 @@ int main() {
 	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizard.glb" );
 	Wizard::projectileModel = ModelManagerAllocate( &modelManager, "res/models/WizardBall.glb" );
 
+	LoadWavFile( &explosion, "res/sounds/Explosion.wav" );
+	LoadWavFile( &Player::revolverFireSound, "res/sounds/RevolverShoot.wav" );
+	LoadWavFile( &Player::revolverReloadSound, "res/sounds/RevolverReload.wav" );
 	LoadWavFile( &Wizard::shootSound, "res/sounds/WizardShoot.wav" );
 	LoadWavFile( &Wizard::ballExplosionSound, "res/sounds/ballExplode.wav" );
 	LoadWavFile( &Wizard::spotSound, "res/sounds/seeWizard.wav" );
@@ -215,6 +198,8 @@ int main() {
 	bool triggered = false;
 	while( !WindowShouldClose( &window ) ) {
 		//PROFILE( "Frame" );
+		xOffset = 0;
+		yOffset = 0;
 		KeysUpdate();
 		WindowPollInput( &window );
 		UpdateSounds();
@@ -225,6 +210,16 @@ int main() {
 
 		if( KeyPressed( KEY_T ) ) {
 			triggered = true;
+		}
+
+		if( KeyPressed( KEY_TAB ) ) {
+			window.cursorLocked = !window.cursorLocked;
+			if( window.cursorLocked ) {
+				glfwSetInputMode( window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
+			}
+			else {
+				glfwSetInputMode( window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL );
+			}
 		}
 
 		float dir[6];
@@ -238,11 +233,6 @@ int main() {
 		dir[5] = renderer.camera.Up.z;
 
 		SoundSetListenerPosition( player->camera.Position );
-		alListenerfv( AL_ORIENTATION, dir );
-		 source->pos = player->camera.Position;
-		if( KeyPressed( KEY_SPACE ) ) {
-		//	PlaySound( source, &sound );
-		}
 
 		if( KeyPressed( KEY_L ) ) {
 			Vec3 orbPos = entityManager.player->pos;//+ Vec3( 0, 3, 0 );

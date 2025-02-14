@@ -93,8 +93,13 @@ void LoadWavFile ( Sound* sound, const char* path ) {
 	memset ( sound->data, 0, wav.dataSize );
 }
 
-AudioSource* CreateTempAudioSource( Sound* sound ) {
+AudioSource* CreateTempAudioSource( Vec3 pos, Sound* sound ) {
     AudioSource* source = NewAudioSource();
+    if( !source ) {
+		LOG_WARNING( LGS_SOUND, "Could not create temp audio source\n" );
+        return 0;
+    }
+    source->pos = pos;
     source->sound = sound;
     source->flags = AUDIO_SOURCE_TEMP;
     PlaySound( source, sound );

@@ -9,6 +9,7 @@ void ErrorCallback( int, const char* err_str ) {
 	std::cout << "GLFW Error: " << err_str << std::endl;
 }
 
+void MouseCallback( GLFWwindow* window, double xposIn, double yposIn );
 
 void WindowInit( Window* window, u32 width, u32 height, const char* title ) {
 	memset( window, 0, sizeof( Window ) );
@@ -48,6 +49,8 @@ void WindowInit( Window* window, u32 width, u32 height, const char* title ) {
 	////Key Callback
 	glfwSetKeyCallback( ( GLFWwindow* ) window->handle, KeyCallback );
 	glfwSetScrollCallback( ( GLFWwindow* ) window->handle, ScrollCallback );
+	glfwSetCursorPosCallback( ( GLFWwindow* ) window->handle, MouseCallback );
+	glfwSetMouseButtonCallback( ( GLFWwindow* ) window->handle, MouseButtonCallback );
 }
 
 void WindowSetVsync( Window* window, int v) {

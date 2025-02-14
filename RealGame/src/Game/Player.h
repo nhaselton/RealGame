@@ -2,6 +2,8 @@
 #include "def.h"
 #include "Entity.h"
 #include "renderer/Camera.h"
+#include "Resources/SoundManager.h"
+
 enum revolverState_t {
 	REVOLVER_IDLE,
 	REVOLVER_RELOADING,
@@ -30,6 +32,10 @@ class Player : public Entity {
 public:
 	Camera camera;
 	Revolver revolver;
+	struct AudioSource* audioSource;
+
+	static Sound revolverFireSound;
+	static Sound revolverReloadSound;
 };
 
 

@@ -2,6 +2,11 @@
 #include "EntityManager.h"
 #include "Physics\Physics.h"
 #include "Resources/ModelManager.h"
+#include "Resources/SoundManager.h"
+
+
+Sound Player::revolverFireSound;
+Sound Player::revolverReloadSound;
 
 Player* CreatePlayer( Vec3 pos ) {
 	Player* player = ( Player* ) NewEntity();
@@ -48,6 +53,8 @@ Player* CreatePlayer( Vec3 pos ) {
 	player->revolver.ammo = 6;
 	player->revolver.spreadDecayRate = 6.0f;
 
+	player->audioSource = NewAudioSource();
+
 	player->OnHit = PlayerOnHit;
 	
 	Mat4 revolverScale = glm::scale( Mat4( 1.0 ), Vec3( .25f ) );
@@ -58,13 +65,19 @@ Player* CreatePlayer( Vec3 pos ) {
 
 void UpdatePlayer( Entity* entity ) {
 	Player* player = ( Player* ) entity;
+	player->audioSource->pos = player->camera.Position;
 	
-	float mx = 0, my = 0, speed = 15;
-	if ( KeyDown( KEY_LEFT ) ) mx -= 3;
-	if ( KeyDown( KEY_RIGHT ) ) mx += 3;
-	if ( KeyDown( KEY_DOWN ) ) my -= 1.5;
-	if ( KeyDown( KEY_UP ) ) my += 1.5;
-	player->camera.ProcessMouseMovement( mx * speed * dt * 50, my * dt * speed * 50 );
+	if( !window.cursorLocked ) {
+		float mx = 0, my = 0, speed = 15;
+		if ( KeyDown( KEY_LEFT ) ) mx -= 3;
+		if ( KeyDown( KEY_RIGHT ) ) mx += 3;
+		if ( KeyDown( KEY_DOWN ) ) my -= 1.5;
+		if ( KeyDown( KEY_UP ) ) my += 1.5;
+		player->camera.ProcessMouseMovement( mx * speed * dt * 50, my * dt * speed * 50 );
+	}
+	else {
+		player->camera.ProcessMouseMovement( xOffset, yOffset, true );
+	}
 
 	Vec3 wantDir( 0 );
 	if ( KeyDown( KEY_W ) ) wantDir += player->camera.Front;
@@ -76,7 +89,8 @@ void UpdatePlayer( Entity* entity ) {
 
 	wantDir *= 20.0f * dt;
 
-#if 0 //Normal
+
+#if 1 //Normal
 	EntityMove( player, wantDir );
 #else //Noclip
 	entity->pos += wantDir;
@@ -125,8 +139,9 @@ void RevolverUpdate( Player* player ) {
 	}
 
 	//SHOOT STATE
-	if ( KeyPressed( KEY_SPACE ) ) {
+	if( KeyPressed( KEY_SPACE ) || ( window.cursorLocked && MousePressed( MOUSE_BUTTON_LEFT ) ) ) {
 		if ( revolver->ammo == 0 ) {
+			PlaySound( player->audioSource, &Player::revolverReloadSound );
 			revolver->state = REVOLVER_RELOADING;
 			EntityStartAnimation( revolver, REVOLVER_ANIM_RELOAD );
 			return;
@@ -144,6 +159,8 @@ void RevolverUpdate( Player* player ) {
 				info.entity->OnHit( attack );
 			}
 		}
+
+		CreateTempAudioSource( player->camera.Position, &Player::revolverFireSound );
 		revolver->pos += Vec3( 0, .02, 0 );
 		revolver->rotation = glm::rotate( revolver->rotation, -.3f, Vec3( 0, 0, -1 ) );
 		revolver->spread += 2.0f;
@@ -154,6 +171,7 @@ void RevolverUpdate( Player* player ) {
 
 	//DO RELOAD
 	if ( KeyPressed( KEY_R ) && revolver->ammo != 6 ) {
+		CreateTempAudioSource( player->camera.Position, &Player::revolverReloadSound );
 		revolver->state = REVOLVER_RELOADING;
 		revolver->spread = 1.0f;
 		EntityStartAnimation( revolver, REVOLVER_ANIM_RELOAD );

@@ -3,31 +3,13 @@
 #include <vector>
 #include "input.h"
 
-#if 0
-class DLL Window {
-public:
-	Window();
-	void Init( u32 width, u32 height, const char* title );
-	void SwapBuffers();
-	void PollInput();
-	static void SetVsync( int sync );
-	bool ShouldClose();
-	u32 width;
-	u32 height;
-	void NotifyKeySubscriptions( KeyInfo sub );
-	void AddKeySubscription(KeySub* sub);
-private:
-	std::vector<KeySub*> keySubscriptions;
-	struct GLFWwindow* handle;
-};
-#endif
-
-class DLL Window {
+class Window {
 public:
 	u32 width;
 	u32 height;
 	std::vector<KeySub*> keySubscriptions;
 	struct GLFWwindow* handle;
+	bool cursorLocked;
 };
 extern Window window;
 void WindowInit( Window* window, u32 width, u32 height, const char* title );

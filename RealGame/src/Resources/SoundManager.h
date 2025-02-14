@@ -64,7 +64,7 @@ extern SoundManager soundManager;
 
 AudioSource* NewAudioSource ();
 //Audio source that will remove itself once the sound is done
-AudioSource* CreateTempAudioSource( Sound* sound );
+AudioSource* CreateTempAudioSource( Vec3 pos, Sound* sound );
 void RemoveAudioSource ( AudioSource* source );
 void SoundSetListenerPosition ( const Vec3& pos );
 //If sound != 0, will change sound

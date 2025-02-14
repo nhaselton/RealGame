@@ -100,7 +100,7 @@ void GoblinOnHit( EntityHitInfo info ) {
 				other->OnHit ( info );
 			}
 		}
-		CreateTempAudioSource( &explosion );
+		CreateTempAudioSource( goblin->pos, &explosion );
 
 		Vec3 velocities []{
 			Vec3( -5,10,3 ),

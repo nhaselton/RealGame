@@ -13,8 +13,18 @@ struct DLL KeySub {
 	int numKeys;
 };
 
-void DLL KeyCallback( struct GLFWwindow* window,int key, int scancode, int action, int flags );
-void DLL ScrollCallback( GLFWwindow* window, double xoffset, double yoffset );
-bool DLL KeyDown(int key );
-bool DLL KeyPressed( int key );
-void DLL KeysUpdate();
+//Mouse
+extern float lastX;
+extern float lastY;
+extern float xOffset;
+extern float yOffset;
+
+void KeyCallback( struct GLFWwindow* window,int key, int scancode, int action, int flags );
+void ScrollCallback( GLFWwindow* window, double xoffset, double yoffset );
+void MouseButtonCallback( GLFWwindow* window, int button, int action, int mods );
+
+bool KeyDown(int key );
+bool KeyPressed( int key );
+void KeysUpdate();
+bool MousePressed( int key );
+bool MouseDown( int key );

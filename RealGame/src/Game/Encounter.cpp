@@ -8,6 +8,7 @@ SpawnTagGroup* FindSpawnTagGroup( Encounter* encounter, const char* name ) {
 			return &encounter->spawnTags[i];
 		}
 	}
+	return 0;
 }
 
 SpawnTagGroup* FindOrCreateSpawnTagGroup( Encounter* encounter, const char* name ) {
@@ -48,6 +49,11 @@ void SpawnEnemy( Encounter* encounter, encounterEnemies_t enemy, Vec3 pos, Spawn
 		case ENCOUNTER_AI_WIZARD: e = CreateWizard( pos ); break;
 		default:
 		LOG_WARNING( LGS_GAME, "Trying to spawn Enemy type %d that does not exist\n", enemy );
+	}
+
+	if( !e ) {
+		LOG_ERROR( LGS_GAME, "Could not spawn entity for encounter. Could softlock\n" );
+		return;
 	}
 
 	if( spawnGroup != 0 ) {
@@ -222,7 +228,7 @@ void UpdateEncounter( Encounter* encounter ) {
 					LOG_WARNING( LGS_GAME, "Tried to Block for non existant spawn group %s\n", encounter->block->spawnTag );
 					encounter->block = 0;
 				}
-				if( group->killed == encounter->block->spawnCount ) {
+				else if( group->killed == encounter->block->spawnCount ) {
 					encounter->block = 0;
 				}
 
