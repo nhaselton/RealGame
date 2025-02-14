@@ -5,14 +5,14 @@
 // entity 2
 {
 "classname" "spawner"
-"origin" "-568 1528 328"
-"targetname" "spawn1"
+"origin" "-424 1448 248"
+"targetname" "pillar1"
 }
 // entity 3
 {
 "classname" "spawner"
-"origin" "760 1480 328"
-"targetname" "spawn2"
+"origin" "744 1416 248"
+"targetname" "pillar2"
 }
 // entity 4
 {
@@ -20,6 +20,62 @@
 "target" "first"
 "triggertype" "2"
 "bounds" "true"
-"boundsmin" "-5.50 -0.00 -5.50"
+"boundsmin" "-5.50 -0.00 -6.50"
 "boundsmax" "-3.00 9.50 6.00"
+}
+{
+"classname" "spawn_zone"
+"targetname" "zone1"
+"bounds" "true"
+"boundsmin" "-24.00 9.50 59.00"
+"boundsmax" "9.00 12.00 61.50"
+}
+{
+"classname" "spawn_zone"
+"targetname" "gob0"
+"bounds" "true"
+"boundsmin" "-25.00 2.50 52.50"
+"boundsmax" "17.50 4.00 57.50"
+}
+{
+"classname" "trigger_once"
+"target" "second"
+"triggertype" "2"
+"bounds" "true"
+"boundsmin" "-7.00 -0.00 62.00"
+"boundsmax" "-3.50 16.50 63.00"
+}
+{
+"classname" "spawner"
+"origin" "584 2552 8"
+"targetname" "hallright"
+}
+// entity 9
+{
+"classname" "spawner"
+"origin" "-120 2504 24"
+"targetname" "hallleft"
+}
+// entity 10
+{
+"classname" "spawn_zone"
+"targetname" "hallback"
+"bounds" "true"
+"boundsmin" "-13.50 1.50 85.50"
+"boundsmax" "-2.50 7.00 92.00"
+}
+{
+"classname" "spawn_zone"
+"targetname" "gobs1"
+"bounds" "true"
+"boundsmin" "-65.50 2.50 196.50"
+"boundsmax" "42.00 14.50 237.00"
+}
+{
+"classname" "trigger_once"
+"triggertype" "2"
+"target" "third"
+"bounds" "true"
+"boundsmin" "-20.50 -0.00 86.50"
+"boundsmax" "6.00 12.50 94.00"
 }

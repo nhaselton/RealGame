@@ -3,7 +3,7 @@
 #include "Physics\Physics.h"
 #include "Resources/ModelManager.h"
 #include "Resources/SoundManager.h"
-
+#include "AL/al.h"
 
 Sound Player::revolverFireSound;
 Sound Player::revolverReloadSound;
@@ -91,6 +91,7 @@ void UpdatePlayer( Entity* entity ) {
 
 
 #if 1 //Normal
+	wantDir.y = 0;
 	EntityMove( player, wantDir );
 #else //Noclip
 	entity->pos += wantDir;
@@ -160,7 +161,11 @@ void RevolverUpdate( Player* player ) {
 			}
 		}
 
-		CreateTempAudioSource( player->camera.Position, &Player::revolverFireSound );
+		AudioSource* fire = CreateTempAudioSource( player->camera.Position, &Player::revolverFireSound );
+		if ( fire ) 
+			alSourcef( fire->alSourceIndex, AL_GAIN, .25 );
+
+
 		revolver->pos += Vec3( 0, .02, 0 );
 		revolver->rotation = glm::rotate( revolver->rotation, -.3f, Vec3( 0, 0, -1 ) );
 		revolver->spread += 2.0f;

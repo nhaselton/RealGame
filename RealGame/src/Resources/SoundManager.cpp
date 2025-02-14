@@ -113,6 +113,11 @@ AudioSource* NewAudioSource () {
     
     soundManager.numSources++;
 	AudioSource* source = ( AudioSource* )PoolArenaAllocate ( &soundManager.AudioSourceArena );
+
+    if( !source ) {
+        return 0;
+    }
+
     source->active = false;
     source->sound = 0;
     source->flags = 0;

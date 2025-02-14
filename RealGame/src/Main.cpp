@@ -128,7 +128,7 @@ int main() {
 	CreateScratchArena( &globalArena, TOTAL_MEMORY, malloc( TOTAL_MEMORY ), NULL, "Global Arena" );
 	CreateStackArena( &tempArena, TEMP_MEMORY, ScratchArenaAllocate( &globalArena, TEMP_MEMORY ), &globalArena, "Temp Arena" );
 
-	WindowInit( &window, 1280, 720, "Game for real this time guys" );
+	WindowInit( &window, 1920, 1080, "Game for real this time guys" );
 
 	CreateModelManager( &modelManager,
 		MODEL_MANAGER_SIZE, ScratchArenaAllocate( &globalArena, MODEL_MANAGER_SIZE ),
@@ -227,12 +227,12 @@ int main() {
 		dir[1] = renderer.camera.Front.y;
 		dir[2] = renderer.camera.Front.z;
 
-
 		dir[3] = renderer.camera.Up.x;
 		dir[4] = renderer.camera.Up.y;
 		dir[5] = renderer.camera.Up.z;
 
 		SoundSetListenerPosition( player->camera.Position );
+		alListenerfv( AL_ORIENTATION, dir );
 
 		if( KeyPressed( KEY_L ) ) {
 			Vec3 orbPos = entityManager.player->pos;//+ Vec3( 0, 3, 0 );
@@ -261,6 +261,7 @@ int main() {
 		if( dt > 1.0f / 144.0f )
 			dt = 1.0f / 144.0f;
 
+#if 0
 		for( int i = 0; i < entityManager.numTriggers; i++ ) {
 			Trigger* trigger = &entityManager.triggers[i];
 			//DebugDrawBoundsMinMax( &entityManager.triggers[i].bounds, RED,0,false );
@@ -271,7 +272,7 @@ int main() {
 			Vec3 size = ( trigger->bounds.max - trigger->bounds.min ) / 2.0f;
 			DebugDrawAABB( center, size );
 		}
-
+#endif
 		for( int i = 0; i < entityManager.numEncounters; i++ ) {
 			Encounter& encounter = entityManager.encounters[i];
 			if( encounter.active )
@@ -292,8 +293,6 @@ int main() {
 		char buffer[2048]{};
 		sprintf_s( buffer, 2048, "Player pos: %.2f %.2f %.2f\n", player->pos.x, player->pos.y, player->pos.z );
 		RenderDrawText( Vec2( 0, 360 ), 16, buffer );
-
-		DebugDrawLine( Vec3( 0 ), Vec3( 10 ) );
 
 		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );

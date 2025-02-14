@@ -249,50 +249,37 @@ void CreateEncounters() {
 		Encounter& encounter = entityManager.encounters[entityManager.numEncounters++];
 		strcpy( encounter.name, "first" );
 
-		EncounterAction& action = encounter.actions[encounter.totalActions++];
-		action.type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
-		action.spawnCount = 4;
-		action.spawnRate = 0.75f;
-		action.ai = ENCOUNTER_AI_WIZARD;
-		strcpy( action.spawnTag, "test" );
-		strcpy( action.spawnTarget, "zone0" );
+		EncounterAction* action = &encounter.actions[encounter.totalActions++];
+		action->type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
+		action->ai = ENCOUNTER_AI_WIZARD;
+		strcpy(action->spawnTarget,"pillar1");
+		strcpy( action->spawnTag, "r0w0" );
 
-#if 0
-		EncounterAction& action = encounter.actions[encounter.totalActions++];
-		action.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-		action.ai = ENCOUNTER_AI_WIZARD;
-		strcpy( action.spawnTarget, "spawn1" );
+		action = &encounter.actions[encounter.totalActions++];
+		action->type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
+		action->ai = ENCOUNTER_AI_WIZARD;
+		strcpy( action->spawnTarget, "pillar2" );
+		strcpy( action->spawnTag, "r0w0" );
 
-		{
-			EncounterAction& action = encounter.actions[encounter.totalActions++];
-			action.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-			action.ai = ENCOUNTER_AI_WIZARD;
-			strcpy( action.spawnTarget, "zone0" );
-		}
-		{
-			EncounterAction& action = encounter.actions[encounter.totalActions++];
-			action.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-			action.ai = ENCOUNTER_AI_WIZARD;
-			strcpy( action.spawnTarget, "zone0" );
-		}
-		{
-			EncounterAction& action = encounter.actions[encounter.totalActions++];
-			action.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-			action.ai = ENCOUNTER_AI_WIZARD;
-			strcpy( action.spawnTarget, "zone0" );
-		}
-#endif
-		EncounterAction& action2 = encounter.actions[encounter.totalActions++];
-		action2.type = ENCOUNTER_ACTION_WAIT_FOR_SPAWN_GROUP_DEAD_BLOCK;
-		action2.spawnCount = 3;
-		strcpy( action2.spawnTag, "test" );
+		action = &encounter.actions[encounter.totalActions++];
+		action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
+		action->ai = ENCOUNTER_AI_WIZARD;
+		action->spawnCount = 2;
+		strcpy( action->spawnTarget, "zone1" );
+		strcpy( action->spawnTag, "r0w0" );
 
-		EncounterAction& action3 = encounter.actions[encounter.totalActions++];
-		action3.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-		action3.ai = ENCOUNTER_AI_GOBLIN;
-		strcpy( action3.spawnTarget, "spawn2" );
+		action = &encounter.actions[encounter.totalActions++];
+		action->type = ENCOUNTER_ACTION_WAIT_FOR_SPAWN_GROUP_DEAD_BLOCK;
+		strcpy( action->spawnTag, "r0w0" );
+		action->spawnCount = 2;
+
+		action = &encounter.actions[encounter.totalActions++];
+		action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
+		action->ai = ENCOUNTER_AI_GOBLIN;
+		action->spawnCount = 3;
+		strcpy( action->spawnTarget, "gob0" );
+		strcpy( action->spawnTag, "r0w1" );
 	}
-	
 	// ===================== //
 	// 	 Second Encounter	 //
 	// ===================== //
@@ -300,19 +287,41 @@ void CreateEncounters() {
 		Encounter& encounter = entityManager.encounters[entityManager.numEncounters++];
 		strcpy( encounter.name, "second" );
 
-		EncounterAction& action = encounter.actions[encounter.totalActions++];
-		action.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-		action.ai = ENCOUNTER_AI_WIZARD;
-		strcpy( action.spawnTarget, "spawn2" );
+		EncounterAction* action = &encounter.actions[encounter.totalActions++];
+		action->type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
+		action->ai = ENCOUNTER_AI_WIZARD;
+		strcpy( action->spawnTarget, "hallleft" );
 
-		EncounterAction& action2 = encounter.actions[encounter.totalActions++];
-		action2.type = ENCOUNTER_ACTION_WAIT_FOR_SECONDS_BLOCK;
-		action2.waitTime = 3.0f;
+		action = &encounter.actions[encounter.totalActions++];
+		action->type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
+		action->ai = ENCOUNTER_AI_WIZARD;
+		strcpy( action->spawnTarget, "hallright" );
 
-		EncounterAction& action3 = encounter.actions[encounter.totalActions++];
-		action3.type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-		action3.ai = ENCOUNTER_AI_WIZARD;
-		strcpy( action3.spawnTarget, "spawn1" );
+		action = &encounter.actions[encounter.totalActions++];
+		action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
+		action->ai = ENCOUNTER_AI_GOBLIN;
+		action->spawnCount = 3;
+		strcpy( action->spawnTarget, "hallback" );
+	}
+	// ===================== //
+	// 	 Third Encounter	 //
+	// ===================== //
+	{
+		Encounter& encounter = entityManager.encounters[entityManager.numEncounters++];
+		strcpy( encounter.name, "third" );
+
+		EncounterAction* action = &encounter.actions[encounter.totalActions++];
+		action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
+		action->ai = ENCOUNTER_AI_GOBLIN;
+		action->spawnCount = 12;
+		strcpy( action->spawnTarget, "gobs1" );
+
+		action = &encounter.actions[encounter.totalActions++];
+		action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
+		action->ai = ENCOUNTER_AI_GOBLIN;
+		action->spawnCount = 8;
+		action->spawnRate = .25f;
+		strcpy( action->spawnTarget, "gobs1" );
 	}
 }
 

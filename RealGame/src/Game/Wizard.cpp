@@ -75,13 +75,13 @@ Wizard* CreateWizard( Vec3 pos ) {
 
 	wizard->audioSource = NewAudioSource();
 	if( wizard->audioSource ) {
-		alSourcef( wizard->audioSource->alSourceIndex, AL_REFERENCE_DISTANCE, 3.5f );
-		alSourcef( wizard->audioSource->alSourceIndex, AL_ROLLOFF_FACTOR, 1.0f );
+		alSourcef( wizard->audioSource->alSourceIndex, AL_REFERENCE_DISTANCE, 10.0f );
+		alSourcef( wizard->audioSource->alSourceIndex, AL_ROLLOFF_FACTOR, 0.25f );
 	}
 	
-	wizard->state = WIZARD_IDLE;
-	EntityStartAnimation( wizard, WIZARD_ANIM_RUN );
-//	WizardStartRepositioning( wizard );
+	//wizard->state = WIZARD_IDLE;
+	//EntityStartAnimation( wizard, WIZARD_ANIM_RUN );
+	WizardStartRepositioning( wizard );
 	return wizard;
 }
 
@@ -293,8 +293,11 @@ void WizardBallCallback( class Projectile* projectile, class Entity* entity ) {
 		entity->OnHit( info );
 	}
 
+	CreateTempAudioSource( projectile->collider.offset, &Wizard::ballExplosionSound );
 	RemoveProjectile( projectile );
 	ParticleEmitter2* emitter = NewParticleEmitter();
+	if( !emitter )
+		return;
 	emitter->numParticles = 300;
 	emitter->maxParticles = 300;
 	emitter->scale = Vec3( .2f );
@@ -305,5 +308,4 @@ void WizardBallCallback( class Projectile* projectile, class Entity* entity ) {
 	emitter->radius = 2.0f;
 	emitter->UV = Vec4( .09375, 0, 0.125, .03125 );
 	emitter->pos = projectile->collider.offset;	
-	CreateTempAudioSource( emitter->pos, &Wizard::ballExplosionSound );
 }
