@@ -89,6 +89,10 @@ void UpdatePlayer( Entity* entity ) {
 
 	wantDir *= 20.0f * dt;
 
+	//Dont move when console is open
+	if( console.IsOpen() )
+		wantDir = Vec3( 0 );
+
 
 #if 1 //Normal
 	wantDir.y = 0;

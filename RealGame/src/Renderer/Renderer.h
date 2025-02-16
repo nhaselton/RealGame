@@ -258,6 +258,8 @@ void RenderDrawGun();
 void RenderUpdateAndDrawParticles();
 
 void RenderDrawFontBatch();
+
+void RenderDrawConsole();
 void RenderDrawText( Vec2 pos, float fontSize, const char* string );
 void RenderDrawChar( Vec2 pos, BitmapGlyph* glyph, float fontSize );
 

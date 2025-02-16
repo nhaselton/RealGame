@@ -7,6 +7,7 @@
 #include "Core\Input.h"
 #include "Core\IO.h"
 #include "Core/Parser.h"
+#include "Core/Console.h"
 
 #define TOTAL_MEMORY (MB(128))
 #define TEMP_MEMORY (MB(25))

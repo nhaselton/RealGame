@@ -19,10 +19,6 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-*	Fix sound not working
-*	Add an empty sound thing that you can edit or call all you want but it wont do anything
-*	This way it can be returned when erroring and not have to check if ( Sound) everywhere.
-* 
 *	Console
 *	Level Swapping
 *	.Def
@@ -128,6 +124,8 @@ Physics physics;
 EntityManager entityManager;
 Level level;
 
+Console console;
+
 Sound explosion;
 
 float dt;
@@ -136,9 +134,12 @@ bool paused = false;
 
 int main() {
 	CreateScratchArena( &globalArena, TOTAL_MEMORY, malloc( TOTAL_MEMORY ), NULL, "Global Arena" );
+	console.Init();
+
 	CreateStackArena( &tempArena, TEMP_MEMORY, ScratchArenaAllocate( &globalArena, TEMP_MEMORY ), &globalArena, "Temp Arena" );
 
 	WindowInit( &window, 1920, 1080, "Game for real this time guys" );
+	WindowAddKeySubscription( &window, &console.sub );
 
 	CreateModelManager( &modelManager,
 		MODEL_MANAGER_SIZE, ScratchArenaAllocate( &globalArena, MODEL_MANAGER_SIZE ),
@@ -212,6 +213,8 @@ int main() {
 		yOffset = 0;
 		KeysUpdate();
 		WindowPollInput( &window );
+		console.Update();
+
 		UpdateSounds();
 
 		if( KeyPressed( KEY_P ) ) {

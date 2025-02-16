@@ -414,6 +414,9 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 	//RenderDrawFontBatch();
 	RenderUpdateAndDrawParticles();
 
+	RenderDrawConsole();
+
+
 	glDepthFunc( GL_LEQUAL );
 	nglBindVertexArray( renderer->skybox.buffer.vao );
 	RenderSetShader( renderer, renderer->shaders[SHADER_SKYBOX] );
@@ -1092,5 +1095,46 @@ void RenderDrawMuzzleFlash( Texture* texture ) {
 	glDrawArrays( GL_TRIANGLES, 0, 6 );
 
 	glDisable ( GL_BLEND );
+
+}
+
+void RenderDrawConsole() {
+	if( !console.IsOpen() )
+		return;
+
+	glDisable( GL_DEPTH_TEST );
+
+	float currentOpenY = console.openMax * console.openT * 720.0f;
+	RenderDrawQuadColored( Vec2( 0 ), Vec2( 1280.0f, currentOpenY ), console.color);
+	//Draw the bar you can type in
+
+	float fontScale = ( float ) console.fontSize / ( float ) renderer.font.glyphSize;
+	float barHeight = fontScale * renderer.font.lineHeight;
+
+	RenderDrawQuadColored( Vec2( 0, currentOpenY - barHeight ), Vec2( 1280.0f, barHeight ), console.color * .6f);
+	currentOpenY - barHeight;
+
+	//  ==============
+	//	Console Text
+	//  =============
+	float scale = console.fontSize / renderer.font.glyphSize;
+	float xOffset = console.lineOffsetStartX * scale;
+	float currentY = currentOpenY - barHeight / 2;
+	ConsoleCommand* currentCommand = &console.commandHistory[console.currentViewingCommandIndex];
+
+	RenderDrawText( Vec2( xOffset, currentY ), console.fontSize, currentCommand->data );
+	//Little Blippy thing
+	if( console.blipTime < console.blipLength ) {
+		//int blipX = ( FindPixelOffsetOfString( &font, currentCommand->data, console.cursorLoc ) + 10 ) * scale;
+		//AddSingleCharToBatch( Vec3( blipX, currentY, 0 ), console.fontSize, '|', true );
+	}
+
+	currentY -= renderer.font.lineHeight * scale;
+
+	for( int i = 1; currentY >= 0; i++, currentY -= renderer.font.lineHeight * scale ) {
+		RenderDrawText( Vec2( xOffset, currentY ), console.fontSize, console.GetHistoryRelative( -i + console.scrollAmount )->data );
+	}
+
+	glEnable( GL_DEPTH_TEST );
 
 }

@@ -144,6 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Core\Console.cpp" />
     <ClCompile Include="src\Core\Input.cpp" />
     <ClCompile Include="src\Core\IO.cpp" />
     <ClCompile Include="src\Core\Log.cpp" />
@@ -174,6 +175,7 @@
     <ClCompile Include="src\Resources\TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Core\Console.h" />
     <ClInclude Include="src\Core\coredef.h" />
     <ClInclude Include="src\Core\Input.h" />
     <ClInclude Include="src\Core\IO.h" />
