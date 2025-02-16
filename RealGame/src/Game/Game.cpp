@@ -79,12 +79,17 @@ void GameLoadEntities( const char* path ) {
 	NFile file;
 	CreateNFile( &file, path, "rb" );
 
+	if( !file.file ) {
+		return;
+	}
+
 	char* buffer = ( char* ) TEMP_ALLOC( file.length + 1);
 	buffer[file.length] = '\0';
 
+
 	NFileRead( &file, buffer, file.length + 1);
 	NFileClose( &file );
-	
+
 	Parser parser( buffer, file.length );
 	parser.ReadToken();
 
@@ -225,7 +230,26 @@ void GameLoadEntities( const char* path ) {
 				break;
 			}
 		}
+		if( entity && entity->bounds ) {
+			entity->bounds->offset = entity->pos;
+		}
+		int a = 0;
 	}
 
 	NFileClose( &file );
+}
+
+void GameUnloadLevel() {
+	entityManager.numEncounters = 0;
+	entityManager.numEntities = 0;
+	entityManager.numProjectiles = 0;
+	entityManager.numRemoveEntities = 0;
+	entityManager.numRemoveEntities = 0;
+	entityManager.numTriggers = 0;
+	entityManager.lastProjectileIndex = 0;
+	entityManager.player = 0;
+	entityManager.numSpawnTargets = 0;
+
+	memset( &entityManager, 0, sizeof( EntityManager ) );
+
 }

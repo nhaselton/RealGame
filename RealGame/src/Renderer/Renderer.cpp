@@ -414,9 +414,7 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 	//RenderDrawFontBatch();
 	RenderUpdateAndDrawParticles();
 
-	RenderDrawConsole();
-
-
+	//Draw Skybox
 	glDepthFunc( GL_LEQUAL );
 	nglBindVertexArray( renderer->skybox.buffer.vao );
 	RenderSetShader( renderer, renderer->shaders[SHADER_SKYBOX] );
@@ -424,6 +422,8 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 	ShaderSetMat4( renderer, renderer->shaders[SHADER_SKYBOX], "model", Mat4( 1.0f ) );
 	nglDrawArrays( GL_TRIANGLES, 0, 36 );
 	glDepthFunc( GL_LESS );
+
+	RenderDrawConsole();
 }
 
 void RenderUpdateAndDrawParticles() {
@@ -744,6 +744,11 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 		chain->firstIndexOfTriangles = ( u32* )ScratchArenaAllocate( &level->arena, numTrianglesPerTexture[i] * sizeof( u32 ) );
 		chain->numTriangles = 0;
 	}
+}
+
+void RenderUnloadLevel() {
+	//TODO unload textures, could maybe point to new level information to see if keep or not?
+	memset( &renderer.levelInfo, 0, sizeof( renderer.levelInfo ) );
 }
 
 void RenderDrawHealthBar( Vec2 pos, Vec2 size, int hp, int maxHp ) {

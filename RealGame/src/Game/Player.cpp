@@ -93,14 +93,15 @@ void UpdatePlayer( Entity* entity ) {
 	if( console.IsOpen() )
 		wantDir = Vec3( 0 );
 
-
-#if 1 //Normal
-	wantDir.y = 0;
-	EntityMove( player, wantDir );
-#else //Noclip
-	entity->pos += wantDir;
-	entity->bounds->offset = entity->pos;
-#endif
+	
+	if( !player->noclip ) {
+		wantDir.y = 0;
+		EntityMove( player, wantDir );
+	}
+	else {
+		entity->pos += wantDir;
+		entity->bounds->offset = entity->pos;
+	}
 
 	player->camera.Position = player->pos + Vec3( 0, 1, 0 );
 	RevolverUpdate(player);
@@ -197,4 +198,12 @@ void PlayerOnHit( EntityHitInfo info ) {
 	}
 
 	return;
+}
+
+void ConsoleToggleNoClip() {
+	Player* p = entityManager.player;
+	if( !p ) 
+		return;
+
+	p->noclip = !p->noclip;
 }

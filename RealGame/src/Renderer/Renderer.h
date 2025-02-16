@@ -269,6 +269,7 @@ void RenderDrawQuadTextured( Vec2 pos, Vec2 size, struct Texture* texture );
 void RenderDrawMuzzleFlash(Texture* texture);
 
 void RenderLoadLevel( class Level* level, class NFile* file );
+void RenderUnloadLevel();
 
 void RenderInitFont();
 void RenderLoadFontFromFile();

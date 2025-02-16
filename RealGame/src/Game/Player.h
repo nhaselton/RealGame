@@ -33,6 +33,7 @@ public:
 	Camera camera;
 	Revolver revolver;
 	struct AudioSource* audioSource;
+	bool noclip;
 
 	static Sound revolverFireSound;
 	static Sound revolverReloadSound;
@@ -45,3 +46,4 @@ Player* CreatePlayer( Vec3 pos );
 void UpdatePlayer( Entity* entity );
 void RevolverUpdate( Player* player );
 void PlayerOnHit( EntityHitInfo info );
+void ConsoleToggleNoClip();

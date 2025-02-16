@@ -13,3 +13,4 @@
 #include "Encounter.h"
 
 void GameLoadEntities( const char* path );
+void GameUnloadLevel();

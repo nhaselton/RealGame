@@ -125,6 +125,7 @@ struct HitInfo {
 
 void PhysicsInit();
 void PhysicsLoadLevel( struct Level* level, struct NFile* file );
+void PhysicsUnloadLevel();
 
 void PhysicsRigidBodiesUpdate();
 

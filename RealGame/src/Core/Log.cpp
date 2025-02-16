@@ -24,6 +24,10 @@ int VPrint( const char* format, va_list argList ) {
 
 	int charsWritten = vsnprintf( buffer, MAX_CHARS, format, argList );
 	printf( "%s", buffer );
+
+	if ( console.active )
+		console.WriteLine( buffer );
+
 	return charsWritten;
 }
 

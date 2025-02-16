@@ -19,8 +19,9 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-*	Console
-*	Level Swapping
+	Go into input and make console eat input?
+	Dont crash on fail (Make blank map)
+
 *	.Def
 *		Model
 * 
@@ -159,8 +160,6 @@ int main() {
 	//CreateSoundSystem ( &soundDevice, &soundContext );
 
 	CreateEntityManager();
-	CreateEncounters();
-
 	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizard.glb" );
 	Wizard::projectileModel = ModelManagerAllocate( &modelManager, "res/models/WizardBall.glb" );
 
@@ -175,6 +174,9 @@ int main() {
 
 	LoadWavFile( &Goblin::staggerSound, "res/sounds/StgGoblin.wav" );
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
+
+	RegisterCvar( "noclip", ConsoleToggleNoClip, CV_FUNC );
+	RegisterCvar( "map", ConsoleChangeLevel, CV_FUNC );
 
 	//Generate Deadpose
 	Wizard::deadPose = ( SkeletonPose* ) ScratchArenaAllocate( &globalArena, sizeof( SkeletonPose ) );
@@ -202,12 +204,13 @@ int main() {
 	bool start = true;
 
 	renderer.drawStats = true;
-
+	 
 	AudioSource* source = NewAudioSource();
 	alSourcef( source->alSourceIndex, AL_GAIN, .25f );
 
 	bool triggered = false;
 	while( !WindowShouldClose( &window ) ) {
+		player = entityManager.player;
 		//PROFILE( "Frame" );
 		xOffset = 0;
 		yOffset = 0;
@@ -218,7 +221,7 @@ int main() {
 		UpdateSounds();
 
 		if( KeyPressed( KEY_P ) ) {
-			paused = !paused;
+			//paused = !paused;
 		}
 
 		if( KeyPressed( KEY_T ) ) {
@@ -261,7 +264,7 @@ int main() {
 		//if( dt > 5.0f / 144.0f )
 		//	dt = 1.0f / 144.0f;
 
-#if 0
+#if 1
 		for( int i = 0; i < entityManager.numTriggers; i++ ) {
 			Trigger* trigger = &entityManager.triggers[i];
 			//DebugDrawBoundsMinMax( &entityManager.triggers[i].bounds, RED,0,false );
@@ -273,6 +276,10 @@ int main() {
 			DebugDrawAABB( center, size );
 		}
 #endif
+		if( entityManager.numEntities == 2 ) {
+			printf( "" );
+		}
+
 		for( int i = 0; i < entityManager.numEncounters; i++ ) {
 			Encounter& encounter = entityManager.encounters[i];
 			if( encounter.active )

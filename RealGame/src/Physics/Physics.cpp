@@ -7,7 +7,7 @@
 #include "Renderer\Renderer.h"
 
 void PhysicsInit() {
-	memset( physics.activeColliders, MAX_ENTITIES, MAX_ENTITIES * sizeof( physics.activeColliders[0] ) );
+	
 }
 
 void PhysicsLoadLevel( Level* level, NFile* file ) {
@@ -39,6 +39,11 @@ void PhysicsLoadLevel( Level* level, NFile* file ) {
 	NFileRead( file, &physics.staticBVH, sizeof( BVHTree ) );
 	physics.staticBVH.nodes = ( BVHNode* ) ScratchArenaAllocate( &level->arena, physics.staticBVH.numNodes * sizeof( BVHNode ) );
 	NFileRead( file, physics.staticBVH.nodes, sizeof( BVHNode ) * physics.staticBVH.numNodes );
+}
+
+void PhysicsUnloadLevel() {
+	memset( &physics, 0, sizeof( Physics ) );
+
 }
 
 inline Vec3 ProjectOnPlane( const Vec3& planeNormal, const Vec3& vector ) {
@@ -97,6 +102,8 @@ Vec3 MoveAndSlide( CharacterCollider* cc, Vec3 velocity, int maxBounces, bool ad
 		Vec3 remaining = velocity - velToSurface;
 
 		point = pos + velToSurface;
+		if( glm::any( glm::isnan( point ) ) )
+			return startPos;
 		assert( !glm::any( glm::isnan( point ) ) );
 		pos = point;
 

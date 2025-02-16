@@ -167,6 +167,7 @@ void CExit() {
 }
 
 void Console::Init() {
+	active = true;
 	cvarArgc = 0;
 	RegisterCvar( "exit", CExit, CV_FUNC );
 	RegisterCvar( "quit", CExit, CV_FUNC );

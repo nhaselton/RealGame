@@ -70,6 +70,8 @@ Cvar* FindCvar( const char* name );
 
 class DLL Console {
 public:
+	bool active;
+
 	Console();
 	void Init();
 	void SetState( ConsoleState state );
