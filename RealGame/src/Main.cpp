@@ -19,6 +19,16 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
+*	Fix sound not working
+*	Add an empty sound thing that you can edit or call all you want but it wont do anything
+*	This way it can be returned when erroring and not have to check if ( Sound) everywhere.
+* 
+*	Console
+*	Level Swapping
+*	.Def
+*		Model
+* 
+* 
 	====================
 		Rendering
 	====================
@@ -234,19 +244,6 @@ int main() {
 		SoundSetListenerPosition( player->camera.Position );
 		alListenerfv( AL_ORIENTATION, dir );
 
-		if( KeyPressed( KEY_L ) ) {
-			Vec3 orbPos = entityManager.player->pos;//+ Vec3( 0, 3, 0 );
-			Vec3 velocity = player->camera.Front* 20.0f;
-			Projectile* orb = NewProjectile( orbPos, velocity, Vec3( .5f ), true );
-			if( orb ) {
-				orb->model.model = Wizard::projectileModel;
-				orb->model.scale = Vec3( .5f );
-				orb->model.translation = Vec3( 0 );
-				orb->OnCollision = WizardBallCallback;
-		}
-
-		}
-
 		timer.Tick();
 		dt = timer.GetTimeSeconds();
 
@@ -258,8 +255,8 @@ int main() {
 
 		timer.Restart();
 
-		if( dt > 1.0f / 144.0f )
-			dt = 1.0f / 144.0f;
+		//if( dt > 5.0f / 144.0f )
+		//	dt = 1.0f / 144.0f;
 
 #if 0
 		for( int i = 0; i < entityManager.numTriggers; i++ ) {

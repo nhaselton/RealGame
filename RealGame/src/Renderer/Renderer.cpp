@@ -1016,7 +1016,7 @@ void RemoveEmitter( ParticleEmitter2* emitter ) {
 ParticleEmitter2* NewParticleEmitter() {
 	if (renderer.numEmitters == MAX_PARTICLE_EMITTERS) {
 		LOG_WARNING ( LGS_RENDERER, "OUT OF PARTICLE EMITTERS" );
-		return 0;
+		return &renderer.emitters.emitters[0];
 	}
 
 	ParticleEmitter2* emitter = renderer.emitters.freeList[0];

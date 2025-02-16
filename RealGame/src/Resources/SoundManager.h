@@ -50,6 +50,7 @@ public:
 	Sound sounds[MAX_SOUND_BUFFERS];
 	PoolArena AudioSourceArena;
 	AudioSource* activeSources[MAX_AUDIO_SOURCES];
+	AudioSource deadSource; //Given when there are no active sources left. This avoids having to check NULL each time
 
 	int numSounds;
 	int numSources;

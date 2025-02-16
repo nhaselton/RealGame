@@ -29,7 +29,8 @@ void CreateSoundManager () {
 
     //Generate all sources up front
     alGenSources ( MAX_AUDIO_SOURCES, sources );
-
+    
+    alGenSources( 1, &soundManager.deadSource.alSourceIndex );
 
     CreatePoolArena ( &soundManager.AudioSourceArena, sizeof ( AudioSource ), MAX_AUDIO_SOURCES,
         ScratchArenaAllocate ( &globalArena, sizeof ( AudioSource ) * MAX_AUDIO_SOURCES ), &globalArena, "Audio Source Arena" );
@@ -97,7 +98,7 @@ AudioSource* CreateTempAudioSource( Vec3 pos, Sound* sound ) {
     AudioSource* source = NewAudioSource();
     if( !source ) {
 		LOG_WARNING( LGS_SOUND, "Could not create temp audio source\n" );
-        return 0;
+        return &soundManager.deadSource;
     }
     source->pos = pos;
     source->sound = sound;
@@ -109,6 +110,7 @@ AudioSource* CreateTempAudioSource( Vec3 pos, Sound* sound ) {
 AudioSource* NewAudioSource () {
     if (soundManager.numSources == MAX_AUDIO_SOURCES) {
 		LOG_WARNING ( LGS_SOUND, "Can't create new audio sources\n" );
+        return &soundManager.deadSource;
     }
     
     soundManager.numSources++;
@@ -131,6 +133,9 @@ AudioSource* NewAudioSource () {
 }
 
 void PlaySound( AudioSource* source, Sound* sound ) {
+    if( source == &soundManager.deadSource )
+        return;
+
     if( !sound ) {
         if( !source->sound ) {
 			LOG_WARNING( LGS_SOUND, "Trying to play audio source with no sound\n" );
@@ -152,6 +157,9 @@ void PlaySound( AudioSource* source, Sound* sound ) {
 }
 
 void StopSound ( AudioSource* source ) {
+    if( source == &soundManager.deadSource )
+        return;
+
     source->active = false;
 
     int indexInActiveList = -1;
@@ -164,11 +172,16 @@ void StopSound ( AudioSource* source ) {
     }
 
     if( indexInActiveList == -1 ) {
-        LOG_ASSERT( LGS_SOUND, "Trying to remove active sound that does not exist\n" );
+        LOG_ERROR( LGS_SOUND, "Trying to remove active sound that does not exist\n" );
         return;
     }
 
     soundManager.activeSources[indexInActiveList] = soundManager.activeSources[--soundManager.numActiveSources];
+
+    if( ( source->flags & AUDIO_SOURCE_TEMP ) == AUDIO_SOURCE_TEMP ) {
+        RemoveAudioSource( source );
+        soundManager.numSources--;
+    }
 }
 
 void UpdateSounds () {
@@ -186,6 +199,8 @@ void UpdateSounds () {
 void RemoveAudioSource( AudioSource* source ) {
     //TODO end audio if still going
     //  Also remove from active if so
+    if( source == &soundManager.deadSource )
+        return;
 
     if( source->active ) {
         StopSound( source );
