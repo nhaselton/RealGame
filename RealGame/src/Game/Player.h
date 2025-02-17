@@ -47,3 +47,4 @@ void UpdatePlayer( Entity* entity );
 void RevolverUpdate( Player* player );
 void PlayerOnHit( EntityHitInfo info );
 void ConsoleToggleNoClip();
+void PlayerLoad( Parser* parser );

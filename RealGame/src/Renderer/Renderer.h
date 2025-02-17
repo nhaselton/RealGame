@@ -210,6 +210,7 @@ public:
 
 	Skybox skybox;
 
+	bool drawTriggers;
 	bool drawStats;
 	FrameInfo frameInfos[MAX_FRAME_INFOS];
 	int currentFrameInfo;
@@ -217,6 +218,7 @@ public:
 	u32 particleSSBO2;
 	u32 particleEmitterSSBO2;
 	u32 particleSortSSBO;
+
 
 	struct Emitter2 {
 		int numParticlesPerEmitter[MAX_PARTICLE_EMITTERS];
@@ -256,7 +258,7 @@ void RenderDrawAllProjectiles();
 void RenderDrawAllRigidBodies();
 void RenderDrawGun();
 void RenderUpdateAndDrawParticles();
-
+void RenderDrawTriggers();
 void RenderDrawFontBatch();
 
 void RenderDrawConsole();

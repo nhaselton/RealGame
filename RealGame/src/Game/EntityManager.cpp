@@ -73,8 +73,6 @@ void UpdateProjectiles( ) {
 		currentMaxProjectile = i;
 		projectile->collider.offset += projectile->velocity * dt;
 
-		DebugDrawAABB( projectile->collider.offset + projectile->collider.bounds.center, projectile->collider.bounds.width, 0.0f, BLUE );
-		
 		EntityCollisonQuery query;
 		if ( PhysicsQueryIntersectEntities( &projectile->collider, &query ) ) {
 			if ( projectile->OnCollision != 0 ) {

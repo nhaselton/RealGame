@@ -59,3 +59,4 @@ void WizardMelee( Wizard* wizard );
 void WizardDie( Wizard* wizard );
 
 void WizardBallCallback( class Projectile* projectile, class Entity* entity );
+void WizardLoad( Parser* parser );

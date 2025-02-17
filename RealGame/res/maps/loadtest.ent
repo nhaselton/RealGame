@@ -1,0 +1,30 @@
+{
+"classname" "info_player_start"
+"origin" "809 -215 67"
+}
+// entity 2
+{
+"classname" "info_goblin_start"
+"origin" "89 -135 48"
+}
+// entity 3
+{
+"classname" "info_wizard_start"
+"origin" "121 -295 67"
+}
+// entity 4
+{
+"classname" "trigger_once"
+"targetname" "trigger0"
+"target" "first"
+"triggertype" "4"
+"bounds" "true"
+"boundsmin" "-6.00 -8.00 -28.00"
+"boundsmax" "-0.50 8.00 1.00"
+}
+{
+"classname" "spawner"
+"origin" "456 -24 24"
+"targetname" "first"
+"types" "1"
+}

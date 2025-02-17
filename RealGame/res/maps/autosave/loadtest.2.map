@@ -1,0 +1,55 @@
+// Game: Generic
+// Format: Valve
+// entity 0
+{
+"mapversion" "220"
+"classname" "worldspawn"
+"_tb_textures" "textures/Util"
+// brush 0
+{
+( -64 -64 -16 ) ( -64 -63 -16 ) ( -64 -64 -15 ) __TB_empty [ 0 -1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( -64 -592 -16 ) ( -64 -592 -15 ) ( -63 -592 -16 ) __TB_empty [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( -64 -64 -16 ) ( -63 -64 -16 ) ( -64 -63 -16 ) __TB_empty [ -1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 64 64 16 ) ( 64 65 16 ) ( 65 64 16 ) __TB_empty [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 64 64 16 ) ( 65 64 16 ) ( 64 64 17 ) __TB_empty [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 912 64 16 ) ( 912 64 17 ) ( 912 65 16 ) __TB_empty [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+}
+}
+// entity 1
+{
+"classname" "info_player_start"
+"origin" "809 -215 67"
+}
+// entity 2
+{
+"classname" "info_goblin_start"
+"origin" "89 -135 48"
+}
+// entity 3
+{
+"classname" "info_wizard_start"
+"origin" "121 -295 67"
+}
+// entity 4
+{
+"classname" "trigger_once"
+"targetname" "trigger0"
+"target" "first"
+"triggertype" "4"
+// brush 0
+{
+( 512 -912 16 ) ( 512 -911 16 ) ( 512 -912 17 ) Util/Trigger [ 0 -1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 512 -912 16 ) ( 512 -912 17 ) ( 513 -912 16 ) Util/Trigger [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 512 -912 -256 ) ( 513 -912 -256 ) ( 512 -911 -256 ) Util/Trigger [ -1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 528 -528 256 ) ( 528 -527 256 ) ( 529 -528 256 ) Util/Trigger [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 528 16 32 ) ( 529 16 32 ) ( 528 16 33 ) Util/Trigger [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 688 -528 32 ) ( 688 -528 33 ) ( 688 -527 32 ) Util/Trigger [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+}
+}
+// entity 5
+{
+"classname" "spawner"
+"origin" "456 -24 24"
+"targetname" "first"
+"types" "1"
+}

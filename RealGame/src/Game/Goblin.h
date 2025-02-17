@@ -27,3 +27,4 @@ void GoblinOnHit( EntityHitInfo info );
 
 void GoblinChase( Goblin* goblin );
 void GoblinStagger( Goblin* goblin );
+void GoblinLoad( Parser* parser );

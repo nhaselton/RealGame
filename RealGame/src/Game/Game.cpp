@@ -2,6 +2,9 @@
 #include "game.h"
 #include "renderer/DebugRenderer.h"
 
+void LoadTrigger( Parser* parser );
+void LoadSpawner( Parser* parser );
+
 Vec3 StringToVec3( const char* value, bool fix ) {
 	Vec3 v(0);
 	int len = strlen( value );
@@ -101,142 +104,32 @@ void GameLoadEntities( const char* path ) {
 		char className[MAX_NAME_LENGTH]{};
 		parser.ParseString( className, MAX_NAME_LENGTH );
 
-		bool isTrigger = false;
-		bool isSpawner = false;
-		Trigger* trigger = 0;
-		Entity* entity = 0;
-
-		//Todo find better way to do this later
+		//TODO hash
 		if( !strcmp( className, "info_player_start" ) ) {
-			entity = CreatePlayer( Vec3( 0 ) );
-			entityManager.player = (Player*) entity;
+			PlayerLoad(&parser);
 		}
 		else if( !strcmp( className, "info_goblin_start" ) ) {
-			entity = CreateGoblin( Vec3( 0, 0, 0 ) );
+			GoblinLoad( &parser );
 		}
 		else if( !strcmp( className, "info_wizard_start" ) ) {
-			entity = CreateWizard( Vec3( 0, -1.5, 0 ) );
-		}
-		else if( !strcmp( className, "encounter" ) ) {
-			//Origin
-			char key0[MAX_NAME_LENGTH]{};
-			char value0[MAX_NAME_LENGTH]{};
-			parser.ParseString( key0, MAX_NAME_LENGTH );
-			parser.ParseString( value0, MAX_NAME_LENGTH );
-			//Name
-			char key1[MAX_NAME_LENGTH]{};
-			char value1[MAX_NAME_LENGTH]{};
-			parser.ParseString( key1, MAX_NAME_LENGTH );
-			parser.ParseString( value1, MAX_NAME_LENGTH );
-			//strcpy( entityManager.encounters[0].name, value1 );
-			parser.ExpectedTokenTypePunctuation( '}' );
-
-			isSpawner = true;
-		}
-		else if( !strcmp( className, "spawner" ) ) {
-			SpawnTarget* spawner = &entityManager.spawnTargets[entityManager.numSpawnTargets++];
-			isSpawner = true;
-
-			char key1[MAX_NAME_LENGTH]{};
-			char value1[MAX_NAME_LENGTH]{};
-			parser.ParseString( key1, MAX_NAME_LENGTH );
-			parser.ParseString( value1, MAX_NAME_LENGTH );
-			char key2[MAX_NAME_LENGTH]{};
-			char value2[MAX_NAME_LENGTH]{};
-			parser.ParseString( key2, MAX_NAME_LENGTH );
-			parser.ParseString( value2, MAX_NAME_LENGTH );
-
-			spawner->type = SPAWN_TARGET_POINT;
-			spawner->pos = StringToVec3( value1, true );
-			strcpy( spawner->name, value2 );
-
-			if ( parser.GetCurrent().subType == '}' )
-				parser.ExpectedTokenTypePunctuation( '}' );
-			else {
-				parser.ParseString( key2, MAX_NAME_LENGTH );
-				memset( value2, 0, MAX_NAME_LENGTH );
-				parser.ParseString( value2, MAX_NAME_LENGTH );
-
-				spawner->enemies = ( encounterEnemies_t ) atoi( value2 );
-				//parser.ParseString( key2, MAX_NAME_LENGTH );
-				parser.ExpectedTokenTypePunctuation( '}' );
-			}
-
-
+			WizardLoad( &parser );
 		}
 		else if( !strcmp( className, "trigger_once" ) ) {
-			//Trigger
-			trigger = &entityManager.triggers[entityManager.numTriggers++];
-			isTrigger = true;
+			LoadTrigger(&parser);
 		}
-		else if( !strcmp( className, "spawn_zone" ) ) {
-			SpawnTarget* spawner = &entityManager.spawnTargets[entityManager.numSpawnTargets++];
-
-			//Bounds True
-			char key1[MAX_NAME_LENGTH]{};
-			char value1[MAX_NAME_LENGTH]{};
-			parser.ParseString( key1, MAX_NAME_LENGTH );
-			parser.ParseString( value1, MAX_NAME_LENGTH );
-			strcpy( spawner->name, value1 );
-
-			parser.ParseString( key1, MAX_NAME_LENGTH );
-			parser.ParseString( value1, MAX_NAME_LENGTH );
-
-			parser.ParseString( key1, MAX_NAME_LENGTH );
-			parser.ParseString( value1, MAX_NAME_LENGTH );
-			Vec3 min = StringToVec3( value1, false );
-
-			parser.ParseString( key1, MAX_NAME_LENGTH );
-			parser.ParseString( value1, MAX_NAME_LENGTH );
-			Vec3 max = StringToVec3( value1, false );
-
-			spawner->type = SPAWN_TARGET_ZONE;
-			spawner->pos = ( max + min ) / 2.0f;
-			spawner->size = ( max - min ) / 2.0f;
-			
-			isSpawner = true;
-			parser.ExpectedTokenTypePunctuation( '}' );
-
+		else if( !strcmp( className, "spawner" ) ) {
+			LoadSpawner( &parser );
 		}
+
+
+		//Entity Does not exist, just skip over it
 		else {
-			printf( "Unkown Entity type %s\n", className );
-			__debugbreak();
+			LOG_WARNING( LGS_GAME, "Unkown classname %s\n", className );
+			parser.SkipUntilTokenOfType( TT_PUNCTUATION, TS_RB );
+			parser.ReadToken();
 		}
 
-		//Find all fields
-		while( 1 ) {
-			if( isSpawner  )
-				break;
-
-			char key[MAX_NAME_LENGTH]{};
-			char value[MAX_NAME_LENGTH]{};
-
-			parser.ParseString( key, MAX_NAME_LENGTH );
-			parser.ParseString( value, MAX_NAME_LENGTH );
-
-			if( isTrigger ) {
-				if( !TryTriggerField( trigger, key, value ) ) {
-					LOG_WARNING( LGS_GAME, "Unkown Trigger Key Value %s \n", key );
-				}
-			}
-			else {
-				if( !TryEntityField( entity, key, value ) ) {
-					LOG_WARNING( LGS_GAME, "Unkown Enity Key Value %s \n", key );
-				}
-			}
-
-			if( parser.GetCurrent().subType == '}' ) {
-				parser.ReadToken();
-				break;
-			}
-		}
-		if( entity && entity->bounds ) {
-			entity->bounds->offset = entity->pos;
-		}
-		int a = 0;
 	}
-
-	NFileClose( &file );
 }
 
 void GameUnloadLevel() {
@@ -252,4 +145,105 @@ void GameUnloadLevel() {
 
 	memset( &entityManager, 0, sizeof( EntityManager ) );
 
+}
+
+void LoadTrigger( Parser* parser ) {
+	if( entityManager.numTriggers == MAX_TRIGGERS ) {
+		LOG_ASSERT( LGS_GAME, "CAN NOT ADD ANOTHER TRIGGER\n" );
+		return;
+	}
+
+	Trigger* trigger = &entityManager.triggers[entityManager.numTriggers++];
+	memset( trigger, 0, sizeof( Trigger ) );
+
+	while( 1 ) {
+		char key[MAX_NAME_LENGTH]{};
+		char value[MAX_NAME_LENGTH]{};
+
+		parser->ParseString( key, MAX_NAME_LENGTH );
+		parser->ParseString( value, MAX_NAME_LENGTH );
+
+		if( !strcmp( key, "bounds" ) ) {
+			//does nothing
+		}
+		else if( !strcmp( key, "boundsmin" ) ) {
+			trigger->bounds.min = StringToVec3( value, false );
+		}
+		else if( !strcmp( key, "boundsmax" ) ) {
+			trigger->bounds.max = StringToVec3( value, false );
+		}
+		else if( !strcmp( key, "targetname" ) ) {
+			strcpy( trigger->myName, value );
+		}
+		else if( !strcmp( key, "target" ) ) {
+			strcpy( trigger->willTrigger, value );
+		}
+		else if( !strcmp( key, "triggertype" ) ) {
+			trigger->type = (trigger_t) atoi( value );
+		}
+
+		else {
+			LOG_WARNING( LGS_GAME, "trigger bad key value %s : %s\n", key, value );
+		}
+
+
+		if( parser->GetCurrent().subType == '}' ) {
+			parser->ReadToken();
+			break;
+		}
+	}
+
+	if( trigger->myName[0] == '\0' ) {
+		LOG_WARNING( LGS_GAME, "Warning trigger forgot name\n" );
+	}
+
+	if( trigger->willTrigger[0] == '0' ) {
+		if( trigger->myName[0] == '\0' ) {
+			LOG_WARNING( LGS_GAME, "trigger forgot name and target" );
+			return;
+		}
+		LOG_WARNING( LGS_GAME, "Warning trigger %s forgot target\n", trigger->myName );
+	}
+}
+
+void LoadSpawner( Parser* parser ) {
+	if( entityManager.numSpawnTargets == MAX_SPAWN_TARGETS) {
+		LOG_ASSERT( LGS_GAME, "CAN NOT ADD ANOTHER SPAWN TARGET\n" );
+		return;
+	}
+
+	SpawnTarget* spawner = &entityManager.spawnTargets[entityManager.numSpawnTargets++];
+	spawner->type = SPAWN_TARGET_POINT;
+	memset( spawner , 0, sizeof( SpawnTarget ) );
+
+	while( 1 ) {
+		char key[MAX_NAME_LENGTH]{};
+		char value[MAX_NAME_LENGTH]{};
+
+		parser->ParseString( key, MAX_NAME_LENGTH );
+		parser->ParseString( value, MAX_NAME_LENGTH );
+
+		
+		if( !strcmp( key, "origin" ) ) {
+			spawner->pos = StringToVec3( value, true );
+		}else if( !strcmp( key, "targetname" ) ) {
+				strcpy( spawner->name, value );
+		}
+		else if( !strcmp( key, "types" ) ) {
+			spawner->enemies = ( encounterEnemies_t ) atoi( value );
+		}
+		else {
+			LOG_WARNING( LGS_GAME, "spawner bad key value %s : %s\n", key, value );
+		}
+
+
+		if( parser->GetCurrent().subType == '}' ) {
+			parser->ReadToken();
+			break;
+		}
+	}
+
+	if( spawner->name[0] == '\0' ) {
+		LOG_WARNING( LGS_GAME, "Forgot to set spawner name" );
+	}
 }

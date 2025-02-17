@@ -19,8 +19,25 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-	Go into input and make console eat input?
-	Dont crash on fail (Make blank map)
+*	
+*	Milestone 3
+*	Renderer
+*		Lighting
+*			Point
+*			Directional
+*			Spot
+*		Shadows
+*			Atlas?
+*			Filtering
+*		Decals
+*	
+* 
+	Better Loading
+	ClassName
+		->ClassNameLoad
+	Else
+		->Skip through args
+
 
 *	.Def
 *		Model
@@ -54,18 +71,17 @@
 		could generate a .cpp file?
 			But then no hot reloading
 
-	Fix Spawn Loading Code
-	Its super hacked in.
+	==================================
+				Gameplay
+	==================================
+	Triggers
+		Delay
+		Message that appears on screen
+		Sound
 
 	CPU Flipbooks
 		Explosion, etc
 			These are not particles but just a static image
-
-	Console:
-		Commands:
-			noclip
-			showtriggers
-			drawphysics
 
 * Animation
 *	Animation Events
@@ -187,7 +203,7 @@ int main() {
 	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
-	LoadLevel( &level, "res/maps/demo.cum" );
+	LoadLevel( &level, "res/maps/loadtest.cum" );
 	Timer timer;
 
 	Player* player = (Player*) entityManager.player;
@@ -265,16 +281,7 @@ int main() {
 		//	dt = 1.0f / 144.0f;
 
 #if 1
-		for( int i = 0; i < entityManager.numTriggers; i++ ) {
-			Trigger* trigger = &entityManager.triggers[i];
-			//DebugDrawBoundsMinMax( &entityManager.triggers[i].bounds, RED,0,false );
-			DebugDrawAABB( trigger->bounds.min, Vec3( .75f ), 0, GREEN );
-			DebugDrawAABB( trigger->bounds.max, Vec3( .75f ), 0, GREEN );
 
-			Vec3 center = ( trigger->bounds.min + trigger->bounds.max ) / 2.0f;
-			Vec3 size = ( trigger->bounds.max - trigger->bounds.min ) / 2.0f;
-			DebugDrawAABB( center, size );
-		}
 #endif
 		if( entityManager.numEntities == 2 ) {
 			printf( "" );

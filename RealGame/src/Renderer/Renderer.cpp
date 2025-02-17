@@ -261,6 +261,9 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	for (int i = 0; i < MAX_PARTICLE_EMITTERS; i++) {
 		renderer->emitters.freeList[i] = &renderer->emitters.emitters[i];
 	}
+
+	RegisterCvar( "drawstats", &renderer->drawStats, CV_INT );
+	RegisterCvar( "drawtriggers", &renderer->drawTriggers, CV_INT );
 }
 
 void RenderInitFont() {
@@ -402,11 +405,11 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 
 	ShaderBuiltInsSetPVM( renderer, renderer->projection, renderer->camera.GetViewMatrix(), Mat4( 1.0 ) );
 
+	RenderDrawTriggers();
 	RenderDrawLevel( renderer );
 	RenderDrawAllEntities();
 	RenderDrawAllProjectiles();
 	RenderDrawAllRigidBodies();
-
 
 	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );
 
@@ -424,6 +427,19 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 	glDepthFunc( GL_LESS );
 
 	RenderDrawConsole();
+}
+
+void RenderDrawTriggers() {
+	if( !renderer.drawTriggers ) {
+		//return;
+	}
+
+	for( int i = 0; i < entityManager.numTriggers; i++ ) {
+		Trigger* trigger = &entityManager.triggers[i];
+		Vec3 center = ( trigger->bounds.min + trigger->bounds.max ) / 2.0f;
+		Vec3 size = ( trigger->bounds.max - trigger->bounds.min ) / 2.0f;
+		DebugDrawAABB( center, size );
+	}
 }
 
 void RenderUpdateAndDrawParticles() {
@@ -600,6 +616,7 @@ void RenderEndFrame( Renderer* renderer ) {
 
 	//Draw gun last (Will mess up post processing later on)
 	RenderDrawGun();
+	RenderDrawFontBatch();
 }
 
 void BuildSkeleton( Skeleton* skeleton, Node* root, Mat4 parent, Mat4* matrices ) {

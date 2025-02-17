@@ -19,7 +19,7 @@ enum TokenSubtype {
 	//any puncuation subtype = it's asci
 
 	TS_LB = '{',
-	TS_RB = '{',
+	TS_RB = '}',
 	TS_LP = '(',
 	TS_RP = ')',
 	TS_HT = '#',

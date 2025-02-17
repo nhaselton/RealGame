@@ -52,7 +52,7 @@ public:
 	//Quick access to player
 	class Player* player;
 
-	SpawnTarget spawnTargets[128];
+	SpawnTarget spawnTargets[MAX_SPAWN_TARGETS];
 	int numSpawnTargets;
 
 	Encounter encounters[128];

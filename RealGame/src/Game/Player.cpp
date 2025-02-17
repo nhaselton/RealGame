@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Game.h"
 #include "EntityManager.h"
 #include "Physics\Physics.h"
 #include "Resources/ModelManager.h"
@@ -206,4 +207,29 @@ void ConsoleToggleNoClip() {
 		return;
 
 	p->noclip = !p->noclip;
+}
+
+void PlayerLoad(Parser* parser) {
+	Player* player = CreatePlayer( Vec3( 0 ) );
+	if( entityManager.player != 0 ) {
+		LOG_ERROR( LGS_GAME, "Trying to create a new player when one already exists\n" );
+	}
+	entityManager.player = player;
+
+	while( 1 ) {
+		char key[MAX_NAME_LENGTH]{};
+		char value[MAX_NAME_LENGTH]{};
+
+		parser->ParseString( key, MAX_NAME_LENGTH );
+		parser->ParseString( value, MAX_NAME_LENGTH );
+
+		if( !TryEntityField( player, key, value ) ) {
+			LOG_WARNING( LGS_GAME, "player has no kvp %s : %s", key, value );
+		}
+
+		if( parser->GetCurrent().subType == '}' ) {
+			parser->ReadToken();
+			break;
+		}
+	}
 }

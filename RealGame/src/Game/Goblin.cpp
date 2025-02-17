@@ -171,3 +171,24 @@ void GoblinOnHit( EntityHitInfo info ) {
 	EntityStartAnimation( goblin, GOBLIN_ANIM_STAGGER );
 	goblin->state = GOBLIN_STAGGER;
 }
+
+void GoblinLoad(Parser* parser) {
+	Goblin* goblin = CreateGoblin( Vec3( 0 ) );
+
+	while( 1 ) {
+		char key[MAX_NAME_LENGTH]{};
+		char value[MAX_NAME_LENGTH]{};
+
+		parser->ParseString( key, MAX_NAME_LENGTH );
+		parser->ParseString( value, MAX_NAME_LENGTH );
+
+		if( !TryEntityField( goblin, key, value ) ) {
+			LOG_WARNING( LGS_GAME, "player has no kvp %s : %s", key, value );
+		}
+
+		if( parser->GetCurrent().subType == '}' ) {
+			parser->ReadToken();
+			break;
+		}
+	}
+}
