@@ -1,7 +1,6 @@
-#version 440
+﻿#version 440
 
 uniform float dt;
-
 
 struct Particle	{
 	vec4 pos;		//xyz = pos.	w = lifeTime [0,1]

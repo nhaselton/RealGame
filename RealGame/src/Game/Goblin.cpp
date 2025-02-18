@@ -160,7 +160,9 @@ void GoblinOnHit( EntityHitInfo info ) {
 			emitter->acceleration = Vec3( 0, -10, 0 );
 			emitter->radius = 1.0f;
 			emitter->emitterSpawnType = EMITTER_OVERTIME;
-			gib->emitter = emitter;
+
+			if ( gib )
+				gib->emitter = emitter;
 #endif
 		}
 		return;

@@ -19,26 +19,31 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-*	
 *	Milestone 3
 *	Renderer
+* 
+*	Dynamic Draw Pipeline
+*		Sort all dynamic entities by model
+*			Sort by skeletal/non skeletal first?
+*
+*		Put all skin matrices into 1 big buffer
+*		Upload buffer to GPU all at once
+* 
+*		Only swap state when needed
+*		Look into instancing/ how to tell model what skeletal array it needs
+*	
+* 
 *		Lighting
 *			Point
 *			Directional
 *			Spot
+* 
 *		Shadows
 *			Atlas?
 *			Filtering
 *		Decals
 *	
 * 
-	Better Loading
-	ClassName
-		->ClassNameLoad
-	Else
-		->Skip through args
-
-
 *	.Def
 *		Model
 * 
@@ -70,6 +75,9 @@
 		One File for all encounters
 		could generate a .cpp file?
 			But then no hot reloading
+
+	Encounters should be placed in map with the name of the encounter text file	
+	This way it can be added when compiled but still hotloaded
 
 	==================================
 				Gameplay
@@ -176,7 +184,7 @@ int main() {
 	//CreateSoundSystem ( &soundDevice, &soundContext );
 
 	CreateEntityManager();
-	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizard.glb" );
+	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizardsmooth.glb" );
 	Wizard::projectileModel = ModelManagerAllocate( &modelManager, "res/models/WizardBall.glb" );
 
 	LoadWavFile( &explosion, "res/sounds/Explosion.wav" );
@@ -189,7 +197,7 @@ int main() {
 	LoadWavFile( &Wizard::staggerSound, "res/sounds/stgWizard.wav" );
 
 	LoadWavFile( &Goblin::staggerSound, "res/sounds/StgGoblin.wav" );
-	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblin.glb" );
+	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblinsmooth.glb" );
 
 	RegisterCvar( "noclip", ConsoleToggleNoClip, CV_FUNC );
 	RegisterCvar( "map", ConsoleChangeLevel, CV_FUNC );
@@ -203,7 +211,7 @@ int main() {
 	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
-	LoadLevel( &level, "res/maps/loadtest.cum" );
+	LoadLevel( &level, "res/maps/demo.cum" );
 	Timer timer;
 
 	Player* player = (Player*) entityManager.player;
@@ -311,6 +319,12 @@ int main() {
 		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );
 		RenderDrawFrame( &renderer, dt );
+
+		{
+			//PROFILE( "SKELETAL" );
+			//for( int i = 0; i < 250; i++ )
+			//	RenderDrawEntity( wizard );
+		}
 
 		RenderDrawMuzzleFlash( renderer.blankTexture );
 

@@ -313,7 +313,7 @@ void CreateEncounters() {
 		EncounterAction* action = &encounter.actions[encounter.totalActions++];
 		action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
 		action->ai = ENCOUNTER_AI_GOBLIN;
-		action->spawnCount = 24;
+		action->spawnCount = 200;
 		strcpy( action->spawnTarget, "gobs1" );
 
 		action = &encounter.actions[encounter.totalActions++];

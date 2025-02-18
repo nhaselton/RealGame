@@ -20,11 +20,20 @@
 "triggertype" "4"
 "bounds" "true"
 "boundsmin" "-6.00 -8.00 -28.00"
-"boundsmax" "-0.50 8.00 1.00"
+"boundsmax" "-0.50 8.00 23.00"
 }
 {
 "classname" "spawner"
 "origin" "456 -24 24"
 "targetname" "first"
 "types" "1"
-}
+}
+// entity 6
+{
+"classname" "spawn_zone"
+"targetname" "zone"
+"types" "1"
+"bounds" "true"
+"boundsmin" "-17.00 0.50 -17.50"
+"boundsmax" "-11.50 5.00 -7.50"
+}

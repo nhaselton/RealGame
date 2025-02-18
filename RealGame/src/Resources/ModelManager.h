@@ -5,15 +5,16 @@
 
 //Models
 struct Node {
-	char name[32];
 	Vec3 t;
 	Quat r;
 	Vec3 s;
 
 	int boneID;//Bone index. -1 = no bone
 	int index; //Node index
+	int parent;
 	int numChildren;
 	Node** children;
+	char name[32];
 };
 
 struct JointPose {

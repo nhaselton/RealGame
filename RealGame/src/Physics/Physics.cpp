@@ -60,7 +60,12 @@ inline Vec3 ProjectOnPlane( const Vec3& planeNormal, const Vec3& vector ) {
 
 }
 
-
+inline BoundsMinMax BoundsUnion( const BoundsMinMax& a, const BoundsMinMax& b ) {
+	BoundsMinMax mm;
+	mm.max = glm::max( a.max, b.max );
+	mm.min = glm::min( a.min, b.min );
+	return mm;
+}
 
 //https://www.peroxide.dk/papers/collision/collision.pdf
 //https ://arxiv.org/pdf/1211.0059
@@ -424,16 +429,17 @@ bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo*
 	int numStack = 1;
 	stack[0] = &physics.staticBVH.nodes[physics.staticBVH.root];
 
-	BoundsMinMax fastBounds{
+	BoundsMinMax startBounds{
 		start - radius,
 		start + radius
 	};
 
-	BoundsMinMax AABB2{
-		start - radius * 2.0f,
-		start + velocity + radius * 2.0f
+	BoundsMinMax endBounds{
+	start + velocity - radius,
+	start + velocity + radius
 	};
-	fastBounds = AABB2;
+
+	BoundsMinMax totalBounds = BoundsUnion( startBounds, endBounds );
 
 	while( numStack > 0 ) {
 		BVHNode* node = stack[--numStack];
@@ -445,9 +451,9 @@ bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo*
 		//if ( !AABBSweep( fastBounds, node->bounds, velocity )  )
 		
 		//THIS IS BROKEN!!! TODO FIX
-#if 0
-		if( !FastAABB( AABB2, node->bounds ) )
-		continue;
+#if 1
+		if( !FastAABB( totalBounds, node->bounds ) )
+			continue;
 #endif 
 		//If leaf then get the actual object
 		if( node->isLeaf ) {

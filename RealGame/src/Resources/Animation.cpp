@@ -103,23 +103,36 @@ void AnimatePose( float time, AnimationClip* clip, SkeletonPose* pose ) {
 }
 
 void UpdatePose( int index, Mat4 prev, SkeletonPose* pose ) {
+	TEMP_ARENA_SET;
 	Skeleton* skeleton = pose->skeleton;
+	int* queue = ( int* ) TEMP_ALLOC( skeleton->numNodes * sizeof( int ) );
 
-	Node* node = &skeleton->joints[index];
-	JointPose* jointPose = &pose->pose[index];
+	//Move the global matrices forward by 1, so that when the head wants to address his parent (idx -1) we dont need a branch
+	Mat4* globalMatrices = ( Mat4* ) TEMP_ALLOC( ( skeleton->numNodes + 1 ) * sizeof( Mat4 ) );
+	globalMatrices++;
+	globalMatrices[-1] = prev;
 
-	Mat4 t = glm::translate( Mat4( 1.0 ), jointPose->t );
-	Mat4 r = glm::toMat4( jointPose->r );
-	Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( jointPose->s ) );
+	int numQueue = 0;
+	queue[numQueue++] = index;
 
-	Mat4 local = t * r * s;
-	Mat4 global = prev * local;
+	while( numQueue > 0 ) {
+		index = queue[--numQueue];
+		Node* node = &skeleton->joints[index];
+		JointPose* jointPose = &pose->pose[index];
 
-	if ( node->boneID != -1 ) {
-		pose->globalPose[node->boneID] = global * pose->skeleton->inverseBinds[node->boneID];// *node->invBind;
-	}
+		Mat4 t = glm::translate( Mat4( 1.0 ), jointPose->t );
+		Mat4 r = glm::toMat4( jointPose->r );
+		Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( jointPose->s ) );
+		Mat4 local = t * r * s;
+		
+		Mat4 global = globalMatrices[node->parent] * local;
+		globalMatrices[index] = global;
 
-	for ( int i = 0; i < node->numChildren; i++ ) {
-		UpdatePose( node->children[i]->index, global, pose );
+		if( node->boneID != -1 ) {
+			pose->globalPose[node->boneID] = global * pose->skeleton->inverseBinds[node->boneID];// *node->invBind;
+		}
+
+		for( int n = 0; n < node->numChildren; n++ )
+			queue[numQueue++] = node->children[n]->index;
 	}
 }

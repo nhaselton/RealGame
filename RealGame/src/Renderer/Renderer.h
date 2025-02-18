@@ -179,6 +179,11 @@ struct FrameInfo {
 	u32 shaderArgsSet;
 };
 
+struct WorldView {
+	Mat4 projection;
+	Mat4 view;
+};
+
 class Renderer {
 public:
 	ScratchArena arena;
@@ -215,6 +220,9 @@ public:
 	FrameInfo frameInfos[MAX_FRAME_INFOS];
 	int currentFrameInfo;
 	
+	u32 worldViewSSBO;
+	WorldView worldView;
+
 	u32 particleSSBO2;
 	u32 particleEmitterSSBO2;
 	u32 particleSortSSBO;

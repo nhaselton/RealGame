@@ -13,36 +13,6 @@
 
 extern ModelManager modelManager;
 
-//Only adds view projection model
-inline void ShaderBuiltInsInit( Renderer* renderer ) {
-	for (int i = 0; i < SHADER_LAST; i++) {
-		Shader* shader = renderer->shaders[i];
-		if (!shader->updateMVP)
-			continue;
-		RenderSetShader( renderer, shader );
-		ShaderAddArg( &shaderManager, shader, SHADER_ARG_MAT4, "view" );
-		ShaderSetMat4( renderer, shader, "view", Mat4( 1.0 ) );
-
-		ShaderAddArg( &shaderManager, shader, SHADER_ARG_MAT4, "model" );
-		ShaderSetMat4( renderer, shader, "model", Mat4( 1.0 ) );
-
-		ShaderAddArg( &shaderManager, shader, SHADER_ARG_MAT4, "projection" );
-		ShaderSetMat4( renderer, shader, "projection", renderer->projection );
-	}
-}
-
-inline void ShaderBuiltInsSetPVM( Renderer* renderer, Mat4 p, Mat4 v, Mat4 m ) {
-	for (int i = 0; i < SHADER_LAST; i++) {
-		Shader* shader = renderer->shaders[i];
-		if (!shader->updateMVP)
-			continue;
-		RenderSetShader( renderer, shader );
-		ShaderSetMat4( renderer, shader, "view", v );
-		ShaderSetMat4( renderer, shader, "projection", p );
-		ShaderSetMat4( renderer, shader, "model", m );
-	}
-}
-
 void RenderCreateShaders( Renderer* renderer ) {
 	//Brute force here. Set nons at end
 	//XYZRGB
@@ -62,6 +32,8 @@ void RenderCreateShaders( Renderer* renderer ) {
 	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD] );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_INT, "albedo" );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD], "albedo", S2D_ALBEDO );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_MAT4, "model" );
+
 
 	//Standrard Skinned
 	renderer->shaders[SHADER_STANDARD_SKINNED] = ShaderManagerCreateShader( &shaderManager, "res/shaders/standardskinned/standardskinned.vert", "res/shaders/standardskinned/standardskinned.frag" );
@@ -70,6 +42,7 @@ void RenderCreateShaders( Renderer* renderer ) {
 	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD_SKINNED], "albedo", S2D_ALBEDO );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_SKINNED], SHADER_ARG_MAT4_ARRAY, "bones" );
 	ShaderSetMat4Array( renderer, renderer->shaders[SHADER_STANDARD_SKINNED], "bones", renderer->mat4Array, 100 );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_SKINNED], SHADER_ARG_MAT4, "model" );
 
 	//Line
 	renderer->shaders[SHADER_LINE_SHADER] = ShaderManagerCreateShader( &shaderManager, "res/shaders/line/line.vert", "res/shaders/line/line.frag" );
@@ -80,6 +53,10 @@ void RenderCreateShaders( Renderer* renderer ) {
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_UI], SHADER_ARG_INT, "albedo" );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_UI], SHADER_ARG_INT, "solidColor" );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_UI], SHADER_ARG_VEC3, "color" );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_UI], SHADER_ARG_MAT4, "projection");
+	ShaderSetMat4( renderer, renderer->shaders[SHADER_UI], "projection", renderer->orthographic );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_UI], SHADER_ARG_MAT4, "model" );
+	ShaderSetMat4( renderer, renderer->shaders[SHADER_UI], "model", Mat4( 1.0 ) );
 
 	ShaderSetInt( renderer, renderer->shaders[SHADER_UI], "albedo", S2D_ALBEDO );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_UI], "solidColor", true );
@@ -105,6 +82,7 @@ void RenderCreateShaders( Renderer* renderer ) {
 	RenderSetShader( renderer, renderer->shaders[SHADER_PARTICLES2] );
 	ShaderAddArg ( &shaderManager, renderer->shaders[SHADER_PARTICLES2], SHADER_ARG_INT, "albedo" );
 	ShaderSetInt ( renderer, renderer->shaders[SHADER_PARTICLES2], "albedo", S2D_ALBEDO );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_PARTICLES2], SHADER_ARG_MAT4, "model" );
 
 	renderer->shaders[SHADER_COMP_CREATE_PARTICLES2] = ShaderManagerCreateComputeShader( &shaderManager, "res/shaders/particles2/createParticles.comp" );
 	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_CREATE_PARTICLES2] );
@@ -114,31 +92,16 @@ void RenderCreateShaders( Renderer* renderer ) {
 	RenderSetShader( renderer, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES2] );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_COMP_UPDATE_PARTICLES2], SHADER_ARG_FLOAT, "dt" );
 
-
 	renderer->shaders[SHADER_BILLBOARD] = ShaderManagerCreateShader( &shaderManager, "res/shaders/billboard/billboard.vert", "res/shaders/billboard/billboard.frag" );
 	RenderSetShader( renderer, renderer->shaders[SHADER_BILLBOARD] );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_BILLBOARD], SHADER_ARG_INT, "albedo" );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_BILLBOARD], "albedo", S3D_SKYBOX );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_BILLBOARD], SHADER_ARG_MAT4, "model" );
 
 
-	for (int i = 0; i < SHADER_LAST; i++)
-		renderer->shaders[i]->updateMVP = true;
-
-	renderer->shaders[SHADER_COMP_CREATE_PARTICLES]->updateMVP = false;
-	renderer->shaders[SHADER_COMP_UPDATE_PARTICLES]->updateMVP = false;
-	renderer->shaders[SHADER_COMP_UPDATE_PARTICLES2]->updateMVP = false;
-	renderer->shaders[SHADER_COMP_CREATE_PARTICLES2]->updateMVP = false;
-
-	//Note: Must do this for all non UPDATE-MVP 
 	Shader* ui = renderer->shaders[SHADER_UI];
 	RenderSetShader( renderer, ui );
 	ui->updateMVP = false;
-	ShaderAddArg( &shaderManager, ui, SHADER_ARG_MAT4, "projection" );
-	ShaderSetMat4( renderer, ui, "projection", renderer->orthographic );
-	ShaderAddArg( &shaderManager, ui, SHADER_ARG_MAT4, "model" );
-	ShaderSetMat4( renderer, ui, "model", Mat4( 1.0 ) );
-
-	ShaderBuiltInsInit( renderer );
 }
 
 void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
@@ -165,11 +128,15 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	GLBufferAddAttribute( &renderer->quadBuffer, 1, 2, GL_FLOAT, 5 * sizeof( float ), ( void* )(3 * sizeof( float )) );
 
 	RenderCreateShaders( renderer );
-
 	RenderInitFont();
+
+	renderer->worldView.projection = renderer->projection;
+	renderer->worldView.view = Mat4( 1.0 );
 
 	renderer->crosshairTex = TextureManagerLoadTextureFromFile( "res/textures/crosshair.png" );
 	renderer->healthTex = TextureManagerLoadTextureFromFile( "res/textures/health.png" );
+
+
 
 	glGenBuffers( 1, &renderer->particleSSBO2 );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleSSBO2 );
@@ -188,6 +155,12 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	glBufferData ( GL_SHADER_STORAGE_BUFFER, MAX_PARTICLES * sizeof ( u32 ), 0, GL_DYNAMIC_DRAW );
 	glBindBufferBase ( GL_SHADER_STORAGE_BUFFER, 5, renderer->particleSortSSBO );
 	glBindBuffer ( GL_SHADER_STORAGE_BUFFER, 0 );
+
+	glGenBuffers( 1, &renderer->worldViewSSBO );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->worldViewSSBO );
+	glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof( WorldView ), 0, GL_DYNAMIC_DRAW );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 8, renderer->worldViewSSBO );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
 
 	//Billboard
 	float veritcesarr[]{
@@ -339,6 +312,7 @@ void RenderDrawLevel( Renderer* renderer ) {
 	nglBindVertexArray( renderer->levelInfo.buffer.vao );
 	nglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, renderer->levelInfo.buffer.ebo );
 	nglBufferSubData( GL_ELEMENT_ARRAY_BUFFER, 0, totalIndices * sizeof( u32 ), indices );
+	ShaderSetMat4( renderer, renderer->shaders[SHADER_STANDARD], "model", Mat4( 1.0 ) );
 
 	offset = 0;
 	nglActiveTexture( GL_TEXTURE0 );
@@ -403,7 +377,11 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 		renderer->levelInfo.textureChains[i].numTriangles = 0;
 	}
 
-	ShaderBuiltInsSetPVM( renderer, renderer->projection, renderer->camera.GetViewMatrix(), Mat4( 1.0 ) );
+	renderer->worldView.projection = renderer->projection;
+	renderer->worldView.view = renderer->camera.GetViewMatrix();
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->worldViewSSBO );
+	glBufferSubData( GL_SHADER_STORAGE_BUFFER, 0, sizeof(WorldView), &renderer->worldView);
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
 
 	RenderDrawTriggers();
 	RenderDrawLevel( renderer );
@@ -411,7 +389,7 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 	RenderDrawAllProjectiles();
 	RenderDrawAllRigidBodies();
 
-	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );
+	//DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );
 
 	//RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
 	//RenderDrawFontBatch();
@@ -419,10 +397,8 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 
 	//Draw Skybox
 	glDepthFunc( GL_LEQUAL );
-	nglBindVertexArray( renderer->skybox.buffer.vao );
 	RenderSetShader( renderer, renderer->shaders[SHADER_SKYBOX] );
-	ShaderSetMat4( renderer, renderer->shaders[SHADER_SKYBOX], "view", Mat4( Mat3( renderer->camera.GetViewMatrix() ) ) );
-	ShaderSetMat4( renderer, renderer->shaders[SHADER_SKYBOX], "model", Mat4( 1.0f ) );
+	nglBindVertexArray( renderer->skybox.buffer.vao );
 	nglDrawArrays( GL_TRIANGLES, 0, 36 );
 	glDepthFunc( GL_LESS );
 
@@ -534,7 +510,8 @@ void RenderUpdateAndDrawParticles() {
 	glDispatchCompute( totalEmit, 1, 1 ); //Creates particles
 	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
-	//Update Partiacles
+
+
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, renderer.particleSSBO2 );
 	RenderSetShader( &renderer, renderer.shaders[SHADER_COMP_UPDATE_PARTICLES2] );
 	ShaderSetFloat( &renderer, renderer.shaders[SHADER_COMP_UPDATE_PARTICLES2], "dt", dt );
@@ -619,22 +596,6 @@ void RenderEndFrame( Renderer* renderer ) {
 	RenderDrawFontBatch();
 }
 
-void BuildSkeleton( Skeleton* skeleton, Node* root, Mat4 parent, Mat4* matrices ) {
-	Mat4 t = glm::translate( Mat4( 1.0 ), root->t );
-	Mat4 r = glm::toMat4( root->r );
-	Mat4 s = glm::scale( Mat4( 1.0 ), root->s );
-
-	Mat4 local = t * r * s;
-	Mat4 global = parent * local;
-
-	if (root->boneID != -1)
-		matrices[root->boneID] = global * skeleton->inverseBinds[root->boneID];
-
-	for (int i = 0; i < root->numChildren; i++)
-		BuildSkeleton( skeleton, root->children[i], global, matrices );
-
-}
-
 void RenderSetShader( Renderer* renderer, Shader* newShader ) {
 	if (!newShader || newShader->id == -1) {
 		LOG_ASSERT( LGS_RENDERER, "Trying to use shader that does not exist" );
@@ -653,9 +614,7 @@ void RenderDrawModel( Renderer* renderer, Model* model, Mat4 offset, SkeletonPos
 	Shader* shader = (model->skeleton == 0) ? renderer->shaders[SHADER_STANDARD] : renderer->shaders[SHADER_STANDARD_SKINNED];
 	RenderSetShader( renderer, shader );
 
-	//Setup mat4 array
 	if (model->skeleton && pose) {
-		BuildSkeleton( model->skeleton, &model->skeleton->joints[model->skeleton->root], Mat4( 1.0f ), renderer->mat4Array );
 		ShaderSetMat4Array( renderer, shader, "bones", pose->globalPose, model->skeleton->numBones );
 	}
 
@@ -981,6 +940,7 @@ void nglActiveTexture( GLenum texture ) {
 }
 
 void RenderDrawAllEntities() {
+#if 1
 	for (int i = 0; i < MAX_ENTITIES; i++) {
 		StoredEntity* stored = &entityManager.entities[i];
 
@@ -990,6 +950,7 @@ void RenderDrawAllEntities() {
 		if (stored->entity.renderModel != 0)
 			RenderDrawEntity( &stored->entity );
 	}
+#endif
 }
 
 void RenderDrawAllProjectiles() {

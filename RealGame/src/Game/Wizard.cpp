@@ -140,7 +140,7 @@ void WizardShoot( Wizard* wizard ) {
 
 	if( wizard->currentAnimationPercent >= 0.5f && !wizard->hasShot ) {
 		Vec3 orbPos = wizard->pos + Vec3( 0, 3, 0 );
-		Vec3 velocity = glm::normalize( ( entityManager.player->pos - orbPos ) ) * 20.0f;
+		Vec3 velocity = glm::normalize( ( entityManager.player->pos - orbPos ) ) * 40.0f;
 		Projectile* orb = NewProjectile( orbPos, velocity, Vec3( .5f ), true );
 		if( orb ) {
 			orb->collider.owner = wizard;

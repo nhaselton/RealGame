@@ -216,7 +216,7 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 		skeleton->numNodes = json["nodes"].size();
 		skeleton->root = scene["nodes"][0];
 		
-		if ( skeleton->numBones > 100 ) {
+		if ( skeleton->numBones > MAX_BONES ) {
 			LOG_ASSERT( LGS_RENDERER, "Too many bones with %d %s\n", skeleton->numBones, path );
 		}
 
@@ -227,6 +227,8 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 		FillBuffer( &file, ( u8** ) &skeleton->inverseBinds, binOffset, &invBindAccessor );
 
 		skeleton->joints = ( Node* ) ScratchArenaAllocateZero( &info->arena, skeleton->numNodes * sizeof( Node ) );
+
+		skeleton->joints[skeleton->root].parent = -1;
 		for ( int i = 0; i < skeleton->numNodes; i++ ) {
 			JSON& jnode = json["nodes"][i];
 			Node* joint = &skeleton->joints[i];
@@ -275,6 +277,7 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 				for ( int n = 0; n < joint->numChildren; n++ ) {
 					int child = children[n];
 					joint->children[n] = &skeleton->joints[ child ];
+					joint->children[n]->parent = i;
 				}
 			}
 		}
@@ -286,7 +289,6 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 			skeleton->joints[index].boneID = i;
 			//Put it in it's own array for easy lookups
 			skeleton->bones[i] = &skeleton->joints[index];
-
 		}
 	}
 

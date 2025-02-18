@@ -17,9 +17,11 @@ layout(std430, binding = 5 ) buffer sortedBuffer {
 	uint sortIndices[];
 };
 
-uniform mat4 view;
-uniform mat4 projection;
 uniform mat4 model;
+layout(std430, binding = 8 ) buffer worldViewBuffer {
+	mat4 projection;
+	mat4 view;
+};
 
 out vec2 vtex;
 
@@ -58,6 +60,8 @@ vec2 CorrectUVs(int index) {
 	else
 		texCoords.y = particles[instanceID].UVs.w;
 
+
+
 	return texCoords;
 }
 
@@ -81,6 +85,6 @@ void main() {
 	vtex = CorrectUVs(index);
 	mat4 viewModel = view * model;
 
-	realPos = particle.pos.xyz + ( quadPos * mat3(viewModel) );
-	gl_Position = projection * view * model * vec4(realPos, 1.0);
+	realPos = particle.pos.xyz + ( quadPos * mat3(view) );
+	gl_Position = projection * view * vec4(realPos, 1.0);
 }

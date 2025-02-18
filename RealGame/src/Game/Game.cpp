@@ -4,6 +4,7 @@
 
 void LoadTrigger( Parser* parser );
 void LoadSpawner( Parser* parser );
+void LoadSpawnZone( Parser* parser );
 
 Vec3 StringToVec3( const char* value, bool fix ) {
 	Vec3 v(0);
@@ -44,36 +45,33 @@ bool TryEntityField( Entity* entity, const char* key, const char* value ) {
 	return false;
 }
 
-bool TryTriggerField( Trigger* trigger, const char* key, const char* value ) {
-	if( !strcmp( key, "target" ) ) {
-		strcpy( trigger->willTrigger, value );
-		return true;
-	}
-
-	if( !strcmp( key, "targetname" ) ) {
-		strcpy( trigger->myName, value );
-		return true;
-	}
-
+bool TryBrushField( const char* key, const char* value, BoundsMinMax* bounds ) {
 	if( !strcmp( key, "bounds" ) ) {
 		return true;
 	}
 
-	if( !strcmp( key, "triggertype" ) ) {
-		trigger->type = ( trigger_t ) atoi( value );
-		return true;
-	}
-
-	if( !strcmp( key, "boundsmin" ) ) {
-		trigger->bounds.min = StringToVec3( value, false );
+		if( !strcmp( key, "boundsmin" ) ) {
+		bounds->min = StringToVec3( value, false );
 		return true;
 	}
 
 	if( !strcmp( key, "boundsmax" ) ) {
-		trigger->bounds.max = StringToVec3( value, false );
+		bounds->max = StringToVec3( value, false );
 		return true;
 	}
 	return false;
+}
+
+bool TryTargetField( char* key, char* value, char outName[MAX_NAME_LENGTH], char outTarget[MAX_NAME_LENGTH] ) {
+		if( !strcmp( key, "targetname" ) ) {
+			strcpy( outName, value );
+			return true;
+		}
+		else if( !strcmp( key, "target" ) ) {
+			strcpy( outTarget, value );
+			return true;
+		}
+		return false;
 }
 
 void GameLoadEntities( const char* path ) {
@@ -120,6 +118,9 @@ void GameLoadEntities( const char* path ) {
 		else if( !strcmp( className, "spawner" ) ) {
 			LoadSpawner( &parser );
 		}
+		else if( !strcmp( className, "spawn_zone" ) ) {
+			LoadSpawnZone(&parser);
+		}
 
 
 		//Entity Does not exist, just skip over it
@@ -163,25 +164,15 @@ void LoadTrigger( Parser* parser ) {
 		parser->ParseString( key, MAX_NAME_LENGTH );
 		parser->ParseString( value, MAX_NAME_LENGTH );
 
-		if( !strcmp( key, "bounds" ) ) {
-			//does nothing
+		if( TryBrushField( key, value, &trigger->bounds ) ) {
+
 		}
-		else if( !strcmp( key, "boundsmin" ) ) {
-			trigger->bounds.min = StringToVec3( value, false );
-		}
-		else if( !strcmp( key, "boundsmax" ) ) {
-			trigger->bounds.max = StringToVec3( value, false );
-		}
-		else if( !strcmp( key, "targetname" ) ) {
-			strcpy( trigger->myName, value );
-		}
-		else if( !strcmp( key, "target" ) ) {
-			strcpy( trigger->willTrigger, value );
+		else if( TryTargetField(key, value, trigger->myName, trigger->willTrigger) ) {
+
 		}
 		else if( !strcmp( key, "triggertype" ) ) {
-			trigger->type = (trigger_t) atoi( value );
+			trigger->type = ( trigger_t ) atoi( value );
 		}
-
 		else {
 			LOG_WARNING( LGS_GAME, "trigger bad key value %s : %s\n", key, value );
 		}
@@ -213,8 +204,8 @@ void LoadSpawner( Parser* parser ) {
 	}
 
 	SpawnTarget* spawner = &entityManager.spawnTargets[entityManager.numSpawnTargets++];
-	spawner->type = SPAWN_TARGET_POINT;
 	memset( spawner , 0, sizeof( SpawnTarget ) );
+	spawner->type = SPAWN_TARGET_POINT;
 
 	while( 1 ) {
 		char key[MAX_NAME_LENGTH]{};
@@ -242,6 +233,57 @@ void LoadSpawner( Parser* parser ) {
 			break;
 		}
 	}
+
+	if( spawner->name[0] == '\0' ) {
+		LOG_WARNING( LGS_GAME, "Forgot to set spawner name" );
+	}
+}
+
+void LoadSpawnZone( Parser* parser ) {
+	if( entityManager.numTriggers == MAX_TRIGGERS ) {
+		LOG_ASSERT( LGS_GAME, "CAN NOT ADD ANOTHER TRIGGER\n" );
+		return;
+	}
+
+	SpawnTarget* spawner = &entityManager.spawnTargets[entityManager.numSpawnTargets++];
+	memset( spawner, 0, sizeof( SpawnTarget ) );
+	spawner->type = SPAWN_TARGET_ZONE;
+
+	//spawner bounds
+	BoundsMinMax bounds{};
+
+	char buffer[MAX_NAME_LENGTH];
+	while( 1 ) {
+		char key[MAX_NAME_LENGTH]{};
+		char value[MAX_NAME_LENGTH]{};
+
+		parser->ParseString( key, MAX_NAME_LENGTH );
+		parser->ParseString( value, MAX_NAME_LENGTH );
+
+
+
+		if( TryBrushField( key, value, &bounds) ) {
+
+		}
+		else if( TryTargetField( key, value, spawner->name, buffer ) ) {
+
+		}
+		else if( !strcmp( key, "types" ) ) {
+			spawner->enemies = ( encounterEnemies_t ) atoi( value );
+		}
+		else {
+			LOG_WARNING( LGS_GAME, "trigger bad key value %s : %s\n", key, value );
+		}
+
+
+		if( parser->GetCurrent().subType == '}' ) {
+			parser->ReadToken();
+			break;
+		}
+	}
+
+	spawner->pos = ( bounds.max + bounds.min ) / 2.0f;
+	spawner->size = (bounds.max - bounds.min) / 2.0f;
 
 	if( spawner->name[0] == '\0' ) {
 		LOG_WARNING( LGS_GAME, "Forgot to set spawner name" );

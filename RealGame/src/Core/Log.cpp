@@ -33,7 +33,6 @@ int VPrint( const char* format, va_list argList ) {
 
 
 void Log( subSystem_t sys, int severity, const char* format, ... ) {
-
 	switch ( severity ) {
 		case LOG_SEVERITY_WARNING:	printf( "\x1B[33m" ); break;
 		case LOG_SEVERITY_ERROR:	printf( "\x1B[31m" ); break;

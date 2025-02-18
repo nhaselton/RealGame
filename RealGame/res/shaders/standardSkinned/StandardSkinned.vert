@@ -1,4 +1,4 @@
-#version 330 core
+#version 450 core
 
 layout (location = 0) in vec3 apos;
 layout (location = 1) in vec3 anorm;
@@ -7,11 +7,13 @@ layout (location = 3) in vec3 atan;
 layout (location = 4) in ivec4 abone;
 layout (location = 5) in vec4 aweight;
 
-uniform mat4 view;
-uniform mat4 projection;
 uniform mat4 model;
-
 uniform mat4 bones[100];
+
+layout(std430, binding = 8 ) buffer worldViewBuffer {
+	mat4 projection;
+	mat4 view;
+};
 
 out vec2 vtex;
 out vec3 vnorm;
