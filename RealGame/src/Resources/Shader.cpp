@@ -143,14 +143,15 @@ ShaderArg* ShaderFindArg( Shader* shader, const char* name ) {
 }
 
 #define CHECKARG() if ( !arg ) { \
-	LOG_WARNING( LGS_RENDERER, "Uniform %s can not be found\n", name ); \
 	return; \
+	LOG_WARNING( LGS_RENDERER, "Uniform %s can not be found\n", name ); \
 }
 
 #define CHECKSHADER() if ( renderer->currentShaderID != shader->id ) { \
-	LOG_WARNING( LGS_RENDERER, "Setting Uniform %s of a non active shader\n", name ); \
 	return; \
+	LOG_WARNING( LGS_RENDERER, "Setting Uniform %s of a non active shader\n", name ); \
 }
+
 
 void ShaderSetMat4( Renderer* renderer, Shader* shader, const char* name, Mat4 mat ){
 	ShaderArg* arg = ShaderFindArg( shader, name );

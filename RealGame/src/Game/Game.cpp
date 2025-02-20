@@ -1,10 +1,12 @@
 #include "def.h"
 #include "game.h"
 #include "renderer/DebugRenderer.h"
+#include "Renderer/Renderer.h"
 
 void LoadTrigger( Parser* parser );
 void LoadSpawner( Parser* parser );
 void LoadSpawnZone( Parser* parser );
+void LoadLight( Parser* parser );
 
 Vec3 StringToVec3( const char* value, bool fix ) {
 	Vec3 v(0);
@@ -120,6 +122,9 @@ void GameLoadEntities( const char* path ) {
 		}
 		else if( !strcmp( className, "spawn_zone" ) ) {
 			LoadSpawnZone(&parser);
+		}
+		else if( !strcmp( className, "light" ) ) {
+			LoadLight(&parser);
 		}
 
 
@@ -288,4 +293,60 @@ void LoadSpawnZone( Parser* parser ) {
 	if( spawner->name[0] == '\0' ) {
 		LOG_WARNING( LGS_GAME, "Forgot to set spawner name" );
 	}
+}
+
+void LoadLight( Parser* parser ) {
+	//Hack
+	Light backup;
+
+	Light* light = NewLight();
+	light->type = LIGHT_POINT;
+	light->color = Vec3( 1 );
+	light->cutoff = glm::cos( glm::radians( 20.0f ) );
+	light->intensity = 1;
+	LightSetAttenuation( light, 20 );
+
+	if( !light ) {
+		light = &backup;
+		LOG_WARNING( LGS_GAME, "no more room for lights\n" );
+	}
+
+
+	while( 1 ) {
+		char key[MAX_NAME_LENGTH]{};
+		char value[MAX_NAME_LENGTH]{};
+
+		parser->ParseString( key, MAX_NAME_LENGTH );
+		parser->ParseString( value, MAX_NAME_LENGTH );
+
+
+		if( !strcmp( key, "origin" ) ) {
+			light->pos = StringToVec3( value, true );
+		}
+		else if( !strcmp( key, "type" ) ) {
+			light->type = ( float ) ( atoi( value ) );
+		}
+		//Should set float (0-1)
+		else if( !strcmp( key, "_color" ) ) {
+			light->color = StringToVec3( value, false );
+		}
+		else if( !strcmp( key, "attenuation" ) ) {
+			LightSetAttenuation( light, atoi( value ) );
+		}
+		else if( !strcmp( key, "intensity" ) ) {
+			light->intensity = atof( value );
+		}
+		else if( !strcmp( key, "direction" ) ) {
+			light->dir = StringToVec3( value, 0 );
+		}
+		else {
+			LOG_WARNING( LGS_GAME, "spawner bad key value %s : %s\n", key, value );
+		}
+
+		if( parser->GetCurrent().subType == '}' ) {
+			parser->ReadToken();
+			break;
+		}
+	}
+	LightSetAttenuation( light, 100 );
 }

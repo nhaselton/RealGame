@@ -43,10 +43,11 @@ void GLBufferAddDefaultAttribs( GLBuffer* buffer ) {
 	GLBufferAddAttribute( buffer, 0, 3, GL_FLOAT, sizeof( DrawVertex ), ( void* ) 0 );
 	GLBufferAddAttribute( buffer, 1, 3, GL_FLOAT, sizeof( DrawVertex ), ( void* ) offsetof( DrawVertex, normal ) );
 	GLBufferAddAttribute( buffer, 2, 2, GL_FLOAT, sizeof( DrawVertex ), ( void* ) offsetof( DrawVertex, tex ) );
+	GLBufferAddAttribute( buffer, 6, 2, GL_FLOAT, sizeof( DrawVertex ), ( void* ) offsetof( DrawVertex, lightmapTex ) );
 }
 
 void GLBufferAddDefaultSkinnedAttribs( GLBuffer* buffer ) {
 	GLBufferAddAttribute( buffer, 3, 4, GL_FLOAT, sizeof( DrawVertex ), ( void* ) offsetof( DrawVertex, tangents ) );
 	GLBufferAddAttributeI( buffer, 4, 4, GL_INT, sizeof( DrawVertex ), ( void* ) offsetof( DrawVertex, bones ) );
 	GLBufferAddAttribute( buffer, 5, 4, GL_FLOAT, sizeof( DrawVertex ), ( void* ) offsetof( DrawVertex, weights ) );
-}
+} 

@@ -163,8 +163,6 @@ void WizardShoot( Wizard* wizard ) {
 }
 
 void WizardReposition( Wizard* wizard ) {
-	WizardStartShoot( wizard );
-
 	EntityLookAtPlayer( wizard );
 
 	if( wizard->nextMelee <= gameTime 

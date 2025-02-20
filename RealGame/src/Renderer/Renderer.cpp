@@ -19,6 +19,7 @@ void RenderCreateShaders( Renderer* renderer ) {
 	renderer->shaders[SHADER_XYZRGB] = ShaderManagerCreateShader( &shaderManager, "res/shaders/xyzrgb/xyzrgb.vert", "res/shaders/xyzrgb/xyzrgb.frag" );
 	RenderSetShader( renderer, renderer->shaders[SHADER_XYZRGB] );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_XYZRGB], SHADER_ARG_VEC3, "color" );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_XYZRGB], SHADER_ARG_MAT4, "model" );
 
 	//XYZRGB Skinned
 	renderer->shaders[SHADER_XYZRGB_SKINNED] = ShaderManagerCreateShader( &shaderManager, "res/shaders/xyzrgbskinned/xyzrgb.vert", "res/shaders/xyzrgbskinned/xyzrgb.frag" );
@@ -36,7 +37,7 @@ void RenderCreateShaders( Renderer* renderer ) {
 
 
 	//Standrard Skinned
-	renderer->shaders[SHADER_STANDARD_SKINNED] = ShaderManagerCreateShader( &shaderManager, "res/shaders/standardskinned/standardskinned.vert", "res/shaders/standardskinned/standardskinned.frag" );
+	renderer->shaders[SHADER_STANDARD_SKINNED] = ShaderManagerCreateShader( &shaderManager, "res/shaders/standardskinned/standardskinned.vert", "res/shaders/standard/standard.frag" );
 	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD_SKINNED] );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_SKINNED], SHADER_ARG_INT, "albedo" );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD_SKINNED], "albedo", S2D_ALBEDO );
@@ -136,7 +137,8 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	renderer->crosshairTex = TextureManagerLoadTextureFromFile( "res/textures/crosshair.png" );
 	renderer->healthTex = TextureManagerLoadTextureFromFile( "res/textures/health.png" );
 
-
+	void* lightMemory = ScratchArenaAllocateZero( &globalArena, MAX_LIGHTS * sizeof( LightNode ));
+	CreatePoolArena( &renderer->lightArena, sizeof( LightNode ), MAX_LIGHTS, lightMemory, &globalArena, "Light");
 
 	glGenBuffers( 1, &renderer->particleSSBO2 );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleSSBO2 );
@@ -155,6 +157,12 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	glBufferData ( GL_SHADER_STORAGE_BUFFER, MAX_PARTICLES * sizeof ( u32 ), 0, GL_DYNAMIC_DRAW );
 	glBindBufferBase ( GL_SHADER_STORAGE_BUFFER, 5, renderer->particleSortSSBO );
 	glBindBuffer ( GL_SHADER_STORAGE_BUFFER, 0 );
+
+	glGenBuffers( 1, &renderer->worldViewSSBO );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->boneSSBO );
+	glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof( Mat4 ) * MAX_BONES * MAX_ENTITIES, 0, GL_DYNAMIC_DRAW );
+	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 7, renderer->boneSSBO );
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
 
 	glGenBuffers( 1, &renderer->worldViewSSBO );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->worldViewSSBO );
@@ -267,7 +275,7 @@ void RenderInitFont() {
 }
 
 void RenderStartFrame( Renderer* renderer ) {
-	if (KeyPressed( KEY_T ))
+	if (KeyPressed( KEY_ENTER ))
 		ReloadShaders();
 
 	//Clear frame info
@@ -371,7 +379,17 @@ void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture ) {
 	nglDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
 }
 
+void RenderGatherLights() {
+	int i = 0;
+	for( LightNode* light = renderer.lightHead; light != 0; light = light->next ) {
+		renderer.worldView.lights[i++] = light->light;
+	}
+	renderer.worldView.counts.x = i;
+}
+
 void RenderDrawFrame( Renderer* renderer, float dt ) {
+	RenderGatherLights();
+
 	//reset texture chains
 	for (int i = 0; i < renderer->levelInfo.numTextures; i++) {
 		renderer->levelInfo.textureChains[i].numTriangles = 0;
@@ -380,7 +398,8 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 	renderer->worldView.projection = renderer->projection;
 	renderer->worldView.view = renderer->camera.GetViewMatrix();
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->worldViewSSBO );
-	glBufferSubData( GL_SHADER_STORAGE_BUFFER, 0, sizeof(WorldView), &renderer->worldView);
+	int worldViewSize = offsetof( WorldView, lights );//this is size before light[]
+	glBufferSubData( GL_SHADER_STORAGE_BUFFER, 0, worldViewSize + sizeof(Light) * renderer->worldView.counts.x, &renderer->worldView);
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
 
 	RenderDrawTriggers();
@@ -389,8 +408,8 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 	RenderDrawAllProjectiles();
 	RenderDrawAllRigidBodies();
 
-	//DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );
-
+	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );
+	DebugDrawAABB( renderer->camera.Position, Vec3( 1 ), 0, Vec3( 1, 0, 0 ) );
 	//RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
 	//RenderDrawFontBatch();
 	RenderUpdateAndDrawParticles();
@@ -403,6 +422,8 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 	glDepthFunc( GL_LESS );
 
 	RenderDrawConsole();
+
+
 }
 
 void RenderDrawTriggers() {
@@ -510,8 +531,6 @@ void RenderUpdateAndDrawParticles() {
 	glDispatchCompute( totalEmit, 1, 1 ); //Creates particles
 	glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
-
-
 	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, renderer.particleSSBO2 );
 	RenderSetShader( &renderer, renderer.shaders[SHADER_COMP_UPDATE_PARTICLES2] );
 	ShaderSetFloat( &renderer, renderer.shaders[SHADER_COMP_UPDATE_PARTICLES2], "dt", dt );
@@ -527,7 +546,7 @@ void RenderUpdateAndDrawParticles() {
 	glBindTexture ( GL_TEXTURE_2D, renderer.particleAtlas->id );
 	RenderSetShader( &renderer, renderer.shaders[SHADER_PARTICLES2] );
 	//FOR NOW DO ALL PARTICLES
-	nglDrawArrays ( GL_TRIANGLES, 0, MAX_PARTICLES * 6 );
+	glDrawArrays ( GL_TRIANGLES, 0, MAX_PARTICLES * 6 );
 
 	glDisable ( GL_BLEND );
 
@@ -647,9 +666,9 @@ void RenderDrawEntity( Entity* entity ) {
 	RenderDrawModel( &renderer, entity->renderModel->model, trs, pose );
 }
 
-
 void RenderLoadLevel( Level* level, NFile* file ) {
 	TEMP_ARENA_SET;
+
 	LevelRenderInfo* li = &renderer.levelInfo;
 	li->numVertices = NFileReadU32( file );
 	li->numIndices = NFileReadU32( file );
@@ -657,6 +676,18 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	li->numBrushes = NFileReadU32( file );
 	li->numTextures = NFileReadU32( file );
 
+	Vec2* lights = ( Vec2* ) TEMP_ALLOC( sizeof( Vec2 ) * renderer.levelInfo.numVertices );
+	NFile lightmapTemp;
+	CreateNFile( &lightmapTemp, "c:/workspace/cpp/realgame/realgame/res/maps/lighting.lgt", "rb" );
+	NFileRead( &lightmapTemp, lights, sizeof( Vec2 ) * renderer.levelInfo.numVertices );
+
+	u32 numTexels = NFileReadU32( &lightmapTemp );
+	Vec3* texels = ( Vec3* ) TEMP_ALLOC( sizeof( Vec3 ) * numTexels );
+	NFileRead( &lightmapTemp, texels, sizeof( Vec3 ) * numTexels );
+	for( int i = 0; i < numTexels; i++ )
+		DebugDrawAABB( texels[i], Vec3( .25f ), 10000.0f );
+
+	NFileClose( &lightmapTemp );
 	//Load GPU Data
 
 	u32 vertexSize = li->numVertices * sizeof( DrawVertex );
@@ -668,7 +699,8 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	NFileRead( file, verticesTemp, vertexSize );
 	NFileRead( file, li->indices, indexSize );
 
-	Vec3 v0 = verticesTemp[0].pos;
+	for( int i = 0; i < renderer.levelInfo.numVertices; i++ )
+		verticesTemp[i].lightmapTex = lights[i];
 
 	CreateGLBuffer( &li->buffer, li->numVertices, li->numIndices, vertexSize, verticesTemp,
 		indexSize, li->indices, true, false );
@@ -701,14 +733,6 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 		loadedTextures[i] = TextureManagerLoadTextureFromFile( fullName );
 	}
 
-	//Assign faces their textures
-	for (int i = 0; i < li->numFaces; i++) {
-		//Index is stored in pointer loc
-		//Texture* texture = loadedTextures[li->faces[i].textureIndex];
-		//u32 index = (u32) li->faces[i].texture;
-		//li->faces[i].texture = loadedTextures[index];
-	}
-
 	u32* numTrianglesPerTexture = ( u32* )TEMP_ALLOC( li->numTextures * sizeof( u32 ) );
 	NFileRead( file, numTrianglesPerTexture, li->numTextures * sizeof( u32 ) );
 
@@ -720,11 +744,14 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 		chain->firstIndexOfTriangles = ( u32* )ScratchArenaAllocate( &level->arena, numTrianglesPerTexture[i] * sizeof( u32 ) );
 		chain->numTriangles = 0;
 	}
+
 }
 
 void RenderUnloadLevel() {
 	//TODO unload textures, could maybe point to new level information to see if keep or not?
 	memset( &renderer.levelInfo, 0, sizeof( renderer.levelInfo ) );
+	renderer.lightHead = 0;
+	PoolArenaFreeAll( &renderer.lightArena );
 }
 
 void RenderDrawHealthBar( Vec2 pos, Vec2 size, int hp, int maxHp ) {
@@ -734,7 +761,9 @@ void RenderDrawHealthBar( Vec2 pos, Vec2 size, int hp, int maxHp ) {
 	float healthPercent = ( float )hp / ( float )maxHp;
 	Vec2 greenBarSize( size.x * healthPercent, size.y );
 
-	RenderDrawQuadColored( pos, greenBarSize, Vec3( 0, 1, 0 ) );
+	if ( greenBarSize.x > 0 )
+		RenderDrawQuadColored( pos, greenBarSize, Vec3( 0, 1, 0 ) );
+
 	RenderDrawQuadColored( pos, size, Vec3( 1, 0, 0 ) );
 }
 
@@ -939,8 +968,19 @@ void nglActiveTexture( GLenum texture ) {
 	glActiveTexture( texture );
 }
 
+int sortRM( const void* a, const void* b ) {
+	RenderModel* ra = *( RenderModel** ) a;
+	RenderModel* rb = *( RenderModel** ) b;
+	
+	if( ra->model > rb->model )
+		return -1;
+	if( rb->model > ra->model )
+		return 1;
+
+	return 0;
+}
+
 void RenderDrawAllEntities() {
-#if 1
 	for (int i = 0; i < MAX_ENTITIES; i++) {
 		StoredEntity* stored = &entityManager.entities[i];
 
@@ -950,7 +990,6 @@ void RenderDrawAllEntities() {
 		if (stored->entity.renderModel != 0)
 			RenderDrawEntity( &stored->entity );
 	}
-#endif
 }
 
 void RenderDrawAllProjectiles() {
@@ -1038,7 +1077,6 @@ void RenderDrawMuzzleFlash( Texture* texture ) {
 	//	Vec3 rpos = entityManager.player->pos + Vec3()
 	//		+ revolver->pos;
 	Player* player = entityManager.player;
-
 	Mat4 t = glm::translate( Mat4( 1.0 ), revolver->pos + Vec3( revolver->renderModel->pose->pose[node->index].t - Vec3( .2f, 0.35, 0 ) ) );
 	Mat4 r = glm::toMat4( player->revolver.rotation );
 	Mat4 s = glm::scale( Mat4( 1.0 ), player->revolver.renderModel->scale );
@@ -1119,5 +1157,60 @@ void RenderDrawConsole() {
 	}
 
 	glEnable( GL_DEPTH_TEST );
+}
 
+Light* NewLight() {
+	LightNode* light = ( LightNode* ) PoolArenaAllocate( &renderer.lightArena );
+
+	if( !light ) {
+		LOG_WARNING( LGS_RENDERER, "CAN NOT ALLOCATE NEW LIGHT\n" );
+		return 0;
+	}
+
+	if( renderer.lightHead )
+		renderer.lightHead->prev = light;
+
+	light->next = renderer.lightHead;
+	light->prev = 0;
+	renderer.lightHead = light;
+
+	memset( &light->light, 0, sizeof( Light ) );
+	LightSetAttenuation( &light->light, 30 );
+	light->light.color = Vec3( 1 );
+	light->light.intensity = 1.0f;
+
+	return &light->light;
+}
+
+void RemoveLight( Light* light ) {
+	LightNode* node = ( LightNode* ) light;
+	if( !node->prev ) {
+		renderer.lightHead = node->next;
+		if( node->next )
+			node->next->prev = 0;
+	}
+	else {
+		node->prev->next = node->next;
+		if( node->next )
+			node->next->prev = node->prev;
+	}
+}
+
+void LightSetAttenuation( Light* light, int index ) {
+	switch( index ) {
+			case 7	:	light->attenuation = Vec3(1.0,	0.7	 ,1.8);break;
+			case 13 :	light->attenuation = Vec3(1.0,	0.35	,0.44);break;
+			case 20 :	light->attenuation = Vec3(1.0,	0.22	,0.20);break;
+			case 32 :	light->attenuation = Vec3(1.0,	0.14	,0.07);break;
+			case 50 :	light->attenuation = Vec3(1.0,	0.09	,0.032);break;
+			case 65 :	light->attenuation = Vec3(1.0,	0.07	,0.017);break;
+			case 100 :	light->attenuation = Vec3(1.0,	0.045	,0.0075);break;
+			case 160 :	light->attenuation = Vec3(1.0,	0.027	,0.0028);break;
+			case 200 :	light->attenuation = Vec3(1.0,	0.022	,0.0019);break;
+			case 325 :	light->attenuation = Vec3(1.0,	0.014	,0.0007);break;
+			case 600 :	light->attenuation = Vec3(1.0,	0.007	,0.0002);break;
+			case 3250 : light->attenuation = Vec3(1.0,	0.0014	,0.000007);break;
+			default:
+			light->attenuation = Vec3( 1.0, 0.22, 0.20 ); break;
+	}
 }

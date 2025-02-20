@@ -6,7 +6,7 @@ out vec3 TexCoords;
 //uniform mat4 projection;
 //uniform mat4 view;
 
-layout(std430, binding = 8 ) buffer worldViewBuffer {
+layout(std430, binding = 8 ) readonly buffer worldViewBuffer {
 	mat4 projection;
 	mat4 view;
 };

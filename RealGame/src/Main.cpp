@@ -21,39 +21,22 @@
 /*
 *	Milestone 3
 *	Renderer
-* 
-*	Dynamic Draw Pipeline
-*		Sort all dynamic entities by model
-*			Sort by skeletal/non skeletal first?
-*
-*		Put all skin matrices into 1 big buffer
-*		Upload buffer to GPU all at once
-* 
-*		Only swap state when needed
-*		Look into instancing/ how to tell model what skeletal array it needs
 *	
-* 
-*		Lighting
-*			Point
-*			Directional
-*			Spot
-* 
-*		Shadows
-*			Atlas?
-*			Filtering
-*		Decals
+*	Bound Lighting
+*		Probably use sphere to make it little amount of extra data
+*		If done on CPU with tiled rendering or something, then can try AABB
+*		Can probably just solve for 0 using attenuation * intensity
+*	
+*	Shadows
+*		Atlas?
+*			Filtering on an atlas
+*	Decals
 *	
 * 
 *	.Def
 *		Model
-* 
-* 
-	====================
-		Rendering
-	====================
-	Super basic directional Lighting
-		Small ambient + directional light
-		fix rotated skeletal meshes not lighting properly
+*		static Enemy who has default stats
+*		This makes it easy to copy and can read from .def file at start
 
 	=====================
 			VFX
@@ -163,7 +146,7 @@ int main() {
 
 	CreateStackArena( &tempArena, TEMP_MEMORY, ScratchArenaAllocate( &globalArena, TEMP_MEMORY ), &globalArena, "Temp Arena" );
 
-	WindowInit( &window, 1920, 1080, "Game for real this time guys" );
+	WindowInit( &window, 1280, 720, "Game for real this time guys" );
 	WindowAddKeySubscription( &window, &console.sub );
 
 	CreateModelManager( &modelManager,
@@ -211,7 +194,7 @@ int main() {
 	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
-	LoadLevel( &level, "res/maps/demo.cum" );
+	LoadLevel( &level, "res/maps/lighting.cum" );
 	Timer timer;
 
 	Player* player = (Player*) entityManager.player;
@@ -223,7 +206,7 @@ int main() {
 	Wizard::model->animations[WIZARD_ANIM_RUN]->looping = true;
 
 	PrintAllocators( &globalArena );
-	WindowSetVsync( &window, 0 );
+	WindowSetVsync( &window, 1 );
 
 	bool start = true;
 
@@ -232,7 +215,11 @@ int main() {
 	AudioSource* source = NewAudioSource();
 	alSourcef( source->alSourceIndex, AL_GAIN, .25f );
 
+	//RenderModel sponza;
+	//sponza.model = ModelManagerAllocate( &modelManager, "DevAssets/Models/sponza.glb" );
+
 	bool triggered = false;
+
 	while( !WindowShouldClose( &window ) ) {
 		player = entityManager.player;
 		//PROFILE( "Frame" );
@@ -261,6 +248,7 @@ int main() {
 				glfwSetInputMode( window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL );
 			}
 		}
+
 
 		float dir[6];
 		dir[0] = renderer.camera.Front.x;
@@ -312,12 +300,15 @@ int main() {
 			EntityManagerCleanUp();
 			AnimateEntities();
 		}
+
+
 		char buffer[2048]{};
 		sprintf_s( buffer, 2048, "Player pos: %.2f %.2f %.2f\n", player->pos.x, player->pos.y, player->pos.z );
 		RenderDrawText( Vec2( 0, 360 ), 16, buffer );
 
 		renderer.camera = player->camera;
 		RenderStartFrame( &renderer );
+		//RenderDrawModel( &renderer, sponza.model );
 		RenderDrawFrame( &renderer, dt );
 
 		{

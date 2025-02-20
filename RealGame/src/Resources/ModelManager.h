@@ -27,6 +27,7 @@ struct DrawVertex {
 	Vec3 pos;
 	Vec3 normal;
 	Vec2 tex;
+	Vec2 lightmapTex;
 	Vec4 tangents;
 	IVec4 bones;
 	Vec4 weights;

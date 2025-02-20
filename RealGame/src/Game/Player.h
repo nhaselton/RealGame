@@ -37,6 +37,8 @@ public:
 
 	static Sound revolverFireSound;
 	static Sound revolverReloadSound;
+	struct Light* light;
+	float lightStart;
 };
 
 

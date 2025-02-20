@@ -79,3 +79,66 @@
 "boundsmin" "-20.50 -0.00 86.50"
 "boundsmax" "6.00 12.50 94.00"
 }
+{
+"classname" "light"
+"origin" "356 -12 260"
+"_color" "1 1 1"
+"attenuation" "7"
+}
+// entity 14
+{
+"classname" "light"
+"origin" "60 1052 660"
+"_color" "1 1 1"
+"attenuation" "100"
+}
+// entity 15
+{
+"classname" "light"
+"origin" "716 4580 964"
+"intensity" "20"
+"attenuation" "325"
+}
+// entity 16
+{
+"classname" "light"
+"origin" "716 7412 964"
+"intensity" "20"
+"attenuation" "325"
+}
+// entity 17
+{
+"classname" "light"
+"origin" "788 1468 692"
+"_color" "1 1 1"
+"type" "3"
+"intensity" "2"
+"direction" "0 -1 0"
+}
+// entity 18
+{
+"classname" "light"
+"origin" "788 1308 276"
+"_color" "1 1 1"
+"type" "2"
+"intensity" "2"
+"attenuation" "65"
+}
+// entity 19
+{
+"classname" "light"
+"origin" "-428 1308 276"
+"_color" "1 1 1"
+"type" "2"
+"intensity" "2"
+"attenuation" "65"
+}
+// entity 20
+{
+"classname" "light"
+"origin" "-428 1468 692"
+"_color" "1 1 1"
+"type" "3"
+"intensity" "2"
+"direction" "0 -1 0"
+}

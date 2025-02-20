@@ -3,6 +3,7 @@
 #include "EntityManager.h"
 #include "Physics\Physics.h"
 #include "Resources/ModelManager.h"
+#include "Renderer/Renderer.h"
 #include "Resources/SoundManager.h"
 #include "AL/al.h"
 
@@ -61,13 +62,15 @@ Player* CreatePlayer( Vec3 pos ) {
 	Mat4 revolverScale = glm::scale( Mat4( 1.0 ), Vec3( .25f ) );
 	Mat4 rot = glm::toMat4( glm::rotate( Quat( 1, 0, 0, 0 ), glm::radians( 90.0f ), Vec3( 0, 1, 0 ) ) );
 
+	player->noclip = true;
+
 	return player;
 }
 
 void UpdatePlayer( Entity* entity ) {
 	Player* player = ( Player* ) entity;
 	player->audioSource->pos = player->camera.Position;
-	
+
 	if( !window.cursorLocked ) {
 		float mx = 0, my = 0, speed = 15;
 		if ( KeyDown( KEY_LEFT ) ) mx -= 3;
@@ -120,6 +123,11 @@ void UpdatePlayer( Entity* entity ) {
 			TriggerTrigger(trigger);
 		}
 	}
+
+	if( player->light && ( player->lightStart + .2f < gameTime ) ) {
+		RemoveLight( player->light );
+		player->light = 0;
+	}
 }
 
 void RevolverUpdate( Player* player ) {
@@ -170,7 +178,18 @@ void RevolverUpdate( Player* player ) {
 		AudioSource* fire = CreateTempAudioSource( player->camera.Position, &Player::revolverFireSound );
 		if ( fire ) 
 			alSourcef( fire->alSourceIndex, AL_GAIN, .25 );
+		
+		player->lightStart = gameTime;
 
+		if( !player->light )
+			player->light = NewLight();
+		if( player->light ) {
+			player->light->pos = player->camera.Position + player->camera.Front;
+			player->light->color = Vec3( 1, .6, 0 );
+			player->light->intensity = 4.0f;
+			player->light->type = LIGHT_POINT;
+			LightSetAttenuation( player->light, 50 );
+		}
 
 		revolver->pos += Vec3( 0, .02, 0 );
 		revolver->rotation = glm::rotate( revolver->rotation, -.3f, Vec3( 0, 0, -1 ) );

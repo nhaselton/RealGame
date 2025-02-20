@@ -11,6 +11,7 @@
 #include <glm/gtx/norm.hpp> 
 
 BVHTree ConstructBVH( std::vector<NPBrush>& brushes );
+void ConstructLightmaps( std::vector<NPFace>& faces, std::vector<BrushVertex&> vertices );
 
 static inline bool ThreePlaneIntersection( DPlane* a, DPlane* b, DPlane* c, dVec3* out ) {
 	double	denom;
@@ -374,6 +375,11 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 			parser->ParseVec( &face.texV[0], 4, true );
 			parser->ParseVec( &face.info[0], 3, false );
 
+			if( fixNormals ) {
+				face.texU = Vec4( face.texU.x, -face.texU.z, -face.texU.y, face.texU.w );
+				face.texV = Vec4( face.texV.x, -face.texV.z, -face.texV.y, face.texV.w );
+			}
+
 			brush.numFaces++;
 			faces.push_back( face );
 
@@ -422,7 +428,8 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 					DBrushVertex vertex;
 					vertex.pos = out;
 
-					out = Vec3 ( -out.x, out.z, out.y ) / (float)scale;
+					if ( fixNormals )
+						out /= -scale;
 
 					Vec2 texSize = textures[face->textureIndex].size;
 					
@@ -431,16 +438,20 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 					double u = ( glm::dot( dVec3( face->texU ), out ) ) / ( float ) texSize.x;
 					u /= face->info.z;
 					u += face->texU.w / ( float ) texSize.x;
+					//u = -u;
 
 					double v = ( glm::dot( dVec3( face->texV ), out ) ) / ( float ) texSize.y;
 					v /= face->info.y;
 					v += face->texV.w / ( float ) texSize.y;
+					//v = -v;
 
 					//u /= scale;
 					//v /= scale;
 
-					vertex.uv = Vec2( u, v );
+					vertex.uv = Vec2( u, v ); 
 					vertex.normal = face->n;
+					//lightmap UV does not scale with texture size, offset, etc.
+					vertex.lightmapUV = Vec2( glm::dot( dVec3( face->texU ), out ), glm::dot( dVec3( face->texV ), out ) );
 					vertices.push_back( vertex );
 
 					face->numVertices++;
@@ -448,6 +459,8 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 				}
 			}
 		}
+		if( brush->numVertices < 3 )
+			printf( "Bad brush only %d vertices", brush->numVertices );
 	}
 
 	// ======
@@ -655,7 +668,6 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	//=======================
 	u32* numTrianglesPerTexture = ( u32* ) malloc( textures.size() * sizeof( u32 ) );
 	memset( numTrianglesPerTexture, 0, textures.size() * sizeof( u32 ) );
-
 	RenderBrush* rBrushes = ( RenderBrush* ) malloc( brushes.size() * sizeof( RenderBrush ) );
 	for ( int i = 0; i < brushes.size(); i++ ) {
 		RenderBrush* brush = &rBrushes[i];
@@ -684,6 +696,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		drawVertices[i].pos = vertices[i].pos;
 		drawVertices[i].normal = vertices[i].normal;
 		drawVertices[i].tex = vertices[i].uv;
+		drawVertices[i].lightmapTex = vertices[i].lightmapUV;
 	}
 
 	u32 numVertices = vertices.size();
@@ -691,27 +704,6 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	u32 numFaces = faces.size();
 	u32 numBrushes = brushes.size();
 	u32 numTextures = textures.size();
-
-
-
-	FILE* out = 0;
-	fopen_s( &out, output, "wb" );
-
-	fwrite( &numVertices, sizeof( u32 ), 1, out );
-	fwrite( &numIndices, sizeof( u32 ), 1, out );
-	fwrite( &numFaces, sizeof( u32 ), 1, out );
-	fwrite( &numBrushes, sizeof( u32 ), 1, out );
-	fwrite( &numTextures, sizeof( u32 ), 1, out );
-
-	fwrite( drawVertices, sizeof( DrawVertex ) * vertices.size(), 1, out );
-	fwrite( indices.data(), sizeof( u32 ), indices.size(), out );
-	fwrite( rfaces, sizeof( RenderBrushFace ) * faces.size(), 1, out );
-	fwrite( rBrushes, sizeof( RenderBrush ) * brushes.size(), 1, out );
-
-	//Write out all textures
-	for ( int i = 0; i < numTextures; i++ )
-		fwrite( textures[i].name, NAME_BUF_LEN, 1, out );
-	fwrite( numTrianglesPerTexture, textures.size() * sizeof( u32 ), 1, out );
 
 	//=======================
 	//      INIT PHYSICS 
@@ -756,7 +748,27 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		polygonOffset += outBrushes[i].numPolygons;
 	}
 
+
 	BVHTree tree = ConstructBVH( brushes );
+
+	FILE* out = 0;
+	fopen_s( &out, output, "wb" );
+
+	fwrite( &numVertices, sizeof( u32 ), 1, out );
+	fwrite( &numIndices, sizeof( u32 ), 1, out );
+	fwrite( &numFaces, sizeof( u32 ), 1, out );
+	fwrite( &numBrushes, sizeof( u32 ), 1, out );
+	fwrite( &numTextures, sizeof( u32 ), 1, out );
+
+	fwrite( drawVertices, sizeof( DrawVertex )* vertices.size(), 1, out );
+	fwrite( indices.data(), sizeof( u32 ), indices.size(), out );
+	fwrite( rfaces, sizeof( RenderBrushFace )* faces.size(), 1, out );
+	fwrite( rBrushes, sizeof( RenderBrush )* brushes.size(), 1, out );
+
+	//Write out all textures
+	for( int i = 0; i < numTextures; i++ )
+		fwrite( textures[i].name, NAME_BUF_LEN, 1, out );
+	fwrite( numTrianglesPerTexture, textures.size() * sizeof( u32 ), 1, out );
 
 	fwrite( &numBrushes, sizeof( u32 ), 1, out );
 	fwrite( &numFaces, sizeof( u32 ), 1, out );
@@ -781,6 +793,40 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	printf( "Num Indices: %u\n", numIndices );
 	printf( "BVHNodes %u\n", tree.numNodes );
 
+
+	char newOut[128]{};
+	int len = strlen( output );
+	memcpy( newOut, output, len );
+	newOut[len - 3] = 'l';
+	newOut[len - 2] = 'm';
+	newOut[len - 1] = 'o';
+
+	LightMapFace* lmf = ( LightMapFace* ) malloc( sizeof( LightMapFace ) * numFaces );
+	for( int i = 0; i < numFaces; i++ ) {
+		lmf[i].firstVertex = faces[i].firstVertex;
+		lmf[i].firstIndex = faces[i].firstIndex;
+		lmf[i].numVertices= faces[i].numVertices;
+		lmf[i].numIndices = faces[i].numIndices;
+		lmf[i].normal = faces[i].n;
+		lmf[i].u = Vec3( faces[i].texU );
+		lmf[i].v = Vec3( faces[i].texV );
+	}
+
+
+	FILE* lightOut = 0;
+	fopen_s( &lightOut, newOut, "wb" );
+	fwrite( &numVertices, 4, 1, lightOut );
+	fwrite( &numFaces, 4, 1, lightOut );
+	fwrite( &numVertices, 4, 1, lightOut );
+	fwrite( &numIndices, 4, 1, lightOut );
+	fwrite( lmf, numFaces * sizeof( LightMapFace ), 1, lightOut );
+	fwrite( drawVertices, numVertices * sizeof(DrawVertex), 1, lightOut);
+	fwrite( indices.data(), 4 * numIndices, 1, lightOut );
+	fclose( lightOut );
+
+	free( numTrianglesPerTexture );
+	free( rfaces );
+	free( drawVertices );
 	return true;
 }
 
@@ -793,8 +839,8 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 * u32 NumBrushes
 * u32 NumTextures
 * DrawVertex[NumVertices]
-* RenderBrushFace[NumFaces]
 * u32 indices[NumIndices]
+* RenderBrushFace[NumFaces]
 * char[MAX_NAME_LEN+4] Textures[NumTextures]
 * u32[NumTextures] NumTrianglesPerTexture
 * 
@@ -928,3 +974,7 @@ BVHTree ConstructBVH( std::vector<NPBrush>& brushes ) {
 	free( workingSet );
 	return tree;
 }
+
+//void ConstructLightmaps( std::vector<NPFace>& faces, std::vector<BrushVertex&> vertices ) {
+//
+//}

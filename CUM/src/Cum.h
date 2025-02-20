@@ -5,10 +5,32 @@ struct DPlane {
 	dVec3 n;
 	double d;
 };
+
+struct LightMapFace {
+	Vec3 normal;
+	Vec3 u;
+	Vec3 v;
+	int firstVertex;
+	int numVertices;
+	int firstIndex;
+	int numIndices;
+};
+
+struct LightmapInfo {
+	u32 numFaces;
+	u32 numVertices;
+	u32 numIndices;
+
+	struct LightMapFace* faces;
+	struct DrawVertex* drawVertices;
+	u32* indices;
+};
+
 struct DBrushVertex {
 	dVec3 pos;
 	dVec3 normal;
 	dVec2 uv;
+	dVec2 lightmapUV;
 };
 
 struct NPFace {
@@ -43,4 +65,3 @@ extern double scale;
 extern bool fixNormals;
 bool Compile( const char* input, const char* output);
 bool LoadWorldSpawn( class Parser* parser, const char* output );
-

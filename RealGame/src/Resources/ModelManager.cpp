@@ -123,7 +123,6 @@ static inline void ReadSampler( JSON& baseJson, JSON& animJson, Sampler* sampler
 
 Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 	TEMP_ARENA_SET
-
 	NFile file;
 	if ( !CreateNFile( &file, path, "rb" ) ) {
 		LOG_ERROR( LGS_IO, "Could not open model %s\n", path );

@@ -11,6 +11,15 @@
 #define MAX_PARTICLES 32768 //Must be power of 2
 #define MAX_PARTICLE_EMITTERS 64
 #define PARTICLE_SIZE_GPU 80 //pos,vel,lifetime,active?
+#define MAX_SKINNED_VERTICES 1048576
+#define MAX_SKINNED_VERTEX_SIZE 
+
+struct SkinnedVertex {
+	Vec4 pos;
+	Vec4 normal;
+	Vec4 tangent;
+	Vec4 tex;
+};
 
 struct FontVert {
 	Vec2 pos;
@@ -22,6 +31,32 @@ struct Skybox {
 	Texture faces[6];
 	GLBuffer buffer;
 };
+
+enum lightTypes {
+	LIGHT_NONE,
+	LIGHT_DIRECTIONAL,
+	LIGHT_POINT,
+	LIGHT_SPOT
+};
+
+struct Light {
+	Vec3 pos;
+	float cutoff;
+	Vec3 dir;
+	float type;
+	Vec3 color;
+	float intensity;
+	//Constant Linear Quadratic
+	Vec3 attenuation;
+	float pad2;
+};
+
+struct LightNode {
+	Light light;
+	LightNode* next;
+	LightNode* prev;
+};
+
 
 enum builtInShaderList {
 	SHADER_XYZRGB,
@@ -182,11 +217,17 @@ struct FrameInfo {
 struct WorldView {
 	Mat4 projection;
 	Mat4 view;
+
+	IVec4 counts;//.x = light
+	Light lights[MAX_LIGHTS];
 };
 
 class Renderer {
 public:
 	ScratchArena arena;
+
+	PoolArena lightArena;//Light Node
+	LightNode* lightHead;
 
 	struct Shader* shaders[SHADER_LAST];
 
@@ -226,6 +267,7 @@ public:
 	u32 particleSSBO2;
 	u32 particleEmitterSSBO2;
 	u32 particleSortSSBO;
+	u32 boneSSBO;
 
 
 	struct Emitter2 {
@@ -301,3 +343,7 @@ void nglBindTexture( GLenum target, GLuint texture );
 void nglBindBuffer( GLenum target, GLuint buffer );
 void nglBufferSubData( GLenum target, GLintptr offset, GLsizeiptr size, const void* data );
 void nglActiveTexture( GLenum texture );
+
+Light* NewLight();
+void RemoveLight( Light* light );
+void LightSetAttenuation( Light* light, int index );

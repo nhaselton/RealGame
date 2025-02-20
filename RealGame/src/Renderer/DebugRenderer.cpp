@@ -158,6 +158,21 @@ void AddLineToBatch( DebugPrim* prim , LineBatch* batch = nullptr) {
 }
 
 void DebugRendererFrame( Mat4 view, Mat4 projection, float dt ) {
+#if 0
+	{
+	DebugPrim* prim = drenderer.prims;
+	while( prim != nullptr ) {
+		DebugPrim* next = prim->next;
+		RemovePrim( prim );
+		prim = next;
+		continue;
+	}
+	if( !prim )
+		return;
+	prim = prim->next;
+	return;
+	}
+#endif
 	RenderSetShader( &renderer,renderer.shaders[SHADER_LINE_SHADER]);
 	ShaderSetMat4( &renderer, renderer.shaders[SHADER_LINE_SHADER], "view", view );
 	ShaderSetMat4( &renderer, renderer.shaders[SHADER_LINE_SHADER], "projection", projection );

@@ -10,22 +10,42 @@ layout (location = 5) in vec4 aweight;
 uniform mat4 model;
 uniform mat4 bones[100];
 
-layout(std430, binding = 8 ) buffer worldViewBuffer {
+struct Light{
+	vec3 pos;
+	float cutoff;
+	vec3 dir;
+	float type;
+	vec3 color;
+	float intensity;
+	//Constant Linear Quadratic
+	vec4 attenuation;
+};
+
+layout(std430, binding = 8 ) readonly buffer worldViewBuffer {
 	mat4 projection;
 	mat4 view;
+	ivec4 counts;
+	Light lights[];
 };
 
 out vec2 vtex;
 out vec3 vnorm;
+out vec3 vpos;
 
 void main(){
 	vtex = atex;
-    vnorm = anorm;
+
     mat4 skinMatrix =
         aweight.x * bones[abone.x] +
         aweight.y * bones[abone.y] +
         aweight.z * bones[abone.z] +
         aweight.w * bones[abone.w];
+
+	vec4 normalL = model * skinMatrix * vec4(anorm,0.0);
+	vnorm = normalize(normalL.xyz);
+
+	vec4 skinPos = model * skinMatrix * vec4(apos,1.0);
+	vpos = skinPos.xyz;
 
 	gl_Position =  projection * view * model * skinMatrix * vec4(apos,1.0);
 }		

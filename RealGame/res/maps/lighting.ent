@@ -1,4 +1,30 @@
 {
 "classname" "info_player_start"
 "origin" "665 615 67"
+}
+// entity 2
+{
+"classname" "light"
+"origin" "156 492 468"
+"type" "2"
+"_color" "1 1 0"
+}
+// entity 3
+{
+"classname" "light"
+"origin" "572 628 236"
+"type" "2"
+"_color" "1 0 0.0156863"
+}
+// entity 4
+{
+"classname" "light"
+"origin" "628 -340 260"
+"type" "2"
+"_color" "0 1 0.117647"
+}
+// entity 5
+{
+"classname" "info_wizard_start"
+"origin" "135 -473 83"
 }

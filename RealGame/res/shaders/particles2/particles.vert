@@ -18,7 +18,7 @@ layout(std430, binding = 5 ) buffer sortedBuffer {
 };
 
 uniform mat4 model;
-layout(std430, binding = 8 ) buffer worldViewBuffer {
+layout(std430, binding = 8 ) readonly buffer worldViewBuffer {
 	mat4 projection;
 	mat4 view;
 };
