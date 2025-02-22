@@ -23,13 +23,9 @@
 *	Renderer
 *	
 *	Lightmap
-*		Fix raycast
-*			Remove all in map except for single wall & lightmap.
-*			get the 1 face that should be able to see it
-*			Draw the rays
-*			Debug properly
-*		UVs wrong
-* 
+		Lightmap looks pretty good right now
+
+		* 
 *	Bound Lighting
 *		Probably use sphere to make it little amount of extra data
 *		If done on CPU with tiled rendering or something, then can try AABB
@@ -214,7 +210,7 @@ int main() {
 	Wizard::model->animations[WIZARD_ANIM_RUN]->looping = true;
 
 	PrintAllocators( &globalArena );
-	WindowSetVsync( &window, 1 );
+	WindowSetVsync( &window, 0 );
 
 	bool start = true;
 

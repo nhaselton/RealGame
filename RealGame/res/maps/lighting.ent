@@ -12,7 +12,7 @@
 // entity 3
 {
 "classname" "light"
-"origin" "156 492 468"
+"origin" "156 492 420"
 "type" "2"
 "_color" "1 1 0"
 }

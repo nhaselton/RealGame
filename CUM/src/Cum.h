@@ -18,13 +18,20 @@ struct LightMapFace {
 };
 
 struct LightmapInfo {
+	u32 numBrushes;
 	u32 numFaces;
 	u32 numVertices;
 	u32 numIndices;
 
+	u32* facesPerBrush;
 	struct LightMapFace* faces;
 	struct DrawVertex* drawVertices;
 	u32* indices;
+};
+
+struct LightMapBrush {
+	u32 firstFace;
+	u32 numFaces;
 };
 
 struct DBrushVertex {

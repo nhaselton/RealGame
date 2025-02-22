@@ -813,12 +813,20 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		lmf[i].v = Vec3( faces[i].texV );
 	}
 
+	//u32* facesPerBrush = ( u32* ) malloc( 4 * numBrushes );
+	LightMapBrush* lightMapBrushes = ( LightMapBrush* ) malloc( sizeof( LightMapBrush ) * numBrushes );
+	for( int i = 0; i < numBrushes; i++ ) {
+		lightMapBrushes[i].numFaces = brushes[i].numFaces;
+		lightMapBrushes[i].firstFace = brushes[i].firstPlane;
+	}
+
 	FILE* lightOut = 0;
 	fopen_s( &lightOut, newOut, "wb" );
+	fwrite( &numBrushes, 4, 1, lightOut );
 	fwrite( &numVertices, 4, 1, lightOut );
 	fwrite( &numFaces, 4, 1, lightOut );
-	fwrite( &numVertices, 4, 1, lightOut );
 	fwrite( &numIndices, 4, 1, lightOut );
+	fwrite( lightMapBrushes, numBrushes * sizeof( LightMapBrush ), 1, lightOut );
 	fwrite( lmf, numFaces * sizeof( LightMapFace ), 1, lightOut );
 	fwrite( drawVertices, numVertices * sizeof(DrawVertex), 1, lightOut);
 	fwrite( indices.data(), 4 * numIndices, 1, lightOut );
