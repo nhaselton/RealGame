@@ -33,6 +33,8 @@ void RenderCreateShaders( Renderer* renderer ) {
 	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD] );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_INT, "albedo" );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD], "albedo", S2D_ALBEDO );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_INT, "lightmap" );
+	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD], "lightmap", S2D_LIGHTMAP );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_MAT4, "model" );
 
 
@@ -409,7 +411,6 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 	RenderDrawAllRigidBodies();
 
 	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );
-	DebugDrawAABB( renderer->camera.Position, Vec3( 1 ), 0, Vec3( 1, 0, 0 ) );
 	//RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
 	//RenderDrawFontBatch();
 	RenderUpdateAndDrawParticles();
@@ -611,7 +612,7 @@ void RenderEndFrame( Renderer* renderer ) {
 	}
 
 	//Draw gun last (Will mess up post processing later on)
-	RenderDrawGun();
+	//RenderDrawGun();
 	RenderDrawFontBatch();
 }
 
@@ -682,11 +683,29 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	NFileRead( &lightmapTemp, lights, sizeof( Vec2 ) * renderer.levelInfo.numVertices );
 
 	u32 numTexels = NFileReadU32( &lightmapTemp );
-	Vec3* texels = ( Vec3* ) TEMP_ALLOC( sizeof( Vec3 ) * numTexels );
-	NFileRead( &lightmapTemp, texels, sizeof( Vec3 ) * numTexels );
-	for( int i = 0; i < numTexels; i++ )
-		DebugDrawAABB( texels[i], Vec3( .25f ), 10000.0f );
+	Vec4* texels = ( Vec4* ) TEMP_ALLOC( sizeof( Vec4 ) * numTexels );
+	NFileRead( &lightmapTemp, texels, sizeof( Vec4 ) * numTexels );
+	//for( int i = 0; i < numTexels; i++ )
+	//	DebugDrawAABB( texels[i], Vec3( 0.05f ), 10000.0f, texels[i].w == 1.0f ? GREEN : RED );
 
+	//DebugDrawAABB( Vec3( -2.97, 3.68, 0.95 ), Vec3( .25 ), 1000.0f, BLUE );
+
+	u8* lightMap = (u8*) TEMP_ALLOC( 512 * 512 * 4 );
+	NFileRead( &lightmapTemp, lightMap, 512 * 512 * 4 );
+
+	u32 lighttexid  = 0;
+	glGenTextures( 1, &lighttexid );
+	glBindTexture( GL_TEXTURE_2D, lighttexid );
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, lightMap );
+
+	glActiveTexture( GL_TEXTURE0 + S2D_LIGHTMAP );
+	glBindTexture( GL_TEXTURE_2D, lighttexid );
+	glActiveTexture( GL_TEXTURE0 );
 	NFileClose( &lightmapTemp );
 	//Load GPU Data
 

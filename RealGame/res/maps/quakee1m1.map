@@ -10461,3 +10461,8 @@
 ( 1040 2480 -144 ) ( 1040 2512 -144 ) ( 1040 2512 -248 ) prototype/jpg128_blue_1 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
 }
 }
+// entity 1
+{
+"classname" "info_player_start"
+"origin" "-9 -7 67"
+}

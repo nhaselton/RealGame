@@ -128,6 +128,7 @@ struct TextureChain {
 //These should always be bound to these values for consistency
 enum samplerList {
 	S2D_ALBEDO = 0,
+	S2D_LIGHTMAP = 14,
 	S3D_SKYBOX = 15,
 	S2D_LAST
 };
@@ -250,6 +251,7 @@ public:
 	Texture* blankTexture;
 	Texture* muzzleFlash;
 	Texture* particleAtlas;
+	Texture* lightmapTexture;
 
 	GLBuffer quadBuffer;
 	BitmapFont font;

@@ -22,6 +22,14 @@
 *	Milestone 3
 *	Renderer
 *	
+*	Lightmap
+*		Fix raycast
+*			Remove all in map except for single wall & lightmap.
+*			get the 1 face that should be able to see it
+*			Draw the rays
+*			Debug properly
+*		UVs wrong
+* 
 *	Bound Lighting
 *		Probably use sphere to make it little amount of extra data
 *		If done on CPU with tiled rendering or something, then can try AABB

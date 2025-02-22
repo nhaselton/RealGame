@@ -808,10 +808,10 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		lmf[i].numVertices= faces[i].numVertices;
 		lmf[i].numIndices = faces[i].numIndices;
 		lmf[i].normal = faces[i].n;
+		lmf[i].d = faces[i].d;
 		lmf[i].u = Vec3( faces[i].texU );
 		lmf[i].v = Vec3( faces[i].texV );
 	}
-
 
 	FILE* lightOut = 0;
 	fopen_s( &lightOut, newOut, "wb" );

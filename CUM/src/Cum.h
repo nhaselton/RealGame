@@ -8,6 +8,7 @@ struct DPlane {
 
 struct LightMapFace {
 	Vec3 normal;
+	float d;
 	Vec3 u;
 	Vec3 v;
 	int firstVertex;
