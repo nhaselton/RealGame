@@ -457,6 +457,7 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 		GLBufferAddDefaultAttribs( &mesh->buffer );
 		if ( model->skeleton != 0 )
 			GLBufferAddDefaultSkinnedAttribs( &mesh->buffer );
+		
 
 	}
 

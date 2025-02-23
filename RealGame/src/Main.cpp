@@ -22,10 +22,22 @@
 *	Milestone 3
 *	Renderer
 *	
-*	Lightmap
-		Lightmap looks pretty good right now
-
-		* 
+*	Lighting:
+*	Light:
+*		Type //Separate arrays? Can upload static once and dynamic per frame
+*			Static
+*			Dynamic
+*		Shape
+*			Point
+*			Spot
+*			Directional
+*		Shadows:
+*			Static
+*			All
+*			None
+* 
+* 
+*
 *	Bound Lighting
 *		Probably use sphere to make it little amount of extra data
 *		If done on CPU with tiled rendering or something, then can try AABB
@@ -198,7 +210,7 @@ int main() {
 	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
-	LoadLevel( &level, "res/maps/lighting.cum" );
+	LoadLevel( &level, "res/maps/demo.cum" );
 	Timer timer;
 
 	Player* player = (Player*) entityManager.player;

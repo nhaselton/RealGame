@@ -1,20 +1,15 @@
 {
-"classname" "info_player_start"
-"origin" "400 -32 56"
-}
-// entity 2
-{
 "classname" "spawner"
 "origin" "-424 1448 248"
 "targetname" "pillar1"
 }
-// entity 3
+// entity 2
 {
 "classname" "spawner"
 "origin" "744 1416 248"
 "targetname" "pillar2"
 }
-// entity 4
+// entity 3
 {
 "classname" "trigger_once"
 "target" "first"
@@ -50,13 +45,13 @@
 "origin" "584 2552 8"
 "targetname" "hallright"
 }
-// entity 9
+// entity 8
 {
 "classname" "spawner"
 "origin" "-120 2504 24"
 "targetname" "hallleft"
 }
-// entity 10
+// entity 9
 {
 "classname" "spawn_zone"
 "targetname" "hallback"
@@ -81,41 +76,44 @@
 }
 {
 "classname" "light"
-"origin" "356 -12 260"
+"origin" "356 -12 212"
 "_color" "1 1 1"
-"attenuation" "7"
+"attenuation" "32"
+"intensity" "2"
 }
-// entity 14
+// entity 13
 {
 "classname" "light"
 "origin" "60 1052 660"
 "_color" "1 1 1"
 "attenuation" "100"
+"intensity" "5"
 }
-// entity 15
+// entity 14
 {
 "classname" "light"
 "origin" "716 4580 964"
 "intensity" "20"
 "attenuation" "325"
 }
-// entity 16
+// entity 15
 {
 "classname" "light"
 "origin" "716 7412 964"
 "intensity" "20"
 "attenuation" "325"
 }
-// entity 17
+// entity 16
 {
 "classname" "light"
-"origin" "788 1468 692"
+"origin" "772 1452 692"
 "_color" "1 1 1"
-"type" "3"
+"type" "2"
 "intensity" "2"
 "direction" "0 -1 0"
+"radius" "0"
 }
-// entity 18
+// entity 17
 {
 "classname" "light"
 "origin" "788 1308 276"
@@ -124,7 +122,7 @@
 "intensity" "2"
 "attenuation" "65"
 }
-// entity 19
+// entity 18
 {
 "classname" "light"
 "origin" "-428 1308 276"
@@ -133,12 +131,32 @@
 "intensity" "2"
 "attenuation" "65"
 }
-// entity 20
+// entity 19
 {
 "classname" "light"
 "origin" "-428 1468 692"
 "_color" "1 1 1"
-"type" "3"
-"intensity" "2"
+"type" "2"
+"intensity" "1"
 "direction" "0 -1 0"
+}
+// entity 20
+{
+"classname" "info_player_start"
+"origin" "649 3929 51"
+}
+// entity 21
+{
+"classname" "light"
+"origin" "52 2732 324"
+}
+// entity 22
+{
+"classname" "light"
+"origin" "-956 3180 324"
+}
+// entity 23
+{
+"classname" "light"
+"origin" "1308 3244 4"
 }

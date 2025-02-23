@@ -49,7 +49,7 @@ vec3 Spot( Light light, vec3 pos, vec3 norm ){
 
 	if ( theta < light.cutoff ){
 		return vec3(0);
-	}
+	} 
 
 	vec3 color = (max(dot(dir, norm)* light.intensity,0) * light.color.xyz);
 	color *= Attenuation( length(light.pos.xyz - pos), light.attenuation.xyz );
@@ -58,7 +58,7 @@ vec3 Spot( Light light, vec3 pos, vec3 norm ){
 
 void main() {
 	vec3 rawcolor = texture(albedo, vtex).rgb;
-	vec3 ambient = vec3(0.0);
+	vec3 ambient = vec3(0.1);
 	vec3 diffuse = vec3(0.0);
 
 	for ( int i = 0; i < counts.x; i++)	{
@@ -73,7 +73,8 @@ void main() {
 	vec3 color = (diffuse + ambient) * rawcolor;
 
 	vec3 lightmapColor = texture(lightmap,vlightTex).rgb;
-	color = rawcolor * diffuse;
-	color = lightmapColor * rawcolor;	
+	color = lightmapColor ;	
+	//color = rawcolor * diffuse;
+	color = lightmapColor * rawcolor;
 	FragColor = vec4(color,1.0);
 }

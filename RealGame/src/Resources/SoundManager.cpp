@@ -133,6 +133,7 @@ AudioSource* NewAudioSource () {
 }
 
 void PlaySound( AudioSource* source, Sound* sound ) {
+    return;
     if( source == &soundManager.deadSource )
         return;
 
