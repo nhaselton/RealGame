@@ -73,8 +73,8 @@ void main() {
 	vec3 color = (diffuse + ambient) * rawcolor;
 
 	vec3 lightmapColor = texture(lightmap,vlightTex).rgb;
-	color = lightmapColor ;	
+	color = lightmapColor;	
 	//color = rawcolor * diffuse;
-	color = lightmapColor * rawcolor;
+	color = lightmapColor * rawcolor ;
 	FragColor = vec4(color,1.0);
 }
