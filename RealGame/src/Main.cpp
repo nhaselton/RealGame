@@ -22,18 +22,17 @@
 *	Milestone 3
 * 
 *	Light Maps:
-*		Get Skeletal Meshes working again
-*			StaticVertex
-*			DynamicVertex
+*		Intergrate into current VS projection
+*			Cum 
+*				Input: map.map
+*				Output: map.cum + light.cum
+*			Light:
+*				Input: map.cum + light.cum
+*				Output: map.cum
 * 
-*		Different Light Types
-*		Fool around with getting triangle collisions working?
-*			if so can send to GPU if times get too long
-*		
-*
+*	Shader includes
 * 
 *		Bake light probes
-* 
 * 
 *	Renderer
 *	Lighting:

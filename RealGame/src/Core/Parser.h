@@ -114,4 +114,4 @@ public:
 	u32 line;
 	u32 lineStart;
 };
-
+Vec3 StringToVec3( const char* value, bool fix );

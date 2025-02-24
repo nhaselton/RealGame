@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RealGame", "RealGame\RealGa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUM", "CUM\CUM.vcxproj", "{85529C0D-DFB9-45C6-8F85-7C72B61C5231}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Light", "Light\Light.vcxproj", "{2B073652-83D1-4CB7-8711-D29CA703D040}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{85529C0D-DFB9-45C6-8F85-7C72B61C5231}.Release|x64.Build.0 = Release|x64
 		{85529C0D-DFB9-45C6-8F85-7C72B61C5231}.Release|x86.ActiveCfg = Release|Win32
 		{85529C0D-DFB9-45C6-8F85-7C72B61C5231}.Release|x86.Build.0 = Release|Win32
+		{2B073652-83D1-4CB7-8711-D29CA703D040}.Debug|x64.ActiveCfg = Debug|x64
+		{2B073652-83D1-4CB7-8711-D29CA703D040}.Debug|x64.Build.0 = Debug|x64
+		{2B073652-83D1-4CB7-8711-D29CA703D040}.Debug|x86.ActiveCfg = Debug|Win32
+		{2B073652-83D1-4CB7-8711-D29CA703D040}.Debug|x86.Build.0 = Debug|Win32
+		{2B073652-83D1-4CB7-8711-D29CA703D040}.Release|x64.ActiveCfg = Release|x64
+		{2B073652-83D1-4CB7-8711-D29CA703D040}.Release|x64.Build.0 = Release|x64
+		{2B073652-83D1-4CB7-8711-D29CA703D040}.Release|x86.ActiveCfg = Release|Win32
+		{2B073652-83D1-4CB7-8711-D29CA703D040}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

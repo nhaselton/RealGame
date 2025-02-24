@@ -356,4 +356,23 @@ void nglActiveTexture( GLenum texture );
 
 Light* NewLight();
 void RemoveLight( Light* light );
-void LightSetAttenuation( Light* light, int index );
+
+//Keep this inline in header file for the lightmapper
+inline void LightSetAttenuation( Light* light, int index ) {
+	switch( index ) {
+		case 7:	light->attenuation = Vec3( 1.0, 0.7, 1.8 ); break;
+		case 13:	light->attenuation = Vec3( 1.0, 0.35, 0.44 ); break;
+		case 20:	light->attenuation = Vec3( 1.0, 0.22, 0.20 ); break;
+		case 32:	light->attenuation = Vec3( 1.0, 0.14, 0.07 ); break;
+		case 50:	light->attenuation = Vec3( 1.0, 0.09, 0.032 ); break;
+		case 65:	light->attenuation = Vec3( 1.0, 0.07, 0.017 ); break;
+		case 100:	light->attenuation = Vec3( 1.0, 0.045, 0.0075 ); break;
+		case 160:	light->attenuation = Vec3( 1.0, 0.027, 0.0028 ); break;
+		case 200:	light->attenuation = Vec3( 1.0, 0.022, 0.0019 ); break;
+		case 325:	light->attenuation = Vec3( 1.0, 0.014, 0.0007 ); break;
+		case 600:	light->attenuation = Vec3( 1.0, 0.007, 0.0002 ); break;
+		case 3250: light->attenuation = Vec3( 1.0, 0.0014, 0.000007 ); break;
+		default:
+		light->attenuation = Vec3( 1.0, 0.22, 0.20 ); break;
+	}
+}

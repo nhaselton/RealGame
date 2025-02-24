@@ -471,3 +471,27 @@ Token Parser::PeekNext() {
 	*this = parser2;
 	return t;
 }
+
+Vec3 StringToVec3( const char* value, bool fix ) {
+	Vec3 v( 0 );
+	int len = strlen( value );
+
+	//Offset into string
+	int o = 0;
+	for( int i = 0; i < 3; i++ ) {
+		//Start of this number
+		int start = o;
+		while( value[o] != ' ' && o != len ) {
+			o++;
+		}
+		//Need to put it in a buffer first because you cant atof on part of a string
+		char buffer[32]{};
+		memcpy( buffer, value + start, o - start );
+		v[i] = atof( buffer );
+		//move past space
+		o++;
+	}
+	if( fix )
+		v = Vec3( -v.x, v.z, v.y ) / 32.0f;
+	return v;
+}
