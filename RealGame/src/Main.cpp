@@ -22,6 +22,10 @@
 *	Milestone 3
 * 
 *	Light Maps:
+*      if( adjusted && !Trace( point, world.lights[0].pos, f, false ) )
+         point = startPoint;
+
+* 
 *		Intergrate into current VS projection
 *			Cum 
 *				Input: map.map

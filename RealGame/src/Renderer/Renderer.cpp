@@ -680,12 +680,11 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	Vec2* lights = ( Vec2* ) TEMP_ALLOC( sizeof( Vec2 ) * renderer.levelInfo.numVertices );
 	NFile lightmapTemp;
 	CreateNFile( &lightmapTemp, "c:/workspace/cpp/realgame/realgame/res/maps/demo.lgt", "rb" );
-	NFileRead( &lightmapTemp, lights, sizeof( Vec2 ) * renderer.levelInfo.numVertices );
 
 	//DebugDrawAABB( Vec3( -2.97, 3.68, 0.95 ), Vec3( .25 ), 1000.0f, BLUE );
-
-	u8* lightMap = (u8*) TEMP_ALLOC( 1024 * 1024 * 4 );
-	NFileRead( &lightmapTemp, lightMap, 1024 * 1024 * 4 );
+	int mapSize = NFileReadU32( &lightmapTemp );
+	u8* lightMap = ( u8* ) TEMP_ALLOC( mapSize * mapSize * 4 );
+	NFileRead( &lightmapTemp, lightMap, mapSize * mapSize * 4 );
 
 	u32 lighttexid  = 0;
 	glGenTextures( 1, &lighttexid );
@@ -693,19 +692,13 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 1024, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, lightMap );
 
 	glActiveTexture( GL_TEXTURE0 + S2D_LIGHTMAP );
 	glBindTexture( GL_TEXTURE_2D, lighttexid );
 	glActiveTexture( GL_TEXTURE0 );
-
-	u32 numTexels = NFileReadU32( &lightmapTemp );
-	Vec4* texels = ( Vec4* ) TEMP_ALLOC( sizeof( Vec4 ) * numTexels );
-	NFileRead( &lightmapTemp, texels, sizeof( Vec4 ) * numTexels );
-	//for( int i = 0; i < numTexels; i++ )
-	//	DebugDrawAABB( texels[i], Vec3( 0.05f ), 10000.0f, texels[i].w == 1.0f ? GREEN : RED );
 
 	NFileClose( &lightmapTemp );
 	//Load GPU Data
@@ -718,9 +711,6 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 
 	NFileRead( file, verticesTemp, vertexSize );
 	NFileRead( file, li->indices, indexSize );
-
-	for( int i = 0; i < renderer.levelInfo.numVertices; i++ )
-		verticesTemp[i].lightTex = lights[i];
 
 	CreateGLBuffer( &li->buffer, li->numVertices, li->numIndices, vertexSize, verticesTemp,
 		indexSize, li->indices, true, false );

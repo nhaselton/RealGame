@@ -1,6 +1,9 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <string.h>
+#include <vector>
+#include "def.h"
+#include "Renderer/Renderer.h"
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -16,10 +19,15 @@ typedef float f32;
 typedef double f64;
 
 //How often is it sampled
-#define ATLAS_SIZE ( 1024.0f )
-#define TEXEL_SIZE_WORLD_UNITS (1.0f) 
-#define AMBIENT (.15f)
+extern int ATLAS_SIZE;
+extern float TEXEL_SIZE_WORLD_UNITS;
+extern float AMBIENT;
+//#define ATLAS_SIZE ( 1024.0f )
+//#define TEXEL_SIZE_WORLD_UNITS (1.0f) 
+//#define AMBIENT (.15f)
 #define PAD (0)
+
+void GenerateLightmap();
 
 struct LightSurface {
 	//World Space
@@ -77,3 +85,27 @@ struct LightMapBrush {
 	u32 firstFace;
 	u32 numFaces;
 };
+
+struct WorldInfo {
+	Atlas atlas;
+	u32* imageRaw;
+	Vec3* imageColors;
+
+	StaticVertex* vertices;
+	//RenderBrushFace* faces;
+	LightMapFace* faces;
+	u32* indices;
+	u32 numVertices;
+	u32 numFaces;
+	u32 numIndices;
+	u32 numBrushes;
+
+	Vec2* lightmapCoords;
+	AtlasNode** fullNodes;
+	LightMapBrush* brushes;
+	LightSurface* surfaces;
+
+	std::vector<Vec4> texelLocations;
+	std::vector<Light> lights;
+};
+extern WorldInfo world;

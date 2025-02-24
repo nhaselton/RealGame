@@ -57,8 +57,25 @@ extern StackArena tempArena;
 extern float dt;
 extern float gameTime;
 
-#define RED		Vec3( 1, 0, 0 ) 
-#define GREEN	Vec3( 0, 1, 0 ) 
-#define BLUE	Vec3( 0, 0, 1 ) 
-#define BLACK	Vec3( 0 )
-#define WHITE	Vec3( 1 )
+#define LIGHTGRAY  (Vec4{ 200, 200, 200, 255 } / 255.0f)  // Light Gray
+#define GRAY       (Vec4{ 130, 130, 130, 255 } / 255.0f)  // Gray
+#define DARKGRAY   (Vec4{ 80, 80, 80, 255 }    / 255.0f)  // Dark Gray
+#define YELLOW     (Vec4{ 253, 249, 0, 255 }   / 255.0f)  // Yellow
+#define GOLD       (Vec4{ 255, 203, 0, 255 }   / 255.0f)  // Gold
+#define ORANGE     (Vec4{ 255, 161, 0, 255 }   / 255.0f)  // Orange
+#define PINK       (Vec4{ 255, 109, 194, 255 } / 255.0f)  // Pink
+#define RED        (Vec4{ 230, 41, 55, 255 }   / 255.0f)  // Red
+#define MAROON     (Vec4{ 190, 33, 55, 255 }   / 255.0f)  // Maroon
+#define GREEN      (Vec4{ 0, 228, 48, 255 }    / 255.0f)  // Green
+#define LIME       (Vec4{ 0, 158, 47, 255 }    / 255.0f)  // Lime
+#define DARKGREEN  (Vec4{ 0, 117, 44, 255 }    / 255.0f)  // Dark Green
+#define SKYBLUE    (Vec4{ 102, 191, 255, 255 } / 255.0f)  // Sky Blue
+#define BLUE       (Vec4{ 0, 121, 241, 255 }   / 255.0f)  // Blue
+#define DARKBLUE   (Vec4{ 0, 82, 172, 255 }    / 255.0f)  // Dark Blue
+#define PURPLE     (Vec4{ 200, 122, 255, 255 } / 255.0f)  // Purple
+#define VIOLET     (Vec4{ 135, 60, 190, 255 }  / 255.0f)  // Violet
+#define DARKPURPLE (Vec4{ 112, 31, 126, 255 }  / 255.0f)  // Dark Purple
+#define BEIGE      (Vec4{ 211, 176, 131, 255 } / 255.0f)  // Beige
+#define BROWN      (Vec4{ 127, 106, 79, 255 }  / 255.0f)  // Brown
+#define DARKBROWN  (Vec4{ 76, 63, 47, 255 }    / 255.0f)  // Dark Brown
+#define BLACK (Vec4(0))

@@ -75,6 +75,6 @@ void main() {
 	vec3 color = lightmapColor * rawcolor;
 	//color = rawcolor * diffuse;
 
-	color = lightmapColor * rawcolor;
+	color = lightmapColor ;
 	FragColor = vec4(color,1.0);
 }

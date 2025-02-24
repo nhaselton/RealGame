@@ -855,7 +855,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 * u32 NumFaces
 * u32 NumBrushes
 * u32 NumTextures
-* DrawVertex[NumVertices]
+* StaticVertex[NumVertices]
 * u32 indices[NumIndices]
 * RenderBrushFace[NumFaces]
 * char[MAX_NAME_LEN+4] Textures[NumTextures]

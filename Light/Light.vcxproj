@@ -138,6 +138,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\LightMain.cpp" />
+    <ClCompile Include="src\CreateLightmap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Lightdef.h" />
