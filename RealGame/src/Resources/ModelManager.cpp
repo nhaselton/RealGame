@@ -371,7 +371,6 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 			
 		Vec3* positions = 0;
 		Vec3* normals = 0;
-		Vec4* tangents = 0;
 		Vec2* texCoords = 0;
 		u8* joints = 0;
 		Vec4* weights = 0;
@@ -384,8 +383,6 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 			TempAllocAndFillBuffer( &file,( u8** ) &positions, binOffset, &gltfMesh->positionAccessor );
 		if ( gltfMesh->normalAccessor.inUse )
 			TempAllocAndFillBuffer( &file, ( u8** ) &normals, binOffset, &gltfMesh->normalAccessor );
-		if ( gltfMesh->tangentAccessor.inUse )
-			TempAllocAndFillBuffer( &file, ( u8** ) &tangents, binOffset, &gltfMesh->tangentAccessor );
 		if ( gltfMesh->texcoordAccessor.inUse )
 			TempAllocAndFillBuffer( &file, ( u8** ) &texCoords, binOffset, &gltfMesh->texcoordAccessor );
 		if ( gltfMesh->jointAccessor.inUse )
@@ -402,7 +399,7 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 		else
 			mesh->texture = 0;
 
-		DrawVertex* vertices = (DrawVertex*) StackArenaAllocate( &tempArena, mesh->numVertices * sizeof( vertices[0] ) );
+		SkinnedVertex* vertices = ( SkinnedVertex*) StackArenaAllocate( &tempArena, mesh->numVertices * sizeof( vertices[0] ) );
 		u32* indices = ( u32* ) StackArenaAllocate( &tempArena, gltfMesh->indicesAccessor.count * sizeof( u32 ) );
 
 		if ( positions )
@@ -410,15 +407,11 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 				vertices[n].pos = positions[n];
 		if ( normals )
 			for ( int n = 0; n < mesh->numVertices; n++ ) {
-				vertices[n].normal = normals[n];
+				vertices[n].norm = normals[n];
 			}
 		if ( texCoords )
 			for ( int n = 0; n < mesh->numVertices; n++ )
 				vertices[n].tex = texCoords[n];
-
-		if ( tangents )
-			for ( int n = 0; n < mesh->numVertices; n++ )
-				vertices[n].tangents = tangents[n];
 
 		if ( weights )
 			for ( int n = 0; n < mesh->numVertices; n++ )
@@ -454,10 +447,10 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 			mesh->numVertices * sizeof( vertices[0] ), vertices,
 			mesh->numIndices * sizeof( u32 ), indices,
 			true, true );
-		GLBufferAddDefaultAttribs( &mesh->buffer );
-		if ( model->skeleton != 0 )
-			GLBufferAddDefaultSkinnedAttribs( &mesh->buffer );
-		
+		//GLBufferAddDefaultAttribs( &mesh->buffer );
+		//if ( model->skeleton != 0 )
+		//	GLBufferAddDefaultSkinnedAttribs( &mesh->buffer );
+		GLBufferAddDefaultAttribsSkinned(&mesh->buffer);
 
 	}
 

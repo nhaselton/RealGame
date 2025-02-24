@@ -43,7 +43,6 @@ void GLBufferAddDefaultAttribs( GLBuffer* buffer ) {
 	GLBufferAddAttribute( buffer, 0, 3, GL_FLOAT, sizeof( DrawVertex ), ( void* ) 0 );
 	GLBufferAddAttribute( buffer, 1, 3, GL_FLOAT, sizeof( DrawVertex ), ( void* ) offsetof( DrawVertex, normal ) );
 	GLBufferAddAttribute( buffer, 2, 2, GL_FLOAT, sizeof( DrawVertex ), ( void* ) offsetof( DrawVertex, tex ) );
-	GLBufferAddAttribute( buffer, 6, 2, GL_FLOAT, sizeof( DrawVertex ), ( void* ) offsetof( DrawVertex, lightmapTex ) );
 }
 
 void GLBufferAddDefaultSkinnedAttribs( GLBuffer* buffer ) {
@@ -51,3 +50,18 @@ void GLBufferAddDefaultSkinnedAttribs( GLBuffer* buffer ) {
 	GLBufferAddAttributeI( buffer, 4, 4, GL_INT, sizeof( DrawVertex ), ( void* ) offsetof( DrawVertex, bones ) );
 	GLBufferAddAttribute( buffer, 5, 4, GL_FLOAT, sizeof( DrawVertex ), ( void* ) offsetof( DrawVertex, weights ) );
 } 
+
+void GLBufferAddDefaultAttribsStatic( GLBuffer* buffer ) {
+	GLBufferAddAttribute( buffer, 0, 3, GL_FLOAT, sizeof( StaticVertex ), ( void* ) 0 );
+	GLBufferAddAttribute( buffer, 1, 3, GL_FLOAT, sizeof( StaticVertex ), ( void* ) offsetof( StaticVertex, norm ) );
+	GLBufferAddAttribute( buffer, 2, 2, GL_FLOAT, sizeof( StaticVertex ), ( void* ) offsetof( StaticVertex, tex ) );
+	GLBufferAddAttribute( buffer, 3, 2, GL_FLOAT, sizeof( StaticVertex ), ( void* ) offsetof( StaticVertex, lightTex ) );
+}
+
+void GLBufferAddDefaultAttribsSkinned( GLBuffer* buffer ) {
+	GLBufferAddAttribute( buffer, 0, 3, GL_FLOAT, sizeof( SkinnedVertex ), ( void* ) 0 );
+	GLBufferAddAttribute( buffer, 1, 3, GL_FLOAT, sizeof( SkinnedVertex ), ( void* ) offsetof( SkinnedVertex, norm ) );
+	GLBufferAddAttribute( buffer, 2, 2, GL_FLOAT, sizeof( SkinnedVertex ), ( void* ) offsetof( SkinnedVertex, tex ) );
+	GLBufferAddAttribute( buffer, 3, 4, GL_FLOAT, sizeof( SkinnedVertex ), ( void* ) offsetof( SkinnedVertex, weights ) );
+	GLBufferAddAttributeI( buffer, 4, 4, GL_INT, sizeof( SkinnedVertex ), ( void* ) offsetof( SkinnedVertex, bones ) );
+}

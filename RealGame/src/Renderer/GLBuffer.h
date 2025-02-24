@@ -21,3 +21,6 @@ void CreateGLBuffer( GLBuffer* buffer, u32 numVertices, u32 numIndices, u32 vboS
 void GLBufferAddAttribute( GLBuffer* buffer, u32 index, u32 size, u32 type, i32 stride, const void* offset );
 void GLBufferAddDefaultAttribs( GLBuffer* buffer );
 void GLBufferAddDefaultSkinnedAttribs( GLBuffer* buffer );
+
+void GLBufferAddDefaultAttribsStatic( GLBuffer* buffer );
+void GLBufferAddDefaultAttribsSkinned( GLBuffer* buffer );

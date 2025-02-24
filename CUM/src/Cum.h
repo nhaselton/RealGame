@@ -11,6 +11,7 @@ struct LightMapFace {
 	float d;
 	Vec3 u;
 	Vec3 v;
+	Vec3 texNormal;
 	int firstVertex;
 	int numVertices;
 	int firstIndex;

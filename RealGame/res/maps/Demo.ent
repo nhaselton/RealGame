@@ -76,18 +76,11 @@
 }
 {
 "classname" "light"
-"origin" "716 4580 964"
-"intensity" "20"
-"attenuation" "325"
+"origin" "716 7412 964"
+"intensity" "40"
+"attenuation" "600"
 }
 // entity 13
-{
-"classname" "light"
-"origin" "716 7412 964"
-"intensity" "20"
-"attenuation" "325"
-}
-// entity 14
 {
 "classname" "light"
 "origin" "772 1452 692"
@@ -97,7 +90,7 @@
 "direction" "0 -1 0"
 "radius" "0"
 }
-// entity 15
+// entity 14
 {
 "classname" "light"
 "origin" "-428 1468 692"
@@ -106,22 +99,22 @@
 "intensity" "1"
 "direction" "0 -1 0"
 }
-// entity 16
+// entity 15
 {
 "classname" "light"
 "origin" "52 2732 324"
 }
-// entity 17
+// entity 16
 {
 "classname" "light"
 "origin" "-956 3180 324"
 }
-// entity 18
+// entity 17
 {
 "classname" "light"
 "origin" "1308 3244 4"
 }
-// entity 19
+// entity 18
 {
 "classname" "light"
 "origin" "788 1308 276"
@@ -130,7 +123,7 @@
 "intensity" "2"
 "attenuation" "65"
 }
-// entity 20
+// entity 19
 {
 "classname" "light"
 "origin" "-428 1308 276"
@@ -139,44 +132,53 @@
 "intensity" "2"
 "attenuation" "65"
 }
-// entity 21
+// entity 20
 {
 "classname" "info_player_start"
 "origin" "341 -37 51"
 }
-// entity 22
+// entity 21
 {
 "classname" "light"
 "origin" "376 -28 216"
 }
-// entity 23
+// entity 22
 {
 "classname" "light"
 "origin" "160 2472 724"
 "intensity" "3"
 "attenuation" "50"
 }
-// entity 24
+// entity 23
 {
 "classname" "light"
 "origin" "-92 2520 400"
 "attenuation" "50"
 }
-// entity 25
+// entity 24
 {
 "classname" "light"
 "origin" "576 2468 416"
 "attenuation" "50"
 }
-// entity 26
+// entity 25
 {
 "classname" "light"
 "origin" "152 2180 464"
 "attenuation" "50"
 }
-// entity 27
+// entity 26
 {
 "classname" "light"
 "origin" "-516 2232 448"
 "attenuation" "50"
+}
+// entity 27
+{
+"classname" "light"
+"origin" "-580 964 580"
+"_color" "1 1 1"
+"type" "2"
+"intensity" "2"
+"attenuation" "65"
 }

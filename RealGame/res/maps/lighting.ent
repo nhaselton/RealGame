@@ -1,25 +1,20 @@
 {
 "classname" "info_player_start"
-"origin" "665 615 67"
+"origin" "-665 343 -13"
 }
 // entity 2
 {
 "classname" "light"
-"origin" "628 -340 260"
-"type" "2"
-"_color" "0 1 0.117647"
+"origin" "-260 -724 228"
+"intensity" "3"
+"_color" "1 1 1"
+"attenuation" "160"
 }
 // entity 3
 {
 "classname" "light"
-"origin" "156 492 420"
-"type" "2"
-"_color" "1 1 0"
-}
-// entity 4
-{
-"classname" "light"
-"origin" "572 628 236"
-"type" "2"
-"_color" "1 0 0.0156863"
+"origin" "-140 76 100"
+"intensity" "1"
+"_color" "0.235294 0.694118 0.164706"
+"attenuation" "32"
 }

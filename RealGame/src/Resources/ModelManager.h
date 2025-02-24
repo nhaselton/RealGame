@@ -1,6 +1,7 @@
 #pragma once
 #include "def.h"
 #include "renderer/GLBuffer.h"
+#include "Renderer/Renderer.h"
 //Note: mesh can only have 1 material
 
 //Models

@@ -15,10 +15,18 @@
 #define MAX_SKINNED_VERTEX_SIZE 
 
 struct SkinnedVertex {
-	Vec4 pos;
-	Vec4 normal;
-	Vec4 tangent;
-	Vec4 tex;
+	Vec3 pos;
+	Vec3 norm;
+	Vec2 tex;
+	Vec4 weights;
+	IVec4 bones;
+};
+
+struct StaticVertex {
+	Vec3 pos;
+	Vec3 norm;
+	Vec2 tex;
+	Vec2 lightTex;
 };
 
 struct FontVert {

@@ -691,12 +691,21 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 		numTrianglesPerTexture[faces[i].textureIndex] += faces[i].numIndices / 3;
 	}
 
+#if 0
 	DrawVertex* drawVertices = ( DrawVertex* ) malloc( vertices.size() * sizeof( DrawVertex ) );
 	for ( int i = 0; i < vertices.size(); i++ ) {
 		drawVertices[i].pos = vertices[i].pos;
 		drawVertices[i].normal = vertices[i].normal;
 		drawVertices[i].tex = vertices[i].uv;
 		drawVertices[i].lightmapTex = vertices[i].lightmapUV;
+	}
+#endif
+	StaticVertex* staticVertices = ( StaticVertex* ) malloc( vertices.size() * sizeof( StaticVertex) );
+	for( int i = 0; i < vertices.size(); i++ ) {
+		staticVertices[i].pos = vertices[i].pos;
+		staticVertices[i].norm = vertices[i].normal;
+		staticVertices[i].tex= vertices[i].uv;
+		staticVertices[i].lightTex = Vec2( 0 ); //Will be done in Lightcompilier
 	}
 
 	u32 numVertices = vertices.size();
@@ -760,7 +769,7 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	fwrite( &numBrushes, sizeof( u32 ), 1, out );
 	fwrite( &numTextures, sizeof( u32 ), 1, out );
 
-	fwrite( drawVertices, sizeof( DrawVertex )* vertices.size(), 1, out );
+	fwrite( staticVertices, sizeof( StaticVertex ) * vertices.size(), 1, out );
 	fwrite( indices.data(), sizeof( u32 ), indices.size(), out );
 	fwrite( rfaces, sizeof( RenderBrushFace )* faces.size(), 1, out );
 	fwrite( rBrushes, sizeof( RenderBrush )* brushes.size(), 1, out );
@@ -828,13 +837,13 @@ bool LoadWorldSpawn( Parser* parser, const char* output ) {
 	fwrite( &numIndices, 4, 1, lightOut );
 	fwrite( lightMapBrushes, numBrushes * sizeof( LightMapBrush ), 1, lightOut );
 	fwrite( lmf, numFaces * sizeof( LightMapFace ), 1, lightOut );
-	fwrite( drawVertices, numVertices * sizeof(DrawVertex), 1, lightOut);
+	fwrite( staticVertices, numVertices * sizeof( StaticVertex ), 1, lightOut );
 	fwrite( indices.data(), 4 * numIndices, 1, lightOut );
 	fclose( lightOut );
 
 	free( numTrianglesPerTexture );
 	free( rfaces );
-	free( drawVertices );
+	free( staticVertices );
 	return true;
 }
 

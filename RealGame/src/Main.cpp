@@ -20,39 +20,55 @@
 #include "game/Game.h"
 /*
 *	Milestone 3
+* 
+*	Light Maps:
+*		Get Skeletal Meshes working again
+*			StaticVertex
+*			DynamicVertex
+* 
+*		Different Light Types
+*		Fool around with getting triangle collisions working?
+*			if so can send to GPU if times get too long
+*		
+*
+* 
+*		Bake light probes
+* 
+* 
 *	Renderer
-*	
 *	Lighting:
 *	Light:
+*		Have Game ignore static lights? Create staic option in TB
 *		Type //Separate arrays? Can upload static once and dynamic per frame
 *			Static
 *			Dynamic
+*		Calculate Radius
+*			Solve quadratic for when light < .1f?
 *		Shape
 *			Point
 *			Spot
 *			Directional
-*		Shadows:
+*		Shadows: Can create when level loads if close enough to it? Unload when too far?
 *			Static
 *			All
 *			None
-* 
-* 
 *
 *	Bound Lighting
 *		Probably use sphere to make it little amount of extra data
 *		If done on CPU with tiled rendering or something, then can try AABB
 *		Can probably just solve for 0 using attenuation * intensity
-*	
-*	Shadows
-*		Atlas?
-*			Filtering on an atlas
-*	Decals
-*	
+* 
+*	Shader Includes
+*		Should be able to do #include "lighting.inc" and have it fetch from shader parent directory
+*	Multiple Vertex Types
+*		Static -> Pos,Norm,Tex,Lightmap
+*		Dynamic ->Pos,Norm,Tex,Bone
 * 
 *	.Def
 *		Model
 *		static Enemy who has default stats
 *		This makes it easy to copy and can read from .def file at start
+*	Decals
 
 	=====================
 			VFX
@@ -69,14 +85,18 @@
 	==================================
 		Whats Next
 	==================================
-	.def files
-	Encounter files / GUI
-		One File for all encounters
-		could generate a .cpp file?
-			But then no hot reloading
+	Data driven engine
+		.def files
+		Encounter files / GUI
+			One File for all encounters
+			could generate a .cpp file?
+				But then no hot reloading
+	Lighting!
+	GUI for editing things
+		Encounters should be placed in map with the name of the encounter text file	via GUI
+		This way it can be added when compiled but still hotloaded
+		Entity manager https://www.youtube.com/watch?v=R93PByk_vPI 3:38
 
-	Encounters should be placed in map with the name of the encounter text file	
-	This way it can be added when compiled but still hotloaded
 
 	==================================
 				Gameplay

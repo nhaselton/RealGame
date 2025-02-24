@@ -3,8 +3,7 @@
 layout (location = 0) in vec3 apos;
 layout (location = 1) in vec3 anorm;
 layout (location = 2) in vec2 atex;
-layout (location = 3) in vec3 atan;
-layout (location = 6) in vec2 alighttex;
+layout (location = 3) in vec2 alighttex;
 
 uniform mat4 model;
 

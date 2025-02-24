@@ -61,20 +61,20 @@ void main() {
 	vec3 ambient = vec3(0.1);
 	vec3 diffuse = vec3(0.0);
 
-	for ( int i = 0; i < counts.x; i++)	{
-		if ( lights[i].type == 1 )
-			diffuse += Directional(lights[i], vnorm);
-		else if ( lights[i].type == 2 )
-			diffuse += Point(lights[i], vpos, vnorm);
-		else if ( lights[i].type == 3 )
-			diffuse += Spot(lights[i], vpos, vnorm);
-	}
-
-	vec3 color = (diffuse + ambient) * rawcolor;
+	//for ( int i = 0; i < counts.x; i++)	{
+	//	if ( lights[i].type == 1 )
+	//		diffuse += Directional(lights[i], vnorm);
+	//	else if ( lights[i].type == 2 )
+	//		diffuse += Point(lights[i], vpos, vnorm);
+	//	else if ( lights[i].type == 3 )
+	//		diffuse += Spot(lights[i], vpos, vnorm);
+	//}
+	//vec3 color = (diffuse + ambient) * rawcolor;
 
 	vec3 lightmapColor = texture(lightmap,vlightTex).rgb;
-	color = lightmapColor;	
+	vec3 color = lightmapColor * rawcolor;
 	//color = rawcolor * diffuse;
-	color = lightmapColor * rawcolor ;
+
+	color = lightmapColor * rawcolor;
 	FragColor = vec4(color,1.0);
 }

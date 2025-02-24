@@ -68,4 +68,4 @@ void NFileSetSeek( NFile* file, u32 offset ) {
 
 void NFileWriteU32( NFile* file, u32 u32 ) {
 	fwrite( &u32, sizeof( u32 ), 1, file->file );
-}
+} 

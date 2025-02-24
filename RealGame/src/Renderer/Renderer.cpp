@@ -39,7 +39,7 @@ void RenderCreateShaders( Renderer* renderer ) {
 
 
 	//Standrard Skinned
-	renderer->shaders[SHADER_STANDARD_SKINNED] = ShaderManagerCreateShader( &shaderManager, "res/shaders/standardskinned/standardskinned.vert", "res/shaders/standard/standard.frag" );
+	renderer->shaders[SHADER_STANDARD_SKINNED] = ShaderManagerCreateShader( &shaderManager, "res/shaders/standardskinned/standardskinned.vert", "res/shaders/standardskinned/standardskinned.frag" );
 	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD_SKINNED] );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_SKINNED], SHADER_ARG_INT, "albedo" );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD_SKINNED], "albedo", S2D_ALBEDO );
@@ -710,22 +710,21 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	NFileClose( &lightmapTemp );
 	//Load GPU Data
 
-	u32 vertexSize = li->numVertices * sizeof( DrawVertex );
+	u32 vertexSize = li->numVertices * sizeof( StaticVertex );
 	u32 indexSize = li->numIndices * sizeof( u32 );
 
-	DrawVertex* verticesTemp = ( DrawVertex* )TEMP_ALLOC( vertexSize );
+	StaticVertex* verticesTemp = ( StaticVertex* )TEMP_ALLOC( vertexSize );
 	li->indices = ( u32* )ScratchArenaAllocate( &level->arena, indexSize );
 
 	NFileRead( file, verticesTemp, vertexSize );
 	NFileRead( file, li->indices, indexSize );
 
 	for( int i = 0; i < renderer.levelInfo.numVertices; i++ )
-		verticesTemp[i].lightmapTex = lights[i];
+		verticesTemp[i].lightTex = lights[i];
 
 	CreateGLBuffer( &li->buffer, li->numVertices, li->numIndices, vertexSize, verticesTemp,
 		indexSize, li->indices, true, false );
-	GLBufferAddDefaultAttribs( &li->buffer );
-
+	GLBufferAddDefaultAttribsStatic( &li->buffer );
 
 	//Load in CPU Data
 	u32 brushSize = li->numBrushes * sizeof( RenderBrush );
