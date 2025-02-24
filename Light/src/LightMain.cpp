@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "lightdef.h"
-
 #include "Core/parser.cpp"
+#include "Core/timer.cpp"
 
 bool Trace( Vec3 start, Vec3 end, int face, bool ignoreSelf );
 
@@ -9,8 +9,9 @@ WorldInfo world;
 int ATLAS_SIZE;
 float TEXEL_SIZE_WORLD_UNITS;
 float AMBIENT;
+bool USE_AA;
 
-void LoadFile( const char* path ) {
+bool LoadFile( const char* path ) {
     ATLAS_SIZE = 1024;
     TEXEL_SIZE_WORLD_UNITS = 1.0f;
 
@@ -18,7 +19,7 @@ void LoadFile( const char* path ) {
     FILE* lightOut = fopen( path, "rb" );
     if( !lightOut ) {
         printf( "Can not find file %s\n", path );
-        return;
+        return false;
     }
 
     fread( &world.numBrushes, 4, 1, lightOut );
@@ -56,8 +57,8 @@ void LoadFile( const char* path ) {
 
     FILE* entFile = fopen( entPath, "rb" );
     if( !entFile ) {
-        printf( "could not load entity file %s\n", entFile );
-        return;
+        printf( "could not load entity file %s\n", entPath );
+        return false;
     }
 
     fseek( entFile, 0, SEEK_END );
@@ -129,9 +130,11 @@ void LoadFile( const char* path ) {
             parser.ReadToken();
         }
     }
+
+    return true;
 }
 
-void EditCum( const char* lmoPath ) {
+bool EditCum( const char* lmoPath ) {
     char path[256]{};
     strcpy( path, lmoPath );
     int slen = strlen( path );
@@ -144,7 +147,7 @@ void EditCum( const char* lmoPath ) {
 
     if( !file ) {
         printf( "Could not find file at %s\n", path );
-        return;
+        return 0;
     }
 
     fseek( file, 0, SEEK_END );
@@ -168,19 +171,75 @@ void EditCum( const char* lmoPath ) {
     file = fopen( path, "wb" );
     fwrite( fileData, len, 1, file );
     fclose( file );
+    return 1;
 }
 
+bool ParseArgs( int argc, char** argv ) {
+	for( int i = 2; i < argc; i ) {
+        if( !strcmp( argv[i], "-texel" ) ) {
+            if( i == argc ) {
+                printf( "[error] require texel size\n" );
+                return false;
+            }
 
+			TEXEL_SIZE_WORLD_UNITS = atof( argv[i + 1] );
+            i += 2;
+            return true;
+        }
 
-int main( void ) {
+        if( !strcmp( argv[i], "-atlas" ) ) {
+            if( i == argc ) {
+                printf( "[error] require atlas size\n" );
+                return false;
+            }
+
+            ATLAS_SIZE = atoi( argv[i + 1] );
+            i += 2;
+        }
+
+        if( !strcmp( argv[i], "-useaa" ) ) {
+            i++;
+            USE_AA = true;
+        }
+    }
+    return true;
+}
+
+const char* help = 
+"Light\n"
+"-texel :(default 1) how big should texels be. 1 ingame unit is 1/32 quake units\n"
+"-atlas :(default 1024) how big should the atlas be\n"
+"-aa :Add antialisaing to texels. Will do 4x as many light calculations\n";
+
+int main( int argc, char** argv ) {
+    Timer t;
     ATLAS_SIZE = 1024;
     TEXEL_SIZE_WORLD_UNITS = 4.0f;
+    USE_AA = false;
 
     const char* mapFilePath = "c:/workspace/cpp/realgame/realgame/res/maps/demo.lmo";
-    LoadFile( mapFilePath );
+
+    if( argc > 2 ) {
+        if( !strcmp( argv[1], "help" ) ) {
+			printf( "%s\n", help );
+            return 0;
+        }
+
+        mapFilePath = argv[1];
+    }
+
+
+    if( !LoadFile( mapFilePath ) ) {
+        printf( "[ERROR] Could not create lightmap\n" );
+        return 0;
+    }
 
     GenerateLightmap();
-    EditCum(mapFilePath);
+    
+    if( !EditCum( mapFilePath ) ) {
+		printf( "[ERROR] Could not find .cum file\n" );
+        return 0;
+    }
 
     char outPath[128]{};
     strcpy( outPath, mapFilePath );
@@ -194,5 +253,8 @@ int main( void ) {
     fwrite( &ATLAS_SIZE, 4, 1, outFile );
     fwrite( world.imageRaw, ATLAS_SIZE * ATLAS_SIZE * 4, 1, outFile );
     fclose( outFile );
+
+    t.Tick();
+	printf( "Successfully compiled lightmap in %.2f ms \n", t.GetTimeMiliSeconds() );
     return 0;
 }

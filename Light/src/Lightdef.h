@@ -22,6 +22,7 @@ typedef double f64;
 extern int ATLAS_SIZE;
 extern float TEXEL_SIZE_WORLD_UNITS;
 extern float AMBIENT;
+extern bool USE_AA;
 //#define ATLAS_SIZE ( 1024.0f )
 //#define TEXEL_SIZE_WORLD_UNITS (1.0f) 
 //#define AMBIENT (.15f)

@@ -348,38 +348,30 @@ void LightLevel() {
         LightMapFace* face = &world.faces[f];
         LightSurface* surface = &world.surfaces[f];
 
-#if 1
-        int samples = 2;
-        int h = ( surface->paddedTextureSize[1] ) * 2;
-        int w = ( surface->paddedTextureSize[0] ) * 2;
-        float starts = ( surface->paddedMin[0] - 0.5 ) * TEXEL_SIZE_WORLD_UNITS;
-        float startt = ( surface->paddedMin[1] - 0.5 ) * TEXEL_SIZE_WORLD_UNITS;
-        float step = TEXEL_SIZE_WORLD_UNITS / 2.0f;
-#else
-        int samples = 1;
-        int h = surface->paddedTextureSize[1];
-        int w = surface->paddedTextureSize[0];
+        int samples, h, w;
+        float starts, startt, step;
 
-        float starts = ( surface->paddedMin[0] - PAD ) * TEXEL_SIZE_WORLD_UNITS;
-        float startt = ( surface->paddedMin[1] - PAD ) * TEXEL_SIZE_WORLD_UNITS;
-        float step = TEXEL_SIZE_WORLD_UNITS;
+        if( USE_AA ) {
+			samples = 2;
+			h = ( surface->paddedTextureSize[1] ) * 2;
+			w = ( surface->paddedTextureSize[0] ) * 2;
+			starts = ( surface->paddedMin[0] - 0.5 ) * TEXEL_SIZE_WORLD_UNITS;
+			startt = ( surface->paddedMin[1] - 0.5 ) * TEXEL_SIZE_WORLD_UNITS;
+			step = TEXEL_SIZE_WORLD_UNITS / 2.0f;
+        }
+        else {
+			samples = 1;
+			h = surface->paddedTextureSize[1];
+			w = surface->paddedTextureSize[0];
 
-#if 0
-        if( starts > 0 ) starts -= TEXEL_SIZE_WORLD_UNITS * PAD;
-        else starts += TEXEL_SIZE_WORLD_UNITS * PAD;
-
-        if( startt > 0 ) startt -= TEXEL_SIZE_WORLD_UNITS * PAD;
-        else startt += TEXEL_SIZE_WORLD_UNITS * PAD;
-#endif
-
-
-#endif
+			starts = ( surface->paddedMin[0] - PAD ) * TEXEL_SIZE_WORLD_UNITS;
+			startt = ( surface->paddedMin[1] - PAD ) * TEXEL_SIZE_WORLD_UNITS;
+			step = TEXEL_SIZE_WORLD_UNITS;
+        }
 
         Vec2 midTs = Vec2( surface->paddedMin + surface->paddedMax ) / 2.0f;
         Vec3 midPoint = surface->texOrigin + surface->texToWorld[0] * midTs[0] + surface->texToWorld[1] * midTs[1];
         midPoint += surface->axes[2] * .1f; //move slightly off surface for collision detection
-
-        world.texelLocations.push_back( Vec4( midPoint, 1 ) );
 
         for( int v = 0; v < h; v++ ) {
             for( int u = 0; u < w; u++ ) {
@@ -438,14 +430,13 @@ void LightLevel() {
                         world.imageColors[uvIndex] += thisColor;
                     }
                 }
-                //if ( adjusted )
-                //	texelLocations.push_back( Vec4( point, good ) );
             }
         }
     }
 
+    float div = ( USE_AA ) ? 4.0f : 1.0f;
     for( int i = 0; i < ATLAS_SIZE * ATLAS_SIZE; i++ ) {
-        world.imageColors[i] /= 4;
+        world.imageColors[i] /= div;
         world.imageColors[i] += AMBIENT;
         world.imageColors[i] = glm::clamp( world.imageColors[i], 0.0f, 1.0f );
 
@@ -454,12 +445,9 @@ void LightLevel() {
         u8 b = world.imageColors[i].z * 255.0f;
         u8 a = 255;
 
-
         u32 color = r + ( g << 8 ) + ( b << 16 ) + ( a << 24 );
         world.imageRaw[i] = color;
     }
-
-    world.texelLocations.push_back( Vec4( world.lights[0].pos, 1 ) );
 }
 
 bool PhysicsRaycastHull( Vec3 start, Vec3 end, int hull ) {
@@ -504,6 +492,6 @@ void GenerateLightmap() {
     world.atlas.head->max = Vec2( ATLAS_SIZE, ATLAS_SIZE );
 
     CreateUVs();
-    DrawTexels();
-    //LightLevel();
+    //DrawTexels();
+    LightLevel();
 }
