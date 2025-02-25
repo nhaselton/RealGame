@@ -20,13 +20,9 @@
 #include "game/Game.h"
 /*
 *	Milestone 3
-* 
-* 
-*	Fullbright command
-*	Shader includes
-* 
+*
 *	Renderer
-*	Lighting:
+*
 *	Light:
 *		Have Game ignore static lights? Create staic option in TB
 *		Type //Separate arrays? Can upload static once and dynamic per frame
@@ -47,12 +43,6 @@
 *		Probably use sphere to make it little amount of extra data
 *		If done on CPU with tiled rendering or something, then can try AABB
 *		Can probably just solve for 0 using attenuation * intensity
-* 
-*	Shader Includes
-*		Should be able to do #include "lighting.inc" and have it fetch from shader parent directory
-*	Multiple Vertex Types
-*		Static -> Pos,Norm,Tex,Lightmap
-*		Dynamic ->Pos,Norm,Tex,Bone
 * 
 *	.Def
 *		Model

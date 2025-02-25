@@ -7,18 +7,18 @@ void ParseFiles( char* vertPath, char* fragPath, char** outVert, char** outFrag 
 void ShaderCheckCompileErrors( GLuint shader, const char* type ) {
 	GLint success;
 	GLchar infoLog[1024];
-	if ( strcmp( type, "PROGRAM" ) ) { //Shader
+	if( strcmp( type, "PROGRAM" ) ) { //Shader
 		glGetShaderiv( shader, GL_COMPILE_STATUS, &success );
-		if ( !success ) {
+		if( !success ) {
 			glGetShaderInfoLog( shader, 1024, NULL, infoLog );
 			LOG_ERROR( LGS_RENDERER, "ERROR::SHADER_COMPILATION_ERROR of type: %s\n%s\n---------------------------------------------------------------------------------\n",
 				type, infoLog );
-			
+
 		}
 	}
 	else {	//Program
 		glGetProgramiv( shader, GL_LINK_STATUS, &success );
-		if ( !success ) {
+		if( !success ) {
 			glGetProgramInfoLog( shader, 1024, NULL, infoLog );
 			LOG_ERROR( LGS_RENDERER, "ERROR::SHADER_COMPILATION_ERROR of type: %s\n%s\n---------------------------------------------------------------------------------\n",
 				type, infoLog );
@@ -33,7 +33,7 @@ bool CreateComputeShader( Shader* shader, const char* path ) {
 	NFile file;
 	CreateNFile( &file, path, "rb" );
 
-	if ( !NFileValid( &file ) ) {
+	if( !NFileValid( &file ) ) {
 		LOG_ASSERT( LGS_RENDERER, "Could not load shader %s\n" );
 		return false;
 	}
@@ -42,7 +42,7 @@ bool CreateComputeShader( Shader* shader, const char* path ) {
 	NFileRead( &file, buffer, file.length );
 	buffer[file.length] = '\0';
 
-	NFileClose(&file);
+	NFileClose( &file );
 
 	u32 cProg;
 	cProg = glCreateShader( GL_COMPUTE_SHADER );
@@ -63,13 +63,13 @@ bool CreateComputeShader( Shader* shader, const char* path ) {
 }
 
 //Return if shader was crated successfully
-bool CreateShader( Shader* shader, const char* vertPath, const char* fragPath) {
+bool CreateShader( Shader* shader, const char* vertPath, const char* fragPath ) {
 	memset( shader, 0, sizeof( *shader ) );
 
 	TEMP_ARENA_SET
 
 #if 0
-	NFile vertFile;
+		NFile vertFile;
 	NFile fragFile;
 
 	CreateNFile( &vertFile, vertPath, "rb" );
@@ -77,23 +77,23 @@ bool CreateShader( Shader* shader, const char* vertPath, const char* fragPath) {
 
 	bool validFiles = true;
 
-	if ( !NFileValid( &vertFile ) ) {
+	if( !NFileValid( &vertFile ) ) {
 		validFiles = false;
 		LOG_ERROR( LGS_IO, "Could not open Vertex file %s\n", vertPath );
 	}
 
-	if ( !NFileValid( &fragFile ) ) {
+	if( !NFileValid( &fragFile ) ) {
 		validFiles = false;
 		LOG_ERROR( LGS_IO, "Could not open Frag file %s\n", fragPath );
 	}
 
 	//Make sure no temp stack allocations are done here
-	if ( !validFiles ) {
+	if( !validFiles ) {
 		return false;
 	}
 
 	//Read in files
-	char* vertBuffer = (char*) StackArenaAllocate( &tempArena, vertFile.length + 1 );
+	char* vertBuffer = ( char* ) StackArenaAllocate( &tempArena, vertFile.length + 1 );
 	NFileRead( &vertFile, vertBuffer, vertFile.length );
 	vertBuffer[vertFile.length] = '\0';
 
@@ -103,7 +103,7 @@ bool CreateShader( Shader* shader, const char* vertPath, const char* fragPath) {
 
 	ParseFile( &vertBuffer, vertFile.length );
 	ParseFile( &fragBuffer, fragFile.length );
-	
+
 	NFileClose( &vertFile );
 	NFileClose( &fragFile );
 #endif
@@ -133,7 +133,7 @@ bool CreateShader( Shader* shader, const char* vertPath, const char* fragPath) {
 	glDeleteShader( vProg );
 	glDeleteShader( fProg );
 
-	shader->flags = (SHADER_VERTEX | SHADER_FRAGMENT);
+	shader->flags = ( SHADER_VERTEX | SHADER_FRAGMENT );
 	shader->paths[0] = vertPath;
 	shader->paths[1] = fragPath;
 
@@ -144,8 +144,8 @@ ShaderArg* ShaderFindArg( Shader* shader, const char* name ) {
 	renderer.frameInfos[renderer.currentFrameInfo].shaderArgsSet++;
 
 	ShaderArg* current = shader->args;
-	while ( current ) {
-		if ( strcmp( name, current->name ) == 0 ) {
+	while( current ) {
+		if( strcmp( name, current->name ) == 0 ) {
 			return current;
 		}
 		current = current->next;
@@ -164,16 +164,16 @@ ShaderArg* ShaderFindArg( Shader* shader, const char* name ) {
 }
 
 
-void ShaderSetMat4( Renderer* renderer, Shader* shader, const char* name, Mat4 mat ){
+void ShaderSetMat4( Renderer* renderer, Shader* shader, const char* name, Mat4 mat ) {
 	ShaderArg* arg = ShaderFindArg( shader, name );
 	CHECKARG()
-	CHECKSHADER()
+		CHECKSHADER()
 
-	memcpy( arg->value, &mat, sizeof( Mat4 ) );
-	glUniformMatrix4fv( arg->uniformLoc, 1, GL_FALSE, (GLfloat*) arg->value );
+		memcpy( arg->value, &mat, sizeof( Mat4 ) );
+	glUniformMatrix4fv( arg->uniformLoc, 1, GL_FALSE, ( GLfloat* ) arg->value );
 }
 
-void ShaderSetMat3( Renderer* renderer, Shader* shader, const char* name, Mat3 mat ){
+void ShaderSetMat3( Renderer* renderer, Shader* shader, const char* name, Mat3 mat ) {
 	ShaderArg* arg = ShaderFindArg( shader, name );
 	CHECKARG();
 	CHECKSHADER();
@@ -182,16 +182,16 @@ void ShaderSetMat3( Renderer* renderer, Shader* shader, const char* name, Mat3 m
 	glUniformMatrix3fv( arg->uniformLoc, 1, GL_FALSE, ( GLfloat* ) arg->value );
 }
 
-void ShaderSetVec4( Renderer* renderer, Shader* shader, const char* name, Vec4 vec ){
+void ShaderSetVec4( Renderer* renderer, Shader* shader, const char* name, Vec4 vec ) {
 	ShaderArg* arg = ShaderFindArg( shader, name );
 	CHECKARG();
 	CHECKSHADER();
 
 	memcpy( arg->value, &vec, sizeof( Vec4 ) );
-	glUniform4fv( arg->uniformLoc, 1, (GLfloat*) arg->value);
+	glUniform4fv( arg->uniformLoc, 1, ( GLfloat* ) arg->value );
 }
 
-void ShaderSetVec3( Renderer* renderer, Shader* shader, const char* name, Vec3 vec ){
+void ShaderSetVec3( Renderer* renderer, Shader* shader, const char* name, Vec3 vec ) {
 	ShaderArg* arg = ShaderFindArg( shader, name );
 	CHECKARG();
 	CHECKSHADER();
@@ -224,7 +224,7 @@ void ShaderSetFloat( Renderer* renderer, Shader* shader, const char* name, int v
 	CHECKSHADER();
 
 	memcpy( arg->value, &value, sizeof( int ) );
-	glUniform1i( arg->uniformLoc, ( GLint) *arg->value );
+	glUniform1i( arg->uniformLoc, ( GLint ) *arg->value );
 }
 
 void ShaderSetInt( Renderer* renderer, Shader* shader, const char* name, int value ) {
@@ -246,18 +246,18 @@ void ShaderSetMat4Array( class Renderer* renderer, Shader* shader, const char* n
 	glUniformMatrix4fv( arg->uniformLoc, count, GL_FALSE, ( GLfloat* ) loc );
 }
 
-void ShaderSetIntArray(class Renderer* renderer, Shader* shader, const char* name, int* value, i32 count) {
-	ShaderArg* arg = ShaderFindArg(shader, name);
+void ShaderSetIntArray( class Renderer* renderer, Shader* shader, const char* name, int* value, i32 count ) {
+	ShaderArg* arg = ShaderFindArg( shader, name );
 	CHECKARG();
 	CHECKSHADER();
 
-	memcpy(arg->value, &value, sizeof(int));
-	Mat4* loc = (Mat4*)value;
-	glUniform1iv(arg->uniformLoc, count, (GLint*)loc);
+	memcpy( arg->value, &value, sizeof( int ) );
+	Mat4* loc = ( Mat4* ) value;
+	glUniform1iv( arg->uniformLoc, count, ( GLint* ) loc );
 }
 
 struct TempFile {
-	const char* path;
+	char path[MAX_PATH_LENGTH];
 	char* buffer;
 	u32 length;
 	u32 spot;
@@ -271,9 +271,11 @@ bool FastReadTempFile( const char* path, TempFile* outFile ) {
 	}
 	outFile->length = file.length;
 	outFile->buffer = ( char* ) TEMP_ALLOC( file.length );
-	outFile->path = path;
-	
+	strcpy( outFile->path, path );
+	//outFile->path = path;
+
 	NFileRead( &file, outFile->buffer, file.length );
+	NFileClose( &file );
 	return true;
 }
 
@@ -282,7 +284,7 @@ bool FastReadTempFile( const char* path, TempFile* outFile ) {
 void ParseFiles( char* vertPath, char* fragPath, char** outVert, char** outFrag ) {
 	char* returns[2];
 
-	returns[0] = ( char* ) TEMP_ALLOC_ZERO(KB(50));
+	returns[0] = ( char* ) TEMP_ALLOC_ZERO( KB( 50 ) );
 	if( fragPath ) {
 		returns[1] = ( char* ) TEMP_ALLOC_ZERO( KB( 50 ) );
 	}
@@ -291,7 +293,7 @@ void ParseFiles( char* vertPath, char* fragPath, char** outVert, char** outFrag 
 	TempFile mainFiles[2]{};
 
 	if( !FastReadTempFile( vertPath, &mainFiles[0] ) ) {
-		LOG_ERROR( LGS_RENDERER,"Could not read vertex file %s\n",vertPath );
+		LOG_ERROR( LGS_RENDERER, "Could not read vertex file %s\n", vertPath );
 		return;
 	}
 
@@ -304,12 +306,17 @@ void ParseFiles( char* vertPath, char* fragPath, char** outVert, char** outFrag 
 	TempFile tempFiles[MAX_DEPTH_INC]{};
 	int numTempFiles = 0;
 
-
 	for( int f = 0; f < 2; f++ ) {
 		int finalSize = 0;
 		int stackLength = 0;
 		TempFile* stack[MAX_DEPTH_INC]{};
 		stack[stackLength++] = &mainFiles[f];
+
+		//Reset Temp file spots
+		for( int l = 0; l < MAX_DEPTH_INC; l++ ) {
+			tempFiles[l].spot = 0;
+		}
+
 
 		while( stackLength > 0 ) {
 			TempFile* current = stack[stackLength - 1];
@@ -325,8 +332,8 @@ void ParseFiles( char* vertPath, char* fragPath, char** outVert, char** outFrag 
 					strcpy( path, "res/shaders/" );
 					int len = 12;
 					//Find Start "
-					while( buffer[current->spot-1] != '\"' ) current->spot++; 
-
+					while( buffer[current->spot - 1] != '\"' ) current->spot++;
+					
 					//Read in all alpha numeric until end "
 					while( buffer[current->spot] != '\"' ) {
 						if( isalnum( buffer[current->spot] ) || buffer[current->spot] == '_'
@@ -335,11 +342,7 @@ void ParseFiles( char* vertPath, char* fragPath, char** outVert, char** outFrag 
 						}
 						current->spot++;
 					}
-
-					//Consume rest of line
-					while( buffer[current->spot - 1] != '\n' )
-						current->spot++;
-
+					current->spot++;
 					//First check if it already exists
 					int foundIndex = -1;
 					for( int k = 0; k < numTempFiles; k++ ) {
@@ -349,10 +352,10 @@ void ParseFiles( char* vertPath, char* fragPath, char** outVert, char** outFrag 
 						}
 					}
 					//if found 
-					if( foundIndex != -1  ) {
+					if( foundIndex != -1 ) {
 						//and in use, it must have been called recursively
-						if( tempFiles[numTempFiles - 1].spot > 0 ) {
-							printf( "ERROR recurisvely trying to call include %s\n", path );
+						if( tempFiles[foundIndex].spot > 0 ) {
+							LOG_ASSERT( LGS_RENDERER, "ERROR recurisvely trying to call include %s for file %s\n", path, mainFiles[f] );
 							return;
 						}
 						//Otherwise its shared between vertex & fragment
@@ -360,13 +363,15 @@ void ParseFiles( char* vertPath, char* fragPath, char** outVert, char** outFrag 
 							stack[stackLength++] = &tempFiles[foundIndex];
 						}
 					}
-					//Read in new file
-					if( !FastReadTempFile( path, &tempFiles[numTempFiles++] )) {
-						LOG_ERROR( LGS_RENDERER, "COULD NOT LOAD SHADER INCLUDE %s\n", path );
-						return;
+					else {
+						//Read in new file
+						if( !FastReadTempFile( path, &tempFiles[numTempFiles++] ) ) {
+							LOG_ERROR( LGS_RENDERER, "COULD NOT LOAD SHADER INCLUDE %s\n", path );
+							return;
+						}
+						//Add to stack
+						stack[stackLength++] = &tempFiles[numTempFiles - 1];
 					}
-					//Add to stack
-					stack[stackLength++] = &tempFiles[numTempFiles - 1];
 				}
 				//Not correct #include
 				else {
@@ -380,11 +385,9 @@ void ParseFiles( char* vertPath, char* fragPath, char** outVert, char** outFrag 
 			if( current->spot == current->length ) {
 				stackLength--;
 			}
-		}
-
-		//Reset Temp file spots
-		for( int l = 0; l < numTempFiles; l++ ) {
-			tempFiles[l].spot = 0;
+			if( current->spot > current->length ) {
+				LOG_ASSERT( LGS_RENDERER, "Read past end of file %s for shader file %s\n", current->buffer, mainFiles[f].path );
+			}
 		}
 	}
 

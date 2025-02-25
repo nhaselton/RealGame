@@ -77,8 +77,8 @@
 {
 "classname" "light"
 "origin" "716 7412 964"
-"intensity" "40"
-"attenuation" "600"
+"intensity" "5"
+"attenuation" "3250"
 }
 // entity 13
 {

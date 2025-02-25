@@ -88,6 +88,7 @@ bool LoadFile( const char* path ) {
             light.color = Vec3( 1 );
             light.cutoff = glm::cos( glm::radians( 20.0f ) );
             light.intensity = 1;
+            light.isStatic = true;
             LightSetAttenuation( &light, 20 );
 
             while( 1 ) {
@@ -117,6 +118,9 @@ bool LoadFile( const char* path ) {
                 else if( !strcmp( key, "direction" ) ) {
                     light.dir = StringToVec3( value, 0 );
                 }
+                else if( !strcmp( key, "static" ) ) {
+                    light.isStatic = !atoi( value );
+                }
                 else {
                 }
 
@@ -125,7 +129,8 @@ bool LoadFile( const char* path ) {
                     break;
                 }
             }
-            world.lights.push_back( light );
+            if ( light.isStatic )
+				world.lights.push_back( light );
         }
         else {
             parser.LeaveCurrentBrackets( 1 );

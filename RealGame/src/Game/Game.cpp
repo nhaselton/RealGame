@@ -277,18 +277,14 @@ void LoadLight( Parser* parser ) {
 	//Hack
 	Light backup;
 
-	Light* light = NewLight();
-	light->type = LIGHT_POINT;
-	light->color = Vec3( 1 );
-	light->cutoff = glm::cos( glm::radians( 20.0f ) );
-	light->intensity = 1;
-	LightSetAttenuation( light, 20 );
-
-	if( !light ) {
-		light = &backup;
-		LOG_WARNING( LGS_GAME, "no more room for lights\n" );
-	}
-
+	//Light* light = NewLight();
+	Light light{};
+	light.type = LIGHT_POINT;
+	light.color = Vec3( 1 );
+	light.cutoff = glm::cos( glm::radians( 20.0f ) );
+	light.intensity = 1;
+	light.isStatic = true;
+	LightSetAttenuation( &light, 50 );
 
 	while( 1 ) {
 		char key[MAX_NAME_LENGTH]{};
@@ -297,34 +293,49 @@ void LoadLight( Parser* parser ) {
 		parser->ParseString( key, MAX_NAME_LENGTH );
 		parser->ParseString( value, MAX_NAME_LENGTH );
 
-
 		if( !strcmp( key, "origin" ) ) {
-			light->pos = StringToVec3( value, true );
+			light.pos = StringToVec3( value, true );
 		}
 		else if( !strcmp( key, "type" ) ) {
-			light->type = ( float ) ( atoi( value ) );
+			light.type = ( float ) ( atoi( value ) );
 		}
 		//Should set float (0-1)
 		else if( !strcmp( key, "_color" ) ) {
-			light->color = StringToVec3( value, false );
+			light.color = StringToVec3( value, false );
 		}
 		else if( !strcmp( key, "attenuation" ) ) {
-			LightSetAttenuation( light, atoi( value ) );
+			LightSetAttenuation( &light, atoi( value ) );
 		}
 		else if( !strcmp( key, "intensity" ) ) {
-			light->intensity = atof( value );
+			light.intensity = atof( value );
 		}
 		else if( !strcmp( key, "direction" ) ) {
-			light->dir = StringToVec3( value, 0 );
+			light.dir = StringToVec3( value, 0 );
+		}
+		else if( !strcmp( key, "static" ) ) {
+			light.isStatic = !atoi( value );
 		}
 		else {
 			LOG_WARNING( LGS_GAME, "spawner bad key value %s : %s\n", key, value );
 		}
-
 		if( parser->GetCurrent().subType == '}' ) {
 			parser->ReadToken();
 			break;
 		}
 	}
-	LightSetAttenuation( light, 100 );
+	
+	//Sucks to have to copy it after creation, but no way to tell if its a light or not
+	if( light.isStatic ) {
+		if( renderer.worldView.numStaticLights == MAX_STATIC_LIGHTS )
+			return;
+		renderer.worldView.staticLights[renderer.worldView.numStaticLights++] = light;
+	}
+	else {
+		Light* newLight = NewLight();
+		if( !newLight ) {
+			LOG_WARNING( LGS_GAME, "no more room for lights\n" );
+			return;
+		}
+		*newLight = light;
+	}
 }

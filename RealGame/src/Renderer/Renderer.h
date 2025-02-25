@@ -51,12 +51,12 @@ struct Light {
 	Vec3 pos;
 	float cutoff;
 	Vec3 dir;
-	float type;
+	int type;
 	Vec3 color;
 	float intensity;
 	//Constant Linear Quadratic
 	Vec3 attenuation;
-	float pad2;
+	int isStatic;
 };
 
 struct LightNode {
@@ -227,8 +227,11 @@ struct WorldView {
 	Mat4 projection;
 	Mat4 view;
 
-	IVec4 counts;//.x = light
-	Light lights[MAX_LIGHTS];
+	int numDynamicLights;
+	int numStaticLights;
+	int pad0, pad1;
+	Light dynamicLights[MAX_STATIC_LIGHTS];
+	Light staticLights[MAX_DYNAMIC_LIGHTS];
 };
 
 class Renderer {
@@ -336,6 +339,7 @@ void RenderUnloadLevel();
 
 void RenderInitFont();
 void RenderLoadFontFromFile();
+void RenderUploadStaticLights();
 
 ParticleEmitter2* NewParticleEmitter();
 void RemoveEmitter(ParticleEmitter2* emitter);

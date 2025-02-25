@@ -152,8 +152,8 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	renderer->crosshairTex = TextureManagerLoadTextureFromFile( "res/textures/crosshair.png" );
 	renderer->healthTex = TextureManagerLoadTextureFromFile( "res/textures/health.png" );
 
-	void* lightMemory = ScratchArenaAllocateZero( &globalArena, MAX_LIGHTS * sizeof( LightNode ));
-	CreatePoolArena( &renderer->lightArena, sizeof( LightNode ), MAX_LIGHTS, lightMemory, &globalArena, "Light");
+	void* lightMemory = ScratchArenaAllocateZero( &globalArena, MAX_DYNAMIC_LIGHTS * sizeof( LightNode ));
+	CreatePoolArena( &renderer->lightArena, sizeof( LightNode ), MAX_DYNAMIC_LIGHTS, lightMemory, &globalArena, "Light");
 
 	glGenBuffers( 1, &renderer->particleSSBO2 );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->particleSSBO2 );
@@ -173,11 +173,11 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	glBindBufferBase ( GL_SHADER_STORAGE_BUFFER, 5, renderer->particleSortSSBO );
 	glBindBuffer ( GL_SHADER_STORAGE_BUFFER, 0 );
 
-	glGenBuffers( 1, &renderer->worldViewSSBO );
-	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->boneSSBO );
-	glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof( Mat4 ) * MAX_BONES * MAX_ENTITIES, 0, GL_DYNAMIC_DRAW );
-	glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 7, renderer->boneSSBO );
-	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+	//glGenBuffers( 1, &renderer->boneSSBO );
+	//glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->boneSSBO );
+	//glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof( Mat4 ) * MAX_BONES * MAX_ENTITIES, 0, GL_DYNAMIC_DRAW );
+	//glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 7, renderer->boneSSBO );
+	//glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
 
 	glGenBuffers( 1, &renderer->worldViewSSBO );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->worldViewSSBO );
@@ -398,9 +398,9 @@ void RenderDrawQuadTextured( Vec2 pos, Vec2 size, Texture* texture ) {
 void RenderGatherLights() {
 	int i = 0;
 	for( LightNode* light = renderer.lightHead; light != 0; light = light->next ) {
-		renderer.worldView.lights[i++] = light->light;
+		renderer.worldView.dynamicLights[i++] = light->light;
 	}
-	renderer.worldView.counts.x = i;
+	renderer.worldView.numDynamicLights = i;
 }
 
 void RenderDrawFrame( Renderer* renderer, float dt ) {
@@ -414,8 +414,8 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 	renderer->worldView.projection = renderer->projection;
 	renderer->worldView.view = renderer->camera.GetViewMatrix();
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->worldViewSSBO );
-	int worldViewSize = offsetof( WorldView, lights );//this is size before light[]
-	glBufferSubData( GL_SHADER_STORAGE_BUFFER, 0, worldViewSize + sizeof(Light) * renderer->worldView.counts.x, &renderer->worldView);
+	int worldViewSize = offsetof( WorldView, dynamicLights );//this is size before light[]
+	glBufferSubData( GL_SHADER_STORAGE_BUFFER, 0, worldViewSize + sizeof( Light ) * renderer->worldView.numDynamicLights, &renderer->worldView );
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
 
 	RenderDrawTriggers();
@@ -1226,3 +1226,15 @@ void RemoveLight( Light* light ) {
 	}
 }
 
+void RenderUploadStaticLights() {
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer.worldViewSSBO );
+	//Upload Lights
+	int worldViewOffset = offsetof( WorldView, staticLights );
+	glBufferSubData( GL_SHADER_STORAGE_BUFFER, worldViewOffset, sizeof(Light) * renderer.worldView.numStaticLights, &renderer.worldView.staticLights);
+	//Upload lightCount
+	//worldViewOffset = offsetof( WorldView, numStaticLights );
+	//glBufferSubData( GL_SHADER_STORAGE_BUFFER, worldViewOffset, 4, &renderer.worldView );
+	//glBufferSubData( GL_SHADER_STORAGE_BUFFER, 0, sizeof( WorldView ), &renderer.worldView );
+
+	glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+}

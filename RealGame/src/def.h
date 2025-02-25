@@ -35,7 +35,8 @@ inline void CopyPathChangeExtension(char* dst, const char* src, const char* newE
 #define MAX_AUDIO_SOURCES 128
 
 #define MAX_TEXTURES 128
-#define MAX_LIGHTS 512
+#define MAX_STATIC_LIGHTS 512
+#define MAX_DYNAMIC_LIGHTS 512
 
 #define MAX_BONES 64
 #define MAX_ANIMATION_SIZE KB(128)

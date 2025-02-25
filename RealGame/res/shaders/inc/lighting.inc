@@ -3,7 +3,7 @@ struct Light{
 	vec3 pos;
 	float cutoff;
 	vec3 dir;
-	float type;
+	int type;
 	vec3 color;
 	float intensity;
 	//Constant Linear Quadratic

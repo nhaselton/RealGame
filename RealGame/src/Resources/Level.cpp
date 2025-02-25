@@ -34,6 +34,8 @@ bool LoadLevel( Level* level, const char* path ) {
 	entityPath[len - 1] = 't';
 	GameLoadEntities( entityPath );
 
+	RenderUploadStaticLights();
+
 	CreateEncounters();
 	return 1;
 }
