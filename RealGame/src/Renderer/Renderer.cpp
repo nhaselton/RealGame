@@ -32,6 +32,8 @@ void RenderCreateShaders( Renderer* renderer ) {
 	renderer->shaders[SHADER_STANDARD] = ShaderManagerCreateShader( &shaderManager, "res/shaders/standard/standard.vert", "res/shaders/standard/standard.frag" );
 	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD] );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_INT, "albedo" );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_INT, "fullbright" );
+	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD], "fullbright", renderer->fullBright );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD], "albedo", S2D_ALBEDO );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_INT, "lightmap" );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD], "lightmap", S2D_LIGHTMAP );
@@ -46,6 +48,8 @@ void RenderCreateShaders( Renderer* renderer ) {
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_SKINNED], SHADER_ARG_MAT4_ARRAY, "bones" );
 	ShaderSetMat4Array( renderer, renderer->shaders[SHADER_STANDARD_SKINNED], "bones", renderer->mat4Array, 100 );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_SKINNED], SHADER_ARG_MAT4, "model" );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_SKINNED], SHADER_ARG_INT, "fullbright" );
+	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD_SKINNED], "fullbright", renderer->fullBright );
 
 	//Line
 	renderer->shaders[SHADER_LINE_SHADER] = ShaderManagerCreateShader( &shaderManager, "res/shaders/line/line.vert", "res/shaders/line/line.frag" );
@@ -105,6 +109,15 @@ void RenderCreateShaders( Renderer* renderer ) {
 	Shader* ui = renderer->shaders[SHADER_UI];
 	RenderSetShader( renderer, ui );
 	ui->updateMVP = false;
+}
+
+void ConsoleFullBright() {
+	renderer.fullBright = !renderer.fullBright;
+	RenderSetShader( &renderer, renderer.shaders[SHADER_STANDARD] );
+	ShaderSetInt( &renderer, renderer.shaders[SHADER_STANDARD], "fullbright", renderer.fullBright );
+
+	RenderSetShader( &renderer, renderer.shaders[SHADER_STANDARD_SKINNED] );
+	ShaderSetInt( &renderer, renderer.shaders[SHADER_STANDARD_SKINNED], "fullbright", renderer.fullBright );
 }
 
 void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
@@ -247,6 +260,7 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 
 	RegisterCvar( "drawstats", &renderer->drawStats, CV_INT );
 	RegisterCvar( "drawtriggers", &renderer->drawTriggers, CV_INT );
+	RegisterCvar( "fullbright", ConsoleFullBright, CV_FUNC );
 }
 
 void RenderInitFont() {
@@ -277,7 +291,7 @@ void RenderInitFont() {
 }
 
 void RenderStartFrame( Renderer* renderer ) {
-	if (KeyPressed( KEY_ENTER ))
+	if (KeyPressed( KEY_ENTER ) && !console.IsOpen())
 		ReloadShaders();
 
 	//Clear frame info
@@ -667,6 +681,36 @@ void RenderDrawEntity( Entity* entity ) {
 	RenderDrawModel( &renderer, entity->renderModel->model, trs, pose );
 }
 
+void TryLoadLightmap( Level* level ) {
+	NFile lightmapTemp;
+	char lightmapPath[MAX_PATH_LENGTH];
+	CopyPathChangeExtension( lightmapPath, level->path, "lgt" );
+	CreateNFile( &lightmapTemp, lightmapPath, "rb" );
+
+	if( !lightmapTemp.file )
+		return;
+
+	//DebugDrawAABB( Vec3( -2.97, 3.68, 0.95 ), Vec3( .25 ), 1000.0f, BLUE );
+	int mapSize = NFileReadU32( &lightmapTemp );
+	u8* lightMap = ( u8* ) TEMP_ALLOC( mapSize * mapSize * 4 );
+	NFileRead( &lightmapTemp, lightMap, mapSize * mapSize * 4 );
+
+	u32 lighttexid = 0;
+	glGenTextures( 1, &lighttexid );
+	glBindTexture( GL_TEXTURE_2D, lighttexid );
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 1024, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, lightMap );
+
+	glActiveTexture( GL_TEXTURE0 + S2D_LIGHTMAP );
+	glBindTexture( GL_TEXTURE_2D, lighttexid );
+	glActiveTexture( GL_TEXTURE0 );
+	NFileClose( &lightmapTemp );
+}
+
 void RenderLoadLevel( Level* level, NFile* file ) {
 	TEMP_ARENA_SET;
 
@@ -677,30 +721,7 @@ void RenderLoadLevel( Level* level, NFile* file ) {
 	li->numBrushes = NFileReadU32( file );
 	li->numTextures = NFileReadU32( file );
 
-	Vec2* lights = ( Vec2* ) TEMP_ALLOC( sizeof( Vec2 ) * renderer.levelInfo.numVertices );
-	NFile lightmapTemp;
-	CreateNFile( &lightmapTemp, "c:/workspace/cpp/realgame/realgame/res/maps/demo.lgt", "rb" );
-
-	//DebugDrawAABB( Vec3( -2.97, 3.68, 0.95 ), Vec3( .25 ), 1000.0f, BLUE );
-	int mapSize = NFileReadU32( &lightmapTemp );
-	u8* lightMap = ( u8* ) TEMP_ALLOC( mapSize * mapSize * 4 );
-	NFileRead( &lightmapTemp, lightMap, mapSize * mapSize * 4 );
-
-	u32 lighttexid  = 0;
-	glGenTextures( 1, &lighttexid );
-	glBindTexture( GL_TEXTURE_2D, lighttexid );
-
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 1024, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, lightMap );
-
-	glActiveTexture( GL_TEXTURE0 + S2D_LIGHTMAP );
-	glBindTexture( GL_TEXTURE_2D, lighttexid );
-	glActiveTexture( GL_TEXTURE0 );
-
-	NFileClose( &lightmapTemp );
+	TryLoadLightmap( level );
 	//Load GPU Data
 
 	u32 vertexSize = li->numVertices * sizeof( StaticVertex );

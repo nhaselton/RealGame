@@ -11,6 +11,7 @@ void CreateLevel( Level* level, void* memory, u32 size ) {
 bool LoadLevel( Level* level, const char* path ) {
 	TEMP_ARENA_SET;
 	
+
 	NFile file;
 	CreateNFile( &file, path, "rb" );
 
@@ -18,6 +19,8 @@ bool LoadLevel( Level* level, const char* path ) {
 		LOG_ERROR( LGS_GAME, "Could not open level file %s\n", path );
 		return 0;
 	}
+	memset( level->path, 0, MAX_PATH_LENGTH );
+	strcpy( level->path, path );
 
 	RenderLoadLevel( level, &file );
 	PhysicsLoadLevel( level, &file );

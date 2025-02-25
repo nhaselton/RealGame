@@ -9,6 +9,15 @@
 #include "Core/Parser.h"
 #include "Core/Console.h"
 
+inline void CopyPathChangeExtension(char* dst, const char* src, const char* newExt) {
+	memset( dst, 0, MAX_PATH_LENGTH );
+	int len = strlen( src );
+	memcpy( dst, src, len );
+	dst[len - 3] = newExt[0];
+	dst[len - 2] = newExt[1];
+	dst[len - 1] = newExt[2];
+}
+
 #define TOTAL_MEMORY (MB(128))
 #define TEMP_MEMORY (MB(25))
 

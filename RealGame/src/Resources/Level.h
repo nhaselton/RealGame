@@ -11,6 +11,7 @@ class Level {
 public:
 	ScratchArena arena;
 	
+	char path[MAX_PATH_LENGTH];
 	int numBrushes;
 	int numVertices;
 	int numIndices;

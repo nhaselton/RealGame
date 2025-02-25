@@ -482,8 +482,6 @@ bool PhysicsRaycastHull( Vec3 start, Vec3 end, int hull ) {
     return 1;
 }
 
-
-
 void GenerateLightmap() {
     world.atlas.count = 0;
     world.atlas.head = NewAtlasNode();
@@ -492,6 +490,8 @@ void GenerateLightmap() {
     world.atlas.head->max = Vec2( ATLAS_SIZE, ATLAS_SIZE );
 
     CreateUVs();
-    //DrawTexels();
-    LightLevel();
+    if ( DRAW_TEXELS )
+		DrawTexels();
+    else
+		LightLevel();
 }

@@ -21,22 +21,9 @@
 /*
 *	Milestone 3
 * 
-*	Light Maps:
-*      if( adjusted && !Trace( point, world.lights[0].pos, f, false ) )
-         point = startPoint;
-
 * 
-*		Intergrate into current VS projection
-*			Cum 
-*				Input: map.map
-*				Output: map.cum + light.cum
-*			Light:
-*				Input: map.cum + light.cum
-*				Output: map.cum
-* 
+*	Fullbright command
 *	Shader includes
-* 
-*		Bake light probes
 * 
 *	Renderer
 *	Lighting:

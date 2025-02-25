@@ -4,6 +4,7 @@ out vec4 FragColor;
 
 uniform sampler2D albedo;
 uniform sampler2D lightmap;
+uniform bool fullbright;
 
 in vec2 vtex;
 in vec3 vnorm;
@@ -75,6 +76,10 @@ void main() {
 	vec3 color = lightmapColor * rawcolor;
 	//color = rawcolor * diffuse;
 
-	color = lightmapColor ;
+	color = lightmapColor * rawcolor;
+	
+	if ( fullbright ){
+		color = rawcolor;
+	}
 	FragColor = vec4(color,1.0);
 }

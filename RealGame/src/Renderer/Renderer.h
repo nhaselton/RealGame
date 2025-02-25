@@ -268,6 +268,7 @@ public:
 
 	bool drawTriggers;
 	bool drawStats;
+	bool fullBright;
 	FrameInfo frameInfos[MAX_FRAME_INFOS];
 	int currentFrameInfo;
 	

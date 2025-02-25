@@ -181,4 +181,13 @@
 "type" "2"
 "intensity" "2"
 "attenuation" "65"
+}
+// entity 28
+{
+"classname" "light"
+"origin" "1116 1620 444"
+"_color" "1 1 1"
+"type" "2"
+"intensity" "2"
+"attenuation" "65"
 }

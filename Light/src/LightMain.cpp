@@ -10,10 +10,12 @@ int ATLAS_SIZE;
 float TEXEL_SIZE_WORLD_UNITS;
 float AMBIENT;
 bool USE_AA;
+bool DRAW_TEXELS;
 
 bool LoadFile( const char* path ) {
     ATLAS_SIZE = 1024;
     TEXEL_SIZE_WORLD_UNITS = 1.0f;
+    DRAW_TEXELS = false;
 
     //Read Light File
     FILE* lightOut = fopen( path, "rb" );
@@ -176,6 +178,7 @@ bool EditCum( const char* lmoPath ) {
 
 bool ParseArgs( int argc, char** argv ) {
 	for( int i = 2; i < argc; i ) {
+		printf( "parsing arg %s\n", argv[i] );
         if( !strcmp( argv[i], "-texel" ) ) {
             if( i == argc ) {
                 printf( "[error] require texel size\n" );
@@ -184,10 +187,9 @@ bool ParseArgs( int argc, char** argv ) {
 
 			TEXEL_SIZE_WORLD_UNITS = atof( argv[i + 1] );
             i += 2;
-            return true;
         }
 
-        if( !strcmp( argv[i], "-atlas" ) ) {
+        else if( !strcmp( argv[i], "-atlas" ) ) {
             if( i == argc ) {
                 printf( "[error] require atlas size\n" );
                 return false;
@@ -197,9 +199,18 @@ bool ParseArgs( int argc, char** argv ) {
             i += 2;
         }
 
-        if( !strcmp( argv[i], "-useaa" ) ) {
+        else if( !strcmp( argv[i], "-useaa" ) ) {
+            printf( "USING AA" );
             i++;
             USE_AA = true;
+        }
+        else if( !strcmp( argv[i], "-drawtexels" ) ) {
+            i++;
+            DRAW_TEXELS = true;
+        }
+        else {
+            printf( "unkown arg %s\n", argv[i] );
+            i++;
         }
     }
     return true;
@@ -209,7 +220,8 @@ const char* help =
 "Light\n"
 "-texel :(default 1) how big should texels be. 1 ingame unit is 1/32 quake units\n"
 "-atlas :(default 1024) how big should the atlas be\n"
-"-aa :Add antialisaing to texels. Will do 4x as many light calculations\n";
+"-aa :Add antialisaing to texels. Will do 4x as many light calculations\n"
+"-drawtexels Draw texels instead of lighting map\n";
 
 int main( int argc, char** argv ) {
     Timer t;
@@ -233,7 +245,7 @@ int main( int argc, char** argv ) {
         printf( "[ERROR] Could not create lightmap\n" );
         return 0;
     }
-
+	ParseArgs( argc, argv );
     GenerateLightmap();
     
     if( !EditCum( mapFilePath ) ) {
@@ -255,6 +267,7 @@ int main( int argc, char** argv ) {
     fclose( outFile );
 
     t.Tick();
-	printf( "Successfully compiled lightmap in %.2f ms \n", t.GetTimeMiliSeconds() );
+	printf( "Successfully compiled lightmap\n" );
+    printf( "Time Taken: %.2f ms \n", t.GetTimeMiliSeconds() );
     return 0;
 }

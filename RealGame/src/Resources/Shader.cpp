@@ -1,6 +1,9 @@
 #include "Shader.h"
 #include <glad\glad.h>
 #include "Renderer\Renderer.h" 
+
+void ParseFiles( char* vertPath, char* fragPath, char** outVert, char** outFrag );
+
 void ShaderCheckCompileErrors( GLuint shader, const char* type ) {
 	GLint success;
 	GLchar infoLog[1024];
@@ -65,6 +68,7 @@ bool CreateShader( Shader* shader, const char* vertPath, const char* fragPath) {
 
 	TEMP_ARENA_SET
 
+#if 0
 	NFile vertFile;
 	NFile fragFile;
 
@@ -96,9 +100,16 @@ bool CreateShader( Shader* shader, const char* vertPath, const char* fragPath) {
 	char* fragBuffer = ( char* ) StackArenaAllocate( &tempArena, fragFile.length + 1 );
 	NFileRead( &fragFile, fragBuffer, fragFile.length );
 	fragBuffer[fragFile.length] = '\0';
+
+	ParseFile( &vertBuffer, vertFile.length );
+	ParseFile( &fragBuffer, fragFile.length );
 	
 	NFileClose( &vertFile );
 	NFileClose( &fragFile );
+#endif
+	char* vertBuffer;
+	char* fragBuffer;
+	ParseFiles( ( char* ) vertPath, ( char* ) fragPath, &vertBuffer, &fragBuffer );
 
 	//Create the shaders
 	u32 vProg, fProg;
@@ -243,4 +254,141 @@ void ShaderSetIntArray(class Renderer* renderer, Shader* shader, const char* nam
 	memcpy(arg->value, &value, sizeof(int));
 	Mat4* loc = (Mat4*)value;
 	glUniform1iv(arg->uniformLoc, count, (GLint*)loc);
+}
+
+struct TempFile {
+	const char* path;
+	char* buffer;
+	u32 length;
+	u32 spot;
+};
+
+bool FastReadTempFile( const char* path, TempFile* outFile ) {
+	NFile file;
+	CreateNFile( &file, path, "rb" );
+	if( !file.file ) {
+		return false;
+	}
+	outFile->length = file.length;
+	outFile->buffer = ( char* ) TEMP_ALLOC( file.length );
+	outFile->path = path;
+	
+	NFileRead( &file, outFile->buffer, file.length );
+	return true;
+}
+
+//Note: fragPath not required
+#define MAX_DEPTH_INC 8
+void ParseFiles( char* vertPath, char* fragPath, char** outVert, char** outFrag ) {
+	char* returns[2];
+
+	returns[0] = ( char* ) TEMP_ALLOC_ZERO(KB(50));
+	if( fragPath ) {
+		returns[1] = ( char* ) TEMP_ALLOC_ZERO( KB( 50 ) );
+	}
+
+	//Load in vert & frag
+	TempFile mainFiles[2]{};
+
+	if( !FastReadTempFile( vertPath, &mainFiles[0] ) ) {
+		LOG_ERROR( LGS_RENDERER,"Could not read vertex file %s\n",vertPath );
+		return;
+	}
+
+	//Fragpath only needed if frag
+	if( !FastReadTempFile( fragPath, &mainFiles[1] ) && fragPath ) {
+		LOG_ERROR( LGS_RENDERER, "Could not read frag file %s\n", fragPath );
+		return;
+	}
+
+	TempFile tempFiles[MAX_DEPTH_INC]{};
+	int numTempFiles = 0;
+
+
+	for( int f = 0; f < 2; f++ ) {
+		int finalSize = 0;
+		int stackLength = 0;
+		TempFile* stack[MAX_DEPTH_INC]{};
+		stack[stackLength++] = &mainFiles[f];
+
+		while( stackLength > 0 ) {
+			TempFile* current = stack[stackLength - 1];
+			char* buffer = current->buffer;
+
+			if( buffer[current->spot] == '#' ) {
+				char next[8]{};
+				memcpy( next, buffer + current->spot + 1, 7 );
+
+				//DO Include
+				if( !strcmp( next, "include" ) ) {
+					char path[MAX_PATH_LENGTH]{};
+					strcpy( path, "res/shaders/" );
+					int len = 12;
+					//Find Start "
+					while( buffer[current->spot-1] != '\"' ) current->spot++; 
+
+					//Read in all alpha numeric until end "
+					while( buffer[current->spot] != '\"' ) {
+						if( isalnum( buffer[current->spot] ) || buffer[current->spot] == '_'
+							|| buffer[current->spot] == ' ' || buffer[current->spot] == '/' || buffer[current->spot] == '.' ) {
+							path[len++] = buffer[current->spot];
+						}
+						current->spot++;
+					}
+
+					//Consume rest of line
+					while( buffer[current->spot - 1] != '\n' )
+						current->spot++;
+
+					//First check if it already exists
+					int foundIndex = -1;
+					for( int k = 0; k < numTempFiles; k++ ) {
+						if( !strcmp( path, tempFiles[k].path ) ) {
+							foundIndex = k;
+							break;
+						}
+					}
+					//if found 
+					if( foundIndex != -1  ) {
+						//and in use, it must have been called recursively
+						if( tempFiles[numTempFiles - 1].spot > 0 ) {
+							printf( "ERROR recurisvely trying to call include %s\n", path );
+							return;
+						}
+						//Otherwise its shared between vertex & fragment
+						else {
+							stack[stackLength++] = &tempFiles[foundIndex];
+						}
+					}
+					//Read in new file
+					if( !FastReadTempFile( path, &tempFiles[numTempFiles++] )) {
+						LOG_ERROR( LGS_RENDERER, "COULD NOT LOAD SHADER INCLUDE %s\n", path );
+						return;
+					}
+					//Add to stack
+					stack[stackLength++] = &tempFiles[numTempFiles - 1];
+				}
+				//Not correct #include
+				else {
+					returns[f][finalSize++] = buffer[current->spot++];
+				}
+			}//Normal char
+			else {
+				returns[f][finalSize++] = buffer[current->spot++];
+			}
+
+			if( current->spot == current->length ) {
+				stackLength--;
+			}
+		}
+
+		//Reset Temp file spots
+		for( int l = 0; l < numTempFiles; l++ ) {
+			tempFiles[l].spot = 0;
+		}
+	}
+
+	*outVert = returns[0];
+	if( fragPath )
+		*outFrag = returns[1];
 }
