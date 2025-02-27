@@ -91,6 +91,7 @@ public:
 	float currentAnimationTime; 
 	float currentAnimationPercent; //t = [0,1]
 	float animTimeScale;//how fast should the anims be
+	float lastAnimationTime;
 
 	u32 state;
 
@@ -102,6 +103,7 @@ public:
 
 	void ( *Update ) ( class Entity* entity );
 	void ( *OnHit ) ( struct EntityHitInfo info );
+	void ( *RecievedAnimationEvent ) ( class Entity* entity, struct AnimationEvent* event );
 };
 //Init
 void EntityGenerateRenderModel( Entity* entity, class Model* model, ScratchArena* arena );

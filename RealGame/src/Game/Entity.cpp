@@ -8,6 +8,17 @@ void EntityStartAnimation( Entity* entity, int index ) {
 	entity->currentAnimationPercent = 0;
 }
 
+void PollAnimationEvents( Entity* entity ) {
+	for( int i = 0; i < entity->currentAnimation->numEvents; i++ ) {
+		AnimationEvent* event = &entity->currentAnimation->events[i];
+		if( entity->currentAnimationTime > event->time && entity->lastAnimationTime < event->time) {
+			if( entity->RecievedAnimationEvent ) {
+				entity->RecievedAnimationEvent( entity, event );
+			}
+		}
+	}
+}
+
 void EntityAnimationUpdate( Entity* entity, float dt ) {
 	if ( !entity->currentAnimation ) {
 		AnimatePose( 0, 0, entity->renderModel->pose );
@@ -28,7 +39,11 @@ void EntityAnimationUpdate( Entity* entity, float dt ) {
 
 	AnimatePose( entity->currentAnimationTime, entity->currentAnimation, entity->renderModel->pose );
 	UpdatePose( entity->renderModel->model->skeleton->root, Mat4( 1.0 ), entity->renderModel->pose );
+	PollAnimationEvents( entity );
+
+	entity->lastAnimationTime = entity->currentAnimationTime;
 }
+
 
 void EntityMove( Entity* entity, Vec3 velocity ) {
 	Vec3 gravity( 0,  -10.0f * dt , 0 );

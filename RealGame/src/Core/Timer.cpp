@@ -6,18 +6,17 @@
 
 #include "Windows.h"
 
-static u64 QueryHighFreqTimer() {
+u64 QueryHighFreqTimer() {
 	u64 time = 0;
 	QueryPerformanceCounter( ( LARGE_INTEGER* ) &time );
 	return time;
 }
 
-static u64 QueryCPUFrequency() {
+u64 QueryCPUFrequency() {
 	u64 freq = 0;
 	QueryPerformanceFrequency( ( LARGE_INTEGER* ) &freq );
 	return freq;
 }
-
 
 //Starts the timer when created
 Timer::Timer() {
@@ -31,7 +30,7 @@ void Timer::Tick() {
 
 void Timer::Restart() {
 	stop = 0;
-	start = QueryHighFreqTimer();
+	start = QueryHighFreqTimer();	
 }
 
 u64 Timer::GetTimeCycles(){
@@ -50,4 +49,13 @@ f32 Timer::GetTimeSeconds(){
 
 f32 Timer::GetTimeMiliSeconds() {
 	return GetTimeSeconds() * 1000.0f;
+}
+
+void NSpinLock( u32 time ) {
+	u32 last = QueryHighFreqTimer();
+	while( time > 0 ) {
+		u32 now = QueryHighFreqTimer();
+		if( now > last + QueryCPUFrequency() / time )
+			break;
+	}
 }

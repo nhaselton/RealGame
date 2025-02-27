@@ -109,7 +109,7 @@ void GoblinOnHit( EntityHitInfo info ) {
 			Vec3( -3,10, 8 ),
 		};
 
-		Model* gibs = ModelManagerGetModel( "res/models/gib.glb" );
+		Model* gibs = ModelManagerGetModel( "res/models/gib.glb", true );
 
 		//Smoke Emitter
 #if 1

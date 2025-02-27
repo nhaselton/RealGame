@@ -566,17 +566,31 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 }
 
 //todo better solution
-Model* ModelManagerGetModel( const char* path ) {
+Model* ModelManagerGetModel( const char* path, bool warnOnFail ) {
 	for ( ModelInfo* model = modelManager.modelHead; model != 0; model = model->next ) {
 		if ( strcmp( path, model->model.path ) == 0 )
 			return &model->model;
 
-		if ( model == 0 ) {
+		if( model == 0 && warnOnFail ) {
 			LOG_WARNING( LGS_RENDERER, "COULD NOT FIND MODEL %s\n", path );
 			return renderer.cube;
 		}
+		//Can retrn null if we're expecting it
+		else
+			return 0;
 	}
 
 	//unreachable but whatever
 	return renderer.cube;
+}
+
+AnimationClip* ModelFindAnimation( Model* model, const char* animation ) {
+	for( int i = 0; i < model->numAnimations; i++ ) {
+		if( !strcmp( model->animations[i]->name, animation ) ) {
+			return model->animations[i];
+		}
+	}
+
+	LOG_WARNING( LGS_GAME, "Could not find animation %s\n", animation );
+	return 0;
 }

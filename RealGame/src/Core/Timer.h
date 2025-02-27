@@ -34,3 +34,7 @@ public:
 	char name[MAX_NAME_LENGTH];
 	Timer t;
 };
+
+u64 QueryHighFreqTimer();
+u64 QueryCPUFrequency();
+void NSpinLock( u32 fps );

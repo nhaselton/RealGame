@@ -1,0 +1,16 @@
+"model"				"res/models/wizardsmooth.glb"	
+{
+
+	"animation"			"Baked_WizardShoot"
+	{
+		"numevents"		"1"
+		{
+			"type"		"SHOOT_PROJECTILE"
+			"time"		"0.3"
+		}
+
+		
+			
+		
+	}
+}

@@ -19,12 +19,21 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-*	Milestone 3 (March 1st)
-* 	==================================
-		Whats Next
-	==================================
-	Framerate cap
-	Console command max_fps
+
+	//===============================
+			Project Karnak Demo (Done By Doom)
+	//===============================
+	* Animation
+*	Animation Events
+*		Should be able to add a new channel for events
+*		This may mean it is time to add the decl format.
+
+
+	//====================
+	//Karnack Milestone 1
+	//		Gameplay
+	//===================
+	By April 1st?
 
 	Implement A Proper Character Controller
 	Must work at:
@@ -33,12 +42,7 @@
 		60fps
 		30fps
 
-	//===============================
-			Project Karnak Demo
-	//==============================
-	By April 1st?
-
-	Maybe CPU Flipbooks
+		Maybe CPU Flipbooks
 		Muzzle Flash
 		Explosion (still add smoke and stuff as normal GPU particles)
 
@@ -62,35 +66,13 @@
 		Small Rooms to show off less enemies
 		Large open fields for lots of enemies
 		4 way split at end to get 4 pieces to unlock exit?
-
-
-	=====================
-			VFX
-	=====================
-	Enemy Spawn
-		3D Model?
-	MVP:
-		Single 2 or 3 room level (Start of karnack pretty much)
-			that starts in small room with Ragned guys
-			Goes outdoors into field that has kamakazi and ranged guys
-
-	==================================
-				Gameplay
-	==================================
+	
 	Triggers
 		Delay
 		Message that appears on screen
 		Sound
 
-	CPU Flipbooks
-		Explosion, etc
-			These are not particles but just a static image
-
-* Animation
-*	Animation Events
-*		Should be able to add a new channel for events
-*		This may mean it is time to add the decl format.
-*	Properly loopign animataions
+*	Properly looping animataions
 *	Figure out where to store hud textures
 *	Add a default texture for failing to get them.
 		stop asserting and start warning
@@ -103,6 +85,25 @@
 *		Im fine if they clip each i think, i can have a collision resolve stage?
 *		Customizable Boid settings (avoidance, interest in target etc.)
 *			Combine this with AABB collisions and it should be swag
+
+
+
+	//====================
+	// Karnack Milestone 2
+	//		Visuals
+	//====================
+	By DOOM the dark ages
+	Shadows
+		Either shadow map or do little shadows underneath
+			Could probably draw a sphere and if it intersects things it draws black
+	VFX
+	Enemy Spawn
+		3D Model?
+
+	CPU Flipbooks
+		Explosion, etc
+			These are not particles but just a static image
+
 *
 * 	Possible Optimizations:
 		Sparse List for entities. Right now it loops over all 1000, which shouldn't be
@@ -171,9 +172,13 @@ Sound explosion;
 
 float dt;
 float gameTime = 0;
-int maxFps;
 bool paused = false;
+int maxFps;
+int sleepTime;
 
+void LoadDecls() {
+	WizardLoadDefFile( "res/def/wizard.def" );
+}
 
 int main() {
 	CreateScratchArena( &globalArena, TOTAL_MEMORY, malloc( TOTAL_MEMORY ), NULL, "Global Arena" );
@@ -201,13 +206,19 @@ int main() {
 	//CreateSoundSystem ( &soundDevice, &soundContext );
 
 	CreateEntityManager();
-	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizardsmooth.glb" );
+
+	LoadDecls();
+
+	//Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizardsmooth.glb" );
 	Wizard::projectileModel = ModelManagerAllocate( &modelManager, "res/models/WizardBall.glb" );
 
 	RegisterCvar( "startencounter", ConsoleStartEncounter, CV_FUNC );
+	RegisterCvar( "maxfps", &maxFps, CV_INT );
 	RegisterCvar( "reloadencounters", ConsoleReloadEncounterFile, CV_FUNC );
+	RegisterCvar( "reloaddecls", LoadDecls, CV_FUNC );
 	RegisterCvar( "killai", KillAI, CV_FUNC );
-	
+	RegisterCvar( "noclip", ConsoleToggleNoClip, CV_FUNC );
+	RegisterCvar( "map", ConsoleChangeLevel, CV_FUNC );
 
 	LoadWavFile( &explosion, "res/sounds/Explosion.wav" );
 	LoadWavFile( &Player::revolverFireSound, "res/sounds/RevolverShoot.wav" );
@@ -220,9 +231,6 @@ int main() {
 
 	LoadWavFile( &Goblin::staggerSound, "res/sounds/StgGoblin.wav" );
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblinsmooth.glb" );
-
-	RegisterCvar( "noclip", ConsoleToggleNoClip, CV_FUNC );
-	RegisterCvar( "map", ConsoleChangeLevel, CV_FUNC );
 
 	//Generate Deadpose
 	Wizard::deadPose = ( SkeletonPose* ) ScratchArenaAllocate( &globalArena, sizeof( SkeletonPose ) );
@@ -259,10 +267,10 @@ int main() {
 
 	bool triggered = false;
 
-	float accum = 0;
 	while( !WindowShouldClose( &window ) ) {
-		timer.Tick();
-		dt = timer.GetTimeSeconds();
+		if( maxFps > 0 )
+			NSpinLock( maxFps );
+
 
 		player = entityManager.player;
 		//PROFILE( "Frame" );
@@ -305,7 +313,8 @@ int main() {
 		SoundSetListenerPosition( player->camera.Position );
 		alListenerfv( AL_ORIENTATION, dir );
 
-
+		timer.Tick();
+		dt = timer.GetTimeSeconds();
 
 		if( KeyDown( KEY_T ) ) {
 			start = true;

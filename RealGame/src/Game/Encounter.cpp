@@ -15,18 +15,6 @@ void ConsoleStartEncounter() {
 }
 
 
-inline bool LoadKeyValue( Parser* parser, char* key, char* value ) {
-	memset( key, 0, MAX_NAME_LENGTH );
-	memset( value, 0, MAX_NAME_LENGTH );
-
-	bool a = parser->ParseString( key, MAX_NAME_LENGTH );
-	bool b = parser->ParseString( value, MAX_NAME_LENGTH );
-	bool v = a && b;
-	if( !v ) {
-		LOG_ERROR( LGS_GAME, "Could not read key value pair\n" );
-	}
-	return ( v );
-}
 
 bool  AddEncounterAction( EncounterAction* action, char* key, char* value ) {
 	if( !strcmp( key, "type" ) ) {

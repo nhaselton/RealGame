@@ -115,3 +115,16 @@ public:
 	u32 lineStart;
 };
 Vec3 StringToVec3( const char* value, bool fix );
+
+inline bool LoadKeyValue( Parser* parser, char* key, char* value ) {
+	memset( key, 0, MAX_NAME_LENGTH );
+	memset( value, 0, MAX_NAME_LENGTH );
+
+	bool a = parser->ParseString( key, MAX_NAME_LENGTH );
+	bool b = parser->ParseString( value, MAX_NAME_LENGTH );
+	bool v = a && b;
+	if( !v ) {
+		LOG_ERROR( LGS_GAME, "Could not read key value pair\n" );
+	}
+	return ( v );
+}

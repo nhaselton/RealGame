@@ -199,6 +199,7 @@
     <ClInclude Include="src\Renderer\DebugRenderer.h" />
     <ClInclude Include="src\Renderer\GLBuffer.h" />
     <ClInclude Include="src\Renderer\Renderer.h" />
+    <ClInclude Include="src\Resources\Animation.h" />
     <ClInclude Include="src\Resources\Level.h" />
     <ClInclude Include="src\Resources\Shader.h" />
     <ClInclude Include="src\Resources\ModelManager.h" />

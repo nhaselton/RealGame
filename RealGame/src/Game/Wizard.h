@@ -57,6 +57,8 @@ void WizardStagger( Wizard* wizard );
 void WizardStartStagger( Wizard* wizard );
 void WizardMelee( Wizard* wizard );
 void WizardDie( Wizard* wizard );
+void WizardRecievedAnimationEvent( Entity* wizard, struct AnimationEvent* event );
 
 void WizardBallCallback( class Projectile* projectile, class Entity* entity );
 void WizardLoad( Parser* parser );
+void WizardLoadDefFile( const char* path );
