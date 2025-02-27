@@ -17,7 +17,7 @@ public:
 	int numIndices;
 	int numFaces;
 };
-
+extern Level level;
 void CreateLevel( Level* level, void* memory, u32 size );
 
 //Note All loading from here (RenderLoadLevel/PhysicsLoadLevel) uses the level.scratch arena

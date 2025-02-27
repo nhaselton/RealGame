@@ -60,14 +60,10 @@ public:
 	int numSpawnTags;
 };
 
-//Spawn Single AI 
-	//spawner
-	//Spawn Zone
-
 void EncounterNotifyOnDeath( Encounter* encounter, class Entity* entity );
 void StartEncounter( Encounter* encounter );
 void UpdateEncounter( Encounter* encounter );
-void CompleteEncounter( Encounter* encounter );
 
-//These are hardcoded in engine right now
-void CreateEncounters();
+void ConsoleStartEncounter();
+void ConsoleReloadEncounterFile();
+void LoadEncounterFile( const char* path );

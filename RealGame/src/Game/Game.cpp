@@ -8,7 +8,13 @@ void LoadSpawner( Parser* parser );
 void LoadSpawnZone( Parser* parser );
 void LoadLight( Parser* parser );
 
-
+void KillAI() {
+	for( int i = 0; i < entityManager.numEntities; i++ ) {
+		Entity* e = &entityManager.entities[i].entity;
+		if( e != entityManager.player )
+			RemoveEntity( e );
+	}
+}
 
 //Tries to set a base entitiy's attribute. if found will set and return true
 //Else return false

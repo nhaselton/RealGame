@@ -35,5 +35,6 @@ void main() {
 	if ( fullbright ){
 		color = rawcolor;
 	}
+	color = lightmapColor;
 	FragColor = vec4(color,1.0);
 }

@@ -56,7 +56,6 @@ typedef int64_t i64;
 typedef float f32;
 typedef double f64;
 
-
 /* The unknown key */
 #define KEY_UNKNOWN            -1
 

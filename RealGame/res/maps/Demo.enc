@@ -1,0 +1,92 @@
+//Format:
+// Braces per encounter
+// Braces per action
+//AI is key integer from encounterEnemies_t for multiple enemy types being possible
+//All action types should be the same as the enum minus the prefix ENCOUNTER_ACTION_
+
+//First Room [0]
+{
+	"name"	"first"
+	
+	//Wizard on pillar 1
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		"target" 	"pillar1"
+		"tag"		"r0w0"
+	}
+	//Wizard on pillar 2
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		"target" 	"pillar2"
+		"tag"		"r0w0"
+	}
+	//Wizards up top
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"2"
+		"target" 	"zone1"
+		"tag"		"r0w0"
+		"count"		"2"
+	}
+	//Wait for 2 wizards to die
+	{
+		"type" 		"WAIT_FOR_SPAWN_GROUP_DEAD_BLOCK"
+		"tag"		"r0w0"
+		"count"		"2"
+	}
+	//Spawn in goblins
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"1"
+		"target" 	"gob0"
+		"tag"		"r0w0"
+		"count"		"3"
+	}
+	
+}
+
+//Second Room [1]
+{
+	"name"		"second"
+	//Guy on left
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		"target" 	"hallleft"
+	}
+	//Guy on right
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		"target" 	"hallright"
+	}
+	//goblins in back
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"1"
+		"count"		"3"
+		"target" 	"hallback"
+	}
+}
+
+//End Outside [2]
+{
+	"name"		"third"
+		//goblins in back
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"1"
+		"target" 	"gobs1"
+		"count"		"200"
+	}
+
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"1"
+		"target" 	"gobs1"
+		"count"		"8"
+		"rate"		".25"
+	}
+}

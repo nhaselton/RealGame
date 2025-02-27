@@ -55,7 +55,7 @@ public:
 	SpawnTarget spawnTargets[MAX_SPAWN_TARGETS];
 	int numSpawnTargets;
 
-	Encounter encounters[128];
+	Encounter encounters[MAX_ENCOUNTERS];
 	int numEncounters;
 };
 extern EntityManager entityManager;

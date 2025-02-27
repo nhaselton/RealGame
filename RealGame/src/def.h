@@ -9,15 +9,6 @@
 #include "Core/Parser.h"
 #include "Core/Console.h"
 
-inline void CopyPathChangeExtension(char* dst, const char* src, const char* newExt) {
-	memset( dst, 0, MAX_PATH_LENGTH );
-	int len = strlen( src );
-	memcpy( dst, src, len );
-	dst[len - 3] = newExt[0];
-	dst[len - 2] = newExt[1];
-	dst[len - 1] = newExt[2];
-}
-
 #define TOTAL_MEMORY (MB(128))
 #define TEMP_MEMORY (MB(25))
 
@@ -54,6 +45,7 @@ inline void CopyPathChangeExtension(char* dst, const char* src, const char* newE
 #define MAX_RIGIDBODIES 500
 #define MAX_TRIGGERS 1024
 #define MAX_SPAWN_TARGETS 128
+#define MAX_ENCOUNTERS 128
 
 #define PHYSICS_MEMORY MB(10)
 
@@ -66,6 +58,7 @@ extern ScratchArena globalArena;
 extern StackArena tempArena;
 extern float dt;
 extern float gameTime;
+extern int maxFps;
 
 #define LIGHTGRAY  (Vec4{ 200, 200, 200, 255 } / 255.0f)  // Light Gray
 #define GRAY       (Vec4{ 130, 130, 130, 255 } / 255.0f)  // Gray
@@ -89,3 +82,18 @@ extern float gameTime;
 #define BROWN      (Vec4{ 127, 106, 79, 255 }  / 255.0f)  // Brown
 #define DARKBROWN  (Vec4{ 76, 63, 47, 255 }    / 255.0f)  // Dark Brown
 #define BLACK (Vec4(0))
+
+inline void CopyPathAndChangeExtension( char* dst, const char* source, const char* newExt, int dstSize ) {
+	int len = strlen( source );
+	if( len >= dstSize ) {
+		LOG_ASSERT( LGS_CORE, "%s is too big to copy into %d bytes", source, dst );
+		return;
+	}
+
+	memcpy( dst, source, len - 3 );
+	dst[len - 3] = newExt[0];
+	dst[len - 2] = newExt[1];
+	dst[len - 1] = newExt[2];
+
+
+}

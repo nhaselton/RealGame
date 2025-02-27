@@ -17,3 +17,4 @@ void GameUnloadLevel();
 
 Vec3 StringToVec3( const char* value, bool fix );
 bool TryEntityField( Entity* entity, const char* key, const char* value );
+void KillAI();

@@ -57,7 +57,7 @@ void KeyCallback( GLFWwindow* window, int key, int scancode, int action, int fla
 		keys[key] = 1;
 	if ( action == 0 )
 		keys[key] = 0;
-
+	
 	Window* win = (Window*) glfwGetWindowUserPointer( window );
 	KeyInfo info;
 	info.keycode = key;

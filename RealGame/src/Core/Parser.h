@@ -84,7 +84,7 @@ public:
 	int ParseIntEqualInFront();
 	float ParseFloat();
 	float ParseFloatFromQuotes();//same as part float but wont throw error
-	void ParseString( char* buffer, u32 bufferSize );
+	bool ParseString( char* buffer, u32 bufferSize ); //Returns if successful or not
 	u32 Cursor() { return cursor; }
 	char* Data() { return buffer; }
 	//Parse float of size and place inside of dests

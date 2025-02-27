@@ -19,64 +19,60 @@
 #include "Physics\Physics.h"
 #include "game/Game.h"
 /*
-*	Milestone 3
-*
-*	Renderer
-*
-*	Light:
-*		Have Game ignore static lights? Create staic option in TB
-*		Type //Separate arrays? Can upload static once and dynamic per frame
-*			Static
-*			Dynamic
-*		Calculate Radius
-*			Solve quadratic for when light < .1f?
-*		Shape
-*			Point
-*			Spot
-*			Directional
-*		Shadows: Can create when level loads if close enough to it? Unload when too far?
-*			Static
-*			All
-*			None
-*
-*	Bound Lighting
-*		Probably use sphere to make it little amount of extra data
-*		If done on CPU with tiled rendering or something, then can try AABB
-*		Can probably just solve for 0 using attenuation * intensity
-* 
-*	.Def
-*		Model
-*		static Enemy who has default stats
-*		This makes it easy to copy and can read from .def file at start
-*	Decals
+*	Milestone 3 (March 1st)
+* 	==================================
+		Whats Next
+	==================================
+	Framerate cap
+	Console command max_fps
+
+	Implement A Proper Character Controller
+	Must work at:
+		500fps
+		250fps
+		60fps
+		30fps
+
+	//===============================
+			Project Karnak Demo
+	//==============================
+	By April 1st?
+
+	Maybe CPU Flipbooks
+		Muzzle Flash
+		Explosion (still add smoke and stuff as normal GPU particles)
+
+	Weapons:
+		Pistol
+		Shotgun
+		Tommy gun clone
+		Rocket Launcher
+
+	Enemies (Types)
+		Explosive Goblin (Threat when close)
+		Wizard (Fodder)
+			Different color for slightly more variation?
+		Chaingunner (Threat at distance)
+		Small Ogre (Annoyance/Body block)
+		Kleer Type enemy (Forces you to never stop moving)
+		Bull type enemy (Heavy Kleer)
+		Reptaloid type enemy(Shootable homing projectiles) 
+	Level:
+		10 Minutes long
+		Small Rooms to show off less enemies
+		Large open fields for lots of enemies
+		4 way split at end to get 4 pieces to unlock exit?
+
 
 	=====================
 			VFX
 	=====================
 	Enemy Spawn
 		3D Model?
-
 	MVP:
 		Single 2 or 3 room level (Start of karnack pretty much)
 			that starts in small room with Ragned guys
 			Goes outdoors into field that has kamakazi and ranged guys
-
-
-	==================================
-		Whats Next
-	==================================
-	Data driven engine
-		.def files
-		Encounter files / GUI
-			One File for all encounters
-			could generate a .cpp file?
-				But then no hot reloading
-	Lighting!
-	GUI for editing things
-		Encounters should be placed in map with the name of the encounter text file	via GUI
-		This way it can be added when compiled but still hotloaded
-		Entity manager https://www.youtube.com/watch?v=R93PByk_vPI 3:38
-
 
 	==================================
 				Gameplay
@@ -118,10 +114,31 @@
 *				Can probably use the convex hucll BVH for this
 *				Dont worry about individual faces, quicker to just cull entire brushes
 
-*	Finish Paritcles
-*		3) Indirect Drawing
-*			Have particles write num particles alive to new buffer and draw indirect it
-*		4) Fadeout over time
+	*	Light:
+	*		Have Game ignore static lights? Create staic option in TB
+	*		Type //Separate arrays? Can upload static once and dynamic per frame
+	*			Static
+	*			Dynamic
+	*		Calculate Radius
+	*			Solve quadratic for when light < .1f?
+	*		Shape
+	*			Point
+	*			Spot
+	*			Directional
+	*		Shadows: Can create when level loads if close enough to it? Unload when too far?
+	*			Static
+	*			All
+	*			None
+	*
+	*	Bound Lighting
+	*		Probably use sphere to make it little amount of extra data
+	*		If done on CPU with tiled rendering or something, then can try AABB
+	*		Can probably just solve for 0 using attenuation * intensity
+
+	*	Finish Paritcles
+	*		3) Indirect Drawing
+	*			Have particles write num particles alive to new buffer and draw indirect it
+	*		4) Fadeout over time
 
 */
 
@@ -154,12 +171,13 @@ Sound explosion;
 
 float dt;
 float gameTime = 0;
+int maxFps;
 bool paused = false;
+
 
 int main() {
 	CreateScratchArena( &globalArena, TOTAL_MEMORY, malloc( TOTAL_MEMORY ), NULL, "Global Arena" );
 	console.Init();
-
 	CreateStackArena( &tempArena, TEMP_MEMORY, ScratchArenaAllocate( &globalArena, TEMP_MEMORY ), &globalArena, "Temp Arena" );
 
 	WindowInit( &window, 1280, 720, "Game for real this time guys" );
@@ -185,6 +203,11 @@ int main() {
 	CreateEntityManager();
 	Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizardsmooth.glb" );
 	Wizard::projectileModel = ModelManagerAllocate( &modelManager, "res/models/WizardBall.glb" );
+
+	RegisterCvar( "startencounter", ConsoleStartEncounter, CV_FUNC );
+	RegisterCvar( "reloadencounters", ConsoleReloadEncounterFile, CV_FUNC );
+	RegisterCvar( "killai", KillAI, CV_FUNC );
+	
 
 	LoadWavFile( &explosion, "res/sounds/Explosion.wav" );
 	LoadWavFile( &Player::revolverFireSound, "res/sounds/RevolverShoot.wav" );
@@ -236,7 +259,11 @@ int main() {
 
 	bool triggered = false;
 
+	float accum = 0;
 	while( !WindowShouldClose( &window ) ) {
+		timer.Tick();
+		dt = timer.GetTimeSeconds();
+
 		player = entityManager.player;
 		//PROFILE( "Frame" );
 		xOffset = 0;
@@ -278,8 +305,7 @@ int main() {
 		SoundSetListenerPosition( player->camera.Position );
 		alListenerfv( AL_ORIENTATION, dir );
 
-		timer.Tick();
-		dt = timer.GetTimeSeconds();
+
 
 		if( KeyDown( KEY_T ) ) {
 			start = true;

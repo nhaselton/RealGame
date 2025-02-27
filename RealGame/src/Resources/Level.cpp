@@ -26,6 +26,7 @@ bool LoadLevel( Level* level, const char* path ) {
 	PhysicsLoadLevel( level, &file );
 
 	char entityPath[MAX_PATH_LENGTH]{};
+	CopyPathAndChangeExtension( entityPath, path, "ent", MAX_PATH_LENGTH );
 	int len = strlen( path );
 
 	memcpy( entityPath, path, len - 3 );
@@ -36,7 +37,10 @@ bool LoadLevel( Level* level, const char* path ) {
 
 	RenderUploadStaticLights();
 
-	CreateEncounters();
+	char encounterPath[MAX_PATH_LENGTH]{};
+	CopyPathAndChangeExtension( encounterPath, path, "enc", MAX_PATH_LENGTH );
+	LoadEncounterFile( encounterPath );
+	//CreateEncounters();
 	return 1;
 }
 

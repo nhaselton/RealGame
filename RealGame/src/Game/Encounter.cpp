@@ -1,6 +1,162 @@
 #include "encounter.h"
 #include "Game.h"
 #include "EntityManager.h"
+#include "Resources/Level.h"
+
+void ConsoleStartEncounter() {
+	char name[MAX_NAME_LENGTH]{};
+	console.cvarArgv[0].ToString( name, MAX_NAME_LENGTH );
+
+	for ( int i = 0; i < entityManager.numEncounters;i++ )
+		if( !strcmp( entityManager.encounters[i].name, name) ) {
+			StartEncounter( &entityManager.encounters[i] );
+			break;
+		}
+}
+
+
+inline bool LoadKeyValue( Parser* parser, char* key, char* value ) {
+	memset( key, 0, MAX_NAME_LENGTH );
+	memset( value, 0, MAX_NAME_LENGTH );
+
+	bool a = parser->ParseString( key, MAX_NAME_LENGTH );
+	bool b = parser->ParseString( value, MAX_NAME_LENGTH );
+	bool v = a && b;
+	if( !v ) {
+		LOG_ERROR( LGS_GAME, "Could not read key value pair\n" );
+	}
+	return ( v );
+}
+
+bool  AddEncounterAction( EncounterAction* action, char* key, char* value ) {
+	if( !strcmp( key, "type" ) ) {
+		if( !strcmp( value, "SPAWN_SINGLE_AI" ) ) {
+			action->type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
+		}
+		else if( !strcmp( value, "SPAWN_MULTIPLE_AI" ) ) {
+			action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
+		}
+		else if( !strcmp( value, "WAIT_FOR_SPAWN_GROUP_DEAD_BLOCK" ) ) {
+			action->type = ENCOUNTER_ACTION_WAIT_FOR_SPAWN_GROUP_DEAD_BLOCK;
+		}
+		else if( !strcmp( value, "WAIT_FOR_SECONDS_BLOCK" ) ) {
+			action->type = ENCOUNTER_ACTION_WAIT_FOR_SECONDS_BLOCK;
+		}
+		else {
+			LOG_WARNING( LGS_GAME, "Unkown encounter action type %s\n", value );
+			action->type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
+		}
+	}
+	else if( !strcmp( key, "ai" ) ) {
+		action->ai = ( encounterEnemies_t ) atol( value );
+		int a = 0;
+	}
+	else if( !strcmp( key, "target" ) ) {
+		strcpy( action->spawnTarget, value );
+	}
+	else if( !strcmp( key, "tag" ) ) {
+		strcpy( action->spawnTag, value );
+	}
+	else if( !strcmp( key, "count" ) ) {
+		action->spawnCount = atoi( value );
+	}
+	else if( !strcmp( key, "rate" ) ) {
+		action->spawnRate = atof( value );
+	}
+	else {
+		LOG_WARNING( LGS_GAME, "Unkown encounter action key value %s : %s", key, value );
+		return false;
+	}
+
+
+	return true;
+}
+
+
+void ConsoleReloadEncounterFile() {
+	char path[MAX_PATH_LENGTH]{};
+	CopyPathAndChangeExtension( path, level.path, "enc", MAX_PATH_LENGTH );
+	LoadEncounterFile( path );
+}
+
+void LoadEncounterFile( const char* path ) {
+	NFile file;
+	CreateNFile( &file, path, "rb" );
+	if( !file.file ) {
+		LOG_ERROR( LGS_GAME, "Could not read encounter file %s\n", path );
+		return;
+	}
+	char* buffer = (char*) TEMP_ALLOC( file.length + 1 );
+	NFileRead( &file, buffer, file.length );
+	
+	Parser parser( buffer, file.length );
+	NFileClose( &file );
+
+	entityManager.numEncounters = 0;
+	for( int i = 0; i < MAX_ENCOUNTERS; i++ )
+		entityManager.encounters[i].totalActions = 0;
+
+	parser.ReadToken();
+
+	char key[MAX_NAME_LENGTH]{};
+	char value[MAX_NAME_LENGTH]{};
+
+	while( parser.GetCurrent().type != TT_EOF ) {
+		//New Encounter
+		parser.ExpectedTokenTypePunctuation( '{' );
+		Encounter* encounter = &entityManager.encounters[entityManager.numEncounters++];
+		//Encounter Data
+		while( 1 ) {
+			if( parser.GetCurrent().subType == '}' ) {
+				parser.ReadToken();
+				break;
+			}
+
+			//New Encounter Action
+			if( parser.GetCurrent().subType == '{' ) {
+				parser.ReadToken(); // {
+				EncounterAction* action = &encounter->actions[encounter->totalActions++];
+				while( 1 ) {
+					//End of action
+					if( parser.GetCurrent().subType == '}' ) {
+						parser.ReadToken();
+						break;
+					}
+
+					if( !LoadKeyValue( &parser, key, value ) ) {
+						goto epfail;
+					}
+
+					//This is so messy right now i'd rather take it out to keep the parse loop readable
+					AddEncounterAction( action, key, value );
+				}
+			}
+			//Must be encounter information
+			else {
+				//If not {} then should be key value
+				if( !LoadKeyValue( &parser, key, value ) ) {
+					goto epfail;
+				}
+
+				if( !strcmp( key, "name" ) ) {
+					strcpy( encounter->name, value );
+				}
+				else {
+					LOG_WARNING( LGS_GAME, "[ERROR] Encounter: %s: Unkown Key Value pair %s : %s", key, value );
+					goto epfail;
+					return;
+				}
+			}
+		}
+	}
+	goto epgood;
+
+epfail:
+	LOG_ERROR( LGS_GAME, "PARSE FAILED %s\n", path );
+	return;
+epgood:
+	return;
+}
 
 SpawnTagGroup* FindSpawnTagGroup( Encounter* encounter, const char* name ) {
 	for( int i = 0; i < encounter->numSpawnTags; i++ ) {
@@ -167,9 +323,19 @@ void EncounterAddActions( Encounter* encounter ) {
 			}
 		}
 	}
+	printf( "Encounter Ended\n" );
+	encounter->active = false;
 }
 
 void StartEncounter( Encounter* encounter ) {
+	if( encounter->active ) {
+		LOG_WARNING( LGS_GAME, "Startng Encounter %s that is already going \n", encounter->name );
+	}
+
+	//Reset it incase needed
+	encounter->block = 0;
+	encounter->nextAction = 0;
+
 	encounter->active = true;
 	EncounterAddActions( encounter );
 }
@@ -238,90 +404,6 @@ void UpdateEncounter( Encounter* encounter ) {
 			break;
 
 		}
-	}
-}
-
-void CreateEncounters() {
-	// ===================== //
-	// 	 First Encounter	 //
-	// ===================== //
-	{
-		Encounter& encounter = entityManager.encounters[entityManager.numEncounters++];
-		strcpy( encounter.name, "first" );
-
-		EncounterAction* action = &encounter.actions[encounter.totalActions++];
-		action->type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-		action->ai = ENCOUNTER_AI_WIZARD;
-		strcpy(action->spawnTarget,"pillar1");
-		strcpy( action->spawnTag, "r0w0" );
-
-		action = &encounter.actions[encounter.totalActions++];
-		action->type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-		action->ai = ENCOUNTER_AI_WIZARD;
-		strcpy( action->spawnTarget, "pillar2" );
-		strcpy( action->spawnTag, "r0w0" );
-
-		action = &encounter.actions[encounter.totalActions++];
-		action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
-		action->ai = ENCOUNTER_AI_WIZARD;
-		action->spawnCount = 2;
-		strcpy( action->spawnTarget, "zone1" );
-		strcpy( action->spawnTag, "r0w0" );
-
-		action = &encounter.actions[encounter.totalActions++];
-		action->type = ENCOUNTER_ACTION_WAIT_FOR_SPAWN_GROUP_DEAD_BLOCK;
-		strcpy( action->spawnTag, "r0w0" );
-		action->spawnCount = 2;
-
-		action = &encounter.actions[encounter.totalActions++];
-		action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
-		action->ai = ENCOUNTER_AI_GOBLIN;
-		action->spawnCount = 3;
-		strcpy( action->spawnTarget, "gob0" );
-		strcpy( action->spawnTag, "r0w1" );
-	}
-	// ===================== //
-	// 	 Second Encounter	 //
-	// ===================== //
-	{
-		Encounter& encounter = entityManager.encounters[entityManager.numEncounters++];
-		strcpy( encounter.name, "second" );
-
-		EncounterAction* action = &encounter.actions[encounter.totalActions++];
-		action->type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-		action->ai = ENCOUNTER_AI_WIZARD;
-		strcpy( action->spawnTarget, "hallleft" );
-
-		action = &encounter.actions[encounter.totalActions++];
-		action->type = ENCOUNTER_ACTION_SPAWN_SINGLE_AI;
-		action->ai = ENCOUNTER_AI_WIZARD;
-		strcpy( action->spawnTarget, "hallright" );
-
-		action = &encounter.actions[encounter.totalActions++];
-		action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
-		action->ai = ENCOUNTER_AI_GOBLIN;
-		action->spawnCount = 3;
-		strcpy( action->spawnTarget, "hallback" );
-	}
-	// ===================== //
-	// 	 Third Encounter	 //
-	// ===================== //
-	{
-		Encounter& encounter = entityManager.encounters[entityManager.numEncounters++];
-		strcpy( encounter.name, "third" );
-
-		EncounterAction* action = &encounter.actions[encounter.totalActions++];
-		action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
-		action->ai = ENCOUNTER_AI_GOBLIN;
-		action->spawnCount = 200;
-		strcpy( action->spawnTarget, "gobs1" );
-
-		action = &encounter.actions[encounter.totalActions++];
-		action->type = ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI;
-		action->ai = ENCOUNTER_AI_GOBLIN;
-		action->spawnCount = 8;
-		action->spawnRate = .25f;
-		strcpy( action->spawnTarget, "gobs1" );
 	}
 }
 

@@ -683,10 +683,10 @@ void RenderDrawEntity( Entity* entity ) {
 
 void TryLoadLightmap( Level* level ) {
 	NFile lightmapTemp;
-	char lightmapPath[MAX_PATH_LENGTH];
-	CopyPathChangeExtension( lightmapPath, level->path, "lgt" );
+	char lightmapPath[MAX_PATH_LENGTH]{};
+	CopyPathAndChangeExtension( lightmapPath, level->path, "lgt", MAX_PATH_LENGTH );
 	CreateNFile( &lightmapTemp, lightmapPath, "rb" );
-
+	
 	if( !lightmapTemp.file )
 		return;
 
@@ -701,8 +701,8 @@ void TryLoadLightmap( Level* level ) {
 
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 1024, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, lightMap );
 
 	glActiveTexture( GL_TEXTURE0 + S2D_LIGHTMAP );

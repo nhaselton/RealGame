@@ -343,15 +343,16 @@ bool Parser::ExpectedTokenTypePunctuation( char symbol ){
 	return true;
 }
 
-void Parser::ParseString( char* buffer, u32 bufferSize ) {
+bool Parser::ParseString( char* buffer, u32 bufferSize ) {
 	if ( current.type != TT_STRING ) {
 		printf( "error Current token is not type string\n" );
 		current.Print();
-		return;
+		return false;
 	}
 
 	memcpy( buffer, current.data, ( current.length < bufferSize ) ? current.length : bufferSize );
 	ReadToken();
+	return true;
 }
 
 void Parser::ParseVec(float* dest, int size, bool hasParenthesesSurrounding ){
