@@ -49,6 +49,12 @@
 
 #define PHYSICS_MEMORY MB(10)
 
+//For entity compilier
+//These are the things that get seralized
+#define ENT_CLASS class
+#define ENT_STRUCT struct
+#define EVAR
+
 
 //How big name buffers are when read from disk
 #define NAME_BUF_LEN (MAX_NAME_LENGTH + 4)
@@ -96,4 +102,13 @@ inline void CopyPathAndChangeExtension( char* dst, const char* source, const cha
 	dst[len - 1] = newExt[2];
 
 
+}
+inline u64 HashStringBad( const char* s ) {
+	char* s2 = ( char* ) s;
+
+	u64 sum = 1;
+	while( *s2 != '\0' ) {
+		sum += *s2++ * sum;
+	}
+	return sum;
 }

@@ -2,6 +2,7 @@
 #include "game.h"
 #include "renderer/DebugRenderer.h"
 #include "Renderer/Renderer.h"
+#include "../../EntC/gen/GEN_Light.h"
 
 void LoadTrigger( Parser* parser );
 void LoadSpawner( Parser* parser );
@@ -302,31 +303,15 @@ void LoadLight( Parser* parser ) {
 		parser->ParseString( key, MAX_NAME_LENGTH );
 		parser->ParseString( value, MAX_NAME_LENGTH );
 
-		if( !strcmp( key, "origin" ) ) {
-			light.pos = StringToVec3( value, true );
+		if( !SetLightSwitch_GENERATED( &light, key, value ) ) {
+			if( !strcmp( key, "attenuation" ) ) {
+				LightSetAttenuation( &light, atoi( value ) );
+			}
+			else {
+				LOG_WARNING( LGS_GAME, "spawner bad key value %s : %s\n", key, value );
+			}
 		}
-		else if( !strcmp( key, "type" ) ) {
-			light.type = ( float ) ( atoi( value ) );
-		}
-		//Should set float (0-1)
-		else if( !strcmp( key, "_color" ) ) {
-			light.color = StringToVec3( value, false );
-		}
-		else if( !strcmp( key, "attenuation" ) ) {
-			LightSetAttenuation( &light, atoi( value ) );
-		}
-		else if( !strcmp( key, "intensity" ) ) {
-			light.intensity = atof( value );
-		}
-		else if( !strcmp( key, "direction" ) ) {
-			light.dir = StringToVec3( value, 0 );
-		}
-		else if( !strcmp( key, "static" ) ) {
-			light.isStatic = !atoi( value );
-		}
-		else {
-			LOG_WARNING( LGS_GAME, "spawner bad key value %s : %s\n", key, value );
-		}
+
 		if( parser->GetCurrent().subType == '}' ) {
 			parser->ReadToken();
 			break;

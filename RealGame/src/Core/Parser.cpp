@@ -216,7 +216,7 @@ Token Parser::ReadToken() {
 
 	//Puncuatipn
 	
-	if ( c == '{' || c == '}' || c == '(' || c == ')' || c == '#' || c == '/' || c == ':' || c == '\'' || c == '=' || c == ',' || c == '[' || c== ']' ) {
+	if ( c == '{' || c == '}' || c == '(' || c == ')' || c == '#' || c == '/' || c == ':' || c == '\'' || c == '=' || c == ',' || c == '[' || c== ']' || c == ';' ) {
 		current.type = TT_PUNCTUATION;
 		current.subType = ( TokenSubtype ) c;
 		current.length = 1;

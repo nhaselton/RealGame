@@ -267,7 +267,10 @@ int main() {
 	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
-	LoadLevel( &level, "res/maps/test.cum" );
+	{
+		PROFILE( "Release" );
+		LoadLevel( &level, "res/maps/demo.cum" );
+	}
 	Timer timer;
 
 	Player* player = (Player*) entityManager.player;
