@@ -53,7 +53,13 @@
 //These are the things that get seralized
 #define ENT_CLASS class
 #define ENT_STRUCT struct
-#define EVAR
+#define EVAR //This is for literals, ints, vec3s, etc. (No structs. we are too poor for that)
+#define EPATH //This is for items that need a path to load. models, sounds, etc.
+//This is a hack because the parser doesnt let you define custom names but TB forces you to use origin
+#define ESTRUCT //This thing Can't exactly look through structs, so all variables come from name.EARG
+
+#define ENT_RENAME(fileName)
+#define ENT_PARENT(parent)
 
 
 //How big name buffers are when read from disk
@@ -112,3 +118,5 @@ inline u64 HashStringBad( const char* s ) {
 	}
 	return sum;
 }
+
+bool TempDumpFile( const char* path, char** buffer, u32* outLen );

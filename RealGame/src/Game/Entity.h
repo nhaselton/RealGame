@@ -54,6 +54,7 @@ public:
 	Vec3 velocity;
 	class Entity* owner;
 
+	float speed;
 	CharacterCollider collider;
 	void ( *OnCollision ) ( Projectile* projectile, Entity* entity );
 	float spawnTime;
@@ -75,9 +76,9 @@ struct State {
 	void ( *OnExit ) ( class Entity* entity );
 };
 
-class Entity {
+ENT_CLASS Entity {
 public:
-	Vec3 pos;
+	EVAR Vec3 pos ENT_RENAME( "origin" );
 	Quat rotation;
 
 	Vec3 target;
@@ -95,8 +96,8 @@ public:
 
 	u32 state;
 
-	int health;
-	int maxHealth;
+	EVAR int health;
+	EVAR int maxHealth;
 
 	char spawnTag[MAX_TAG_LENGTH];
 	class Encounter* encounter;
@@ -118,4 +119,4 @@ inline Vec3 EntityForward( Entity* entity ) {
 	return glm::normalize(entity->rotation * Vec4( 0, 0, 1, 0 ));
 }
 
-struct Model* DefLoadModel( const char* path, Parser* parser );
+struct Model* DefLoadModel( const char* path );

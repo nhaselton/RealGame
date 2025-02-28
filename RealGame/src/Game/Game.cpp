@@ -2,7 +2,7 @@
 #include "game.h"
 #include "renderer/DebugRenderer.h"
 #include "Renderer/Renderer.h"
-#include "../../EntC/gen/GEN_Light.h"
+#include "generated/GEN_Light.h"
 
 void LoadTrigger( Parser* parser );
 void LoadSpawner( Parser* parser );

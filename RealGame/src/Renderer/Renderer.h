@@ -48,14 +48,14 @@ enum lightTypes {
 };
 
 ENT_STRUCT Light {
-EVAR	Vec3 pos;
+EVAR	Vec3 pos; ENT_RENAME( "origin" )
 EVAR	float cutoff;
 EVAR	Vec3 dir;
 EVAR	int type;
 EVAR	Vec3 color;
 EVAR	float intensity;
 		//Constant Linear Quadratic
-EVAR	Vec3 attenuation;
+		Vec3 attenuation;
 EVAR	int isStatic;
 };
 

@@ -216,7 +216,7 @@ Token Parser::ReadToken() {
 
 	//Puncuatipn
 	
-	if ( c == '{' || c == '}' || c == '(' || c == ')' || c == '#' || c == '/' || c == ':' || c == '\'' || c == '=' || c == ',' || c == '[' || c== ']' || c == ';' ) {
+	if( c == '{' || c == '}' || c == '(' || c == ')' || c == '#' || c == '/' || c == ':' || c == '\'' || c == '=' || c == ',' || c == '[' || c == ']' || c == ';' || c == '*' ) {
 		current.type = TT_PUNCTUATION;
 		current.subType = ( TokenSubtype ) c;
 		current.length = 1;
@@ -474,6 +474,8 @@ Token Parser::PeekNext() {
 }
 
 Vec3 StringToVec3( const char* value, bool fix ) {
+	const char* backup = value;//debugging
+
 	Vec3 v( 0 );
 	int len = strlen( value );
 

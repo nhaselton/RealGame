@@ -1,20 +1,4 @@
-"model"				"res/models/wizardsmooth.glb"	
 {
-
-	"animation"			"Baked_WizardShoot"
-	{
-		"numevents"		"1"
-		{
-			"type"		"SHOOT_PROJECTILE"
-			"time"		"0.6"
-		}			
-	}
-	"animation"			"Baked_WizardMelee"
-	{
-		"numevents"		"1"
-		{
-			"type"		"MELEE_ATTACK"
-			"time"		"1.2"
-		}			
-	}
+"model"				"res/def/WizardModel.def"
+"projectileModel"	"res/def/WizardModel.def"
 }

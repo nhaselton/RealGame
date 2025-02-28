@@ -1,5 +1,5 @@
 {
-	"model"		"res/gib.glb"
+	"model"		"WizardModel"
 	"modelscale" "1 1 1"
 	"offset"	"0 0 0" 		// Model Offset
 	"linear"	"true" 			//Probably should default

@@ -20,9 +20,31 @@
 #include "game/Game.h"
 /*
 
+	Decl Manager
+	Decl Types:
+		Projectiles:
+			List of created entitydefs for projectiles
+			When someone tries to get this projectile search through list of created ones first
+			If not there then load file and add it
+		
+		Entities: (Must do paths then will be done)
+		Prototypes
+			Remove ALL static things besides 
+			ClassLoadPrototype();
+	Done:
+		Model: (Done but must fix function to not take parser)
+			Model Path
+			Anim Info
+
+
 	//===============================
 			 Demo (Done By Doom)
 	//===============================
+	Prototype class
+		Every object points to it's prototype
+		Only store whats new
+		Bitfield for all fields overriding
+
 	Def Files:
 		Goblin	
 		Ogre
@@ -202,6 +224,20 @@ void LoadDecls() {
 	WizardLoadDefFile( "res/def/wizard.def" );
 }
 
+bool TempDumpFile( const char* path, char** buffer, u32* length ) {
+	NFile file;
+	CreateNFile( &file, path, "rb" );
+	if( !file.file ) {
+		LOG_ERROR( LGS_IO, "Could not dump file %s\n", path );
+		return 0;
+	}
+	*length = file.length;
+	*buffer = ( char* ) TEMP_ALLOC( file.length );
+	NFileRead( &file, *buffer, file.length );
+	NFileClose( &file );
+	return true;
+}
+
 int main() {
 	CreateScratchArena( &globalArena, TOTAL_MEMORY, malloc( TOTAL_MEMORY ), NULL, "Global Arena" );
 	console.Init();
@@ -232,7 +268,7 @@ int main() {
 	LoadDecls();
 
 	//Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizardsmooth.glb" );
-	Wizard::projectileModel = ModelManagerAllocate( &modelManager, "res/models/WizardBall.glb" );
+	//Wizard::projectileModel = ModelManagerAllocate( &modelManager, "res/models/WizardBall.glb" );
 
 	RegisterCvar( "startencounter", ConsoleStartEncounter, CV_FUNC );
 	RegisterCvar( "maxfps", &maxFps, CV_INT );
