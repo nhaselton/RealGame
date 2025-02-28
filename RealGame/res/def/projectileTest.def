@@ -1,0 +1,9 @@
+{
+	"model"		"res/gib.glb"
+	"modelscale" "1 1 1"
+	"offset"	"0 0 0" 		// Model Offset
+	"linear"	"true" 			//Probably should default
+	"size"		"2 2 2"
+	
+	
+}

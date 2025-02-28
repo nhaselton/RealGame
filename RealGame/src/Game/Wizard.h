@@ -28,8 +28,6 @@ public:
 	float shootCooldown;
 	float nextMelee;
 	float startMovingTime;
-	bool hasShot;
-	bool hasMelee;
 	class AudioSource* audioSource;
 
 

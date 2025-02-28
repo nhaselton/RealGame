@@ -117,3 +117,5 @@ void EntityLookAtPlayer( Entity* entity );
 inline Vec3 EntityForward( Entity* entity ) {
 	return glm::normalize(entity->rotation * Vec4( 0, 0, 1, 0 ));
 }
+
+struct Model* DefLoadModel( const char* path, Parser* parser );

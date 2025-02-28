@@ -23,8 +23,6 @@ void WizardStartShoot( Wizard* wizard ) {
 }
 
 void WizardStartRepositioning( Wizard* wizard ) {
-	wizard->hasShot = false;
-	wizard->hasMelee = false;
 	wizard->state = WIZARD_REPOSITION;
 	wizard->startMovingTime = gameTime;
 
@@ -202,25 +200,6 @@ void WizardReposition( Wizard* wizard ) {
 }
 
 void WizardMelee( Wizard* wizard ) {
-	if( wizard->currentAnimationPercent >= 0.9f && !wizard->hasMelee ) {
-		wizard->hasMelee = true;
-		ParticleEmitter2* emitter = NewParticleEmitter();
-		emitter->pos = wizard->pos + Vec3(0,0,0);
-		//emitter->UV 
-		emitter->numParticles = 300;
-		emitter->maxParticles = 300;
-		emitter->scale = Vec3( .2f );
-		emitter->acceleration = Vec3( 0, -20, 0 );
-		emitter->emitterSpawnType = EMITTER_INSTANT;
-		emitter->maxEmitterLifeTime = 1.5f;
-		emitter->particleLifeTime = 3.0f;
-		emitter->radius = 2.0f;
-		emitter->UV = Vec4( .09375, 0, 0.125, .03125 );
-
-		return;
-	}
-
-
 	if( wizard->currentAnimationPercent >= 1.0f ) {
 		wizard->nextMelee = gameTime + wizard->shootCooldown;
 		wizard->nextShootTime = gameTime + wizard->shootCooldown / 2.0f; //Dont immediately shoot after a melee
@@ -310,9 +289,12 @@ void WizardBallCallback( class Projectile* projectile, class Entity* entity ) {
 	emitter->pos = projectile->collider.offset;	
 }
 
-void WizardRecievedAnimationEvent( Entity* wizard, AnimationEvent* event ) {
+void WizardRecievedAnimationEvent( Entity* ent, AnimationEvent* event ) {
+	Wizard* wizard = ( Wizard* ) ent;
 	switch( event->type ) {
 		case ANIM_EVENT_SHOOT_PROJECTILE:
+		{
+
 		Vec3 orbPos = wizard->pos + Vec3( 0, 3, 0 );
 		Vec3 velocity = glm::normalize( ( entityManager.player->pos - orbPos ) ) * 40.0f;
 		Projectile* orb = NewProjectile( orbPos, velocity, Vec3( .5f ), true );
@@ -324,7 +306,23 @@ void WizardRecievedAnimationEvent( Entity* wizard, AnimationEvent* event ) {
 			orb->OnCollision = WizardBallCallback;
 			//PlaySound( wizard->audioSource, &Wizard::shootSound );
 		}
-		break;
+		}break;
+		case ANIM_EVENT_MELEE_ATTACK:
+		{
+			ParticleEmitter2* emitter = NewParticleEmitter();
+			emitter->pos = wizard->pos + Vec3( 0, 0, 0 );
+			//emitter->UV 
+			emitter->numParticles = 300;
+			emitter->maxParticles = 300;
+			emitter->scale = Vec3( .2f );
+			emitter->acceleration = Vec3( 0, -20, 0 );
+			emitter->emitterSpawnType = EMITTER_INSTANT;
+			emitter->maxEmitterLifeTime = 1.5f;
+			emitter->particleLifeTime = 3.0f;
+			emitter->radius = 2.0f;
+			emitter->UV = Vec4( .09375, 0, 0.125, .03125 );
+		}break;
+		
 	}
 }
 
@@ -339,7 +337,7 @@ void WizardLoad( Parser* parser ) {
 		parser->ParseString( value, MAX_NAME_LENGTH );
 
 		if( !TryEntityField( wizard, key, value ) ) {
-			LOG_WARNING( LGS_GAME, "player has no kvp %s : %s", key, value );
+			LOG_WARNING( LGS_GAME, "wizard has no kvp %s : %s", key, value );
 		}
 
 		if( parser->GetCurrent().subType == '}' ) {
@@ -352,6 +350,7 @@ void WizardLoad( Parser* parser ) {
 //To Abstract:
 	//If Model:
 		//Give new function Model** and parser* and let it go
+
 
 void WizardLoadDefFile( const char* path ) {
 	NFile file;
@@ -384,80 +383,8 @@ void WizardLoadDefFile( const char* path ) {
 		}
 
 		if( !strcmp( key, "model" ) ) {
-			//Check if we already got the model (Can happen during reloads)
-			Wizard::model = ModelManagerGetModel( value, false );
-			//If not then load it
-			if( !Wizard::model )
-				Wizard::model = ModelManagerAllocate( &modelManager, value );
-
-			//Make sure it actually loaded that time
-			if( !Wizard::model ) {
-				LOG_ERROR( LGS_GAME, "No Wizard Model at %s\n", value );
-				goto wzfail;
-			}
-			ModelInfo* modelInfo = ( ModelInfo* ) ( ( char* ) Wizard::model - 8 );
-			//Editing animations
-			if( parser.GetCurrent().subType == '{' ) {
-				parser.ReadToken();
-
-				while( 1 ) {
-					if( parser.GetCurrent().subType == '}' ) {
-						break;
-					}
-					if( !LoadKeyValue( &parser, key, value ) ) goto wzfail;
-					
-					if( !strcmp( key, "animation" ) ) {
-						//Find Animation
-						AnimationClip* animation = ModelFindAnimation( Wizard::model, value );
-						if( !animation ) goto wzfail;
-						parser.ExpectedTokenTypePunctuation( '{' );
-
-						if( !LoadKeyValue( &parser, key, value ) ) goto wzfail;
-						if( !strcmp( "numevents", key ) ) {
-							int numEvents = atoi( value );
-							//If hot reloading, we dont need to reallocate memory.
-							//Just override it
-							if( animation->numEvents != numEvents ) {
-								animation->numEvents = numEvents;
-								animation->events =	 ( AnimationEvent* ) ScratchArenaAllocate( &modelInfo->arena, animation->numEvents * sizeof( AnimationEvent ) );
-							}
-							for( int i = 0; i < animation->numEvents; i++ ) {
-								AnimationEvent* event = &animation->events[i];
-								parser.ExpectedTokenTypePunctuation( '{' );
-								while( 1 ) {
-									if( parser.GetCurrent().subType == '}' ) {
-										parser.ReadToken();
-										break;
-									}
-
-									if( !LoadKeyValue( &parser, key, value ) ) goto wzfail;
-									if( !strcmp( "type", key ) ) {
-										if( !strcmp( "SHOOT_PROJECTILE", value ) ) {
-											event->type = ANIM_EVENT_SHOOT_PROJECTILE;
-										}
-										else {
-											LOG_WARNING( LGS_GAME, "Unkown Animation Event type %s\n", value );
-											goto wzfail;
-										}
-									}
-									else if( !strcmp( "time", key ) ) {
-										event->time = atof( value );
-									}
-									else {
-										LOG_WARNING( LGS_GAME, "Unkown anim event arg %s\n" );
-										goto wzfail;
-									}
-								}
-							}
-							//End of Animation
-							parser.ExpectedTokenTypePunctuation( '}' );
-						}
-
-
-					}
-				}
-
-			}
+			Wizard::model = DefLoadModel( value, &parser );
+			if( !Wizard::model ) goto wzfail;
 		}
 	}
 

@@ -98,6 +98,9 @@ void GameLoadEntities( const char* path ) {
 		else if( !strcmp( className, "info_wizard_start" ) ) {
 			WizardLoad( &parser );
 		}
+		else if( !strcmp( className, "info_ogre_start" ) ) {
+			OgreLoad( &parser );
+		}
 		else if( !strcmp( className, "trigger_once" ) ) {
 			LoadTrigger(&parser);
 		}

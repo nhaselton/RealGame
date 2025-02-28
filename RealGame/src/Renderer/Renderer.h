@@ -381,3 +381,6 @@ inline void LightSetAttenuation( Light* light, int index ) {
 		light->attenuation = Vec3( 1.0, 0.22, 0.20 ); break;
 	}
 }
+
+
+void ConsoleFullBright();

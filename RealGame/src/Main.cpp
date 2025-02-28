@@ -21,16 +21,47 @@
 /*
 
 	//===============================
-			Project Karnak Demo (Done By Doom)
+			 Demo (Done By Doom)
 	//===============================
-	* Animation
-*	Animation Events
-*		Should be able to add a new channel for events
-*		This may mean it is time to add the decl format.
+	Def Files:
+		Goblin	
+		Ogre
+
+	Codegen:
+		Whatever.cpp
+			#define PARSE_CLASS 
+			#define PARSE_VAR
+
+			#define CLASS_PROTOTYPE WHATEVER{
+			}
+
+			PARSE_CLASS class Whatever{
+				PARSE_VAR var whatever
+				var whatever2;
+				PARSE_VAR whatever3;
+			}
+	Prototype classes (Look at Tim Cain Video for ideas?)
+	Would be nice to be able to load in path and find prototype class from it 
+
+	Class types:
+		Entity
+		Projecitle
+		Partilce effect
+
+
+		Run comp.exe
+		CLASSGen.cpp
+		EntityGen.h
+			at compile-time turns into
+			void SetWhatever(Class* class, varType var){class->whatever = var;}
+			void SetWhatever3(Class* class, varType var){class->whatever3 = var;}
+
+
+		//Decl manager that all talk to each other
 
 
 	//====================
-	//Karnack Milestone 1
+	//Milestone 1
 	//		Gameplay
 	//===================
 	By April 1st?
@@ -41,10 +72,6 @@
 		250fps
 		60fps
 		30fps
-
-		Maybe CPU Flipbooks
-		Muzzle Flash
-		Explosion (still add smoke and stuff as normal GPU particles)
 
 	Weapons:
 		Pistol
@@ -58,6 +85,7 @@
 			Different color for slightly more variation?
 		Chaingunner (Threat at distance)
 		Small Ogre (Annoyance/Body block)
+			Need Models
 		Kleer Type enemy (Forces you to never stop moving)
 		Bull type enemy (Heavy Kleer)
 		Reptaloid type enemy(Shootable homing projectiles) 
@@ -89,7 +117,7 @@
 
 
 	//====================
-	// Karnack Milestone 2
+	//  Milestone 2
 	//		Visuals
 	//====================
 	By DOOM the dark ages
@@ -103,12 +131,7 @@
 	CPU Flipbooks
 		Explosion, etc
 			These are not particles but just a static image
-
 *
-* 	Possible Optimizations:
-		Sparse List for entities. Right now it loops over all 1000, which shouldn't be
-		too bad however each entity is 2K and that will not be cache coherent at all
-
 	Graphics
 *		Map Renderering
 *			Cull Brushes with AABB from camera
@@ -140,7 +163,6 @@
 	*		3) Indirect Drawing
 	*			Have particles write num particles alive to new buffer and draw indirect it
 	*		4) Fadeout over time
-
 */
 
 //Eventually
@@ -232,6 +254,10 @@ int main() {
 	LoadWavFile( &Goblin::staggerSound, "res/sounds/StgGoblin.wav" );
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblinsmooth.glb" );
 
+	Ogre::model = ModelManagerAllocate( &modelManager, "res/models/ogre.glb" );
+	Ogre::projectileModel = ModelManagerAllocate( &modelManager, "res/models/rock.glb" );
+
+
 	//Generate Deadpose
 	Wizard::deadPose = ( SkeletonPose* ) ScratchArenaAllocate( &globalArena, sizeof( SkeletonPose ) );
 	Wizard::deadPose->globalPose = ( Mat4*  ) ScratchArenaAllocate( &globalArena, sizeof(Mat4) * Wizard::model->skeleton->numBones );
@@ -241,7 +267,7 @@ int main() {
 	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
-	LoadLevel( &level, "res/maps/demo.cum" );
+	LoadLevel( &level, "res/maps/test.cum" );
 	Timer timer;
 
 	Player* player = (Player*) entityManager.player;
@@ -266,7 +292,8 @@ int main() {
 	//sponza.model = ModelManagerAllocate( &modelManager, "DevAssets/Models/sponza.glb" );
 
 	bool triggered = false;
-
+	ConsoleFullBright();
+	maxFps = 250;
 	while( !WindowShouldClose( &window ) ) {
 		if( maxFps > 0 )
 			NSpinLock( maxFps );

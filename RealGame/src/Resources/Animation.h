@@ -49,9 +49,8 @@ struct JointKeyFrames {
 //These are gameplay related events 
 
 enum animationEvent_t {
-	ANIM_EVENT_HIT_ACTIVE,
-	ANIM_EVENT_HIT_END,
 	ANIM_EVENT_SHOOT_PROJECTILE,
+	ANIM_EVENT_MELEE_ATTACK
 };
 
 struct AnimationEvent {

@@ -26,10 +26,12 @@ public:
 	float attackCooldown;
 	bool hasThrownRock;
 	bool hasSwiped;
-	Entity* player;
+
+	static Model* model;
+	static Model* projectileModel;
 };
 
-Ogre* CreateOgre( Vec3 pos, Entity* player );
+Ogre* CreateOgre( Vec3 pos );
 
 void OgreUpdate( Entity* entity );
 void OgreOnHit( EntityHitInfo info );
@@ -47,3 +49,4 @@ void OgreStartDie(Entity* entity);
 void OgreDie( Entity* entity );
 
 void OgreRockCallback( class Projectile* projectile, class Entity* entity );
+void OgreLoad( class Parser* ogre );

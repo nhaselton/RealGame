@@ -1,3 +1,5 @@
+#include "def.h"
+#include "Game.h"
 #include "Ogre.h"
 #include "Entity.h"
 #include "Renderer\Renderer.h"
@@ -7,35 +9,26 @@
 #include "EntityManager.h"
 #include "Resources\ModelManager.h"
 
-Model* rockModel;
+Model* Ogre::model;
+Model* Ogre::projectileModel;
 
-Ogre* CreateOgre( Vec3 pos, Entity* player ) {
+Ogre* CreateOgre( Vec3 pos ) {
 	//Ogre* entity = ( Ogre* ) ScratchArenaAllocateZero( &globalArena, KB( 1 ) );
-	if ( !rockModel )
-		rockModel = ModelManagerAllocate( &modelManager, "res/models/rock.glb" );
-
 	Ogre* entity = ( Ogre* ) NewEntity();
-	entity->player = player;
 	entity->pos = pos;
 
-	Model* model = ModelManagerAllocate( &modelManager, "res/models/ogre.glb" );
-	EntityGenerateRenderModel( entity, model, &globalArena );
-	entity->renderModel->scale = Vec3( 3 );
+	EntityGenerateRenderModel( entity, Ogre::model, &globalArena );
+	entity->renderModel->scale = Vec3( 1.75 );
 
 	entity->bounds->offset = pos;
-	entity->bounds->bounds.center = Vec3( 0, 3, 0 );
-	entity->bounds->bounds.width = Vec3( 3 );
+	entity->bounds->bounds.center = Vec3( 0, 1.9, 0 );
+	entity->bounds->bounds.width = Vec3( 1.75,1.9,1.75 );
 	entity->bounds->owner = entity;
 	
 	entity->nextAttack = 0;
 	entity->attackCooldown = 5.0f;
 
 	entity->renderModel->model->animations[OGRE_ANIM_WALKING]->looping = true;
-
-	Vec3 dirToPlayer = player->pos - entity->pos;
-	dirToPlayer.y = 0;
-	entity->rotation = glm::quatLookAt( -glm::normalize( dirToPlayer ), Vec3( 0, 1, 0 ) );
-
 	entity->Update = OgreUpdate;
 	entity->OnHit = OgreOnHit;
 
@@ -79,6 +72,7 @@ void OgreMove( Entity* entity, Vec3 target ) {
 void OgreUpdate( Entity* entity ) {
 	//Apply Gravity
 	entity->pos = MoveAndSlide( entity->bounds, Vec3( 0, -10 * dt, 0 ), 0, true );
+	DebugDrawCharacterCollider( entity->bounds );
 
 	switch ( ( ogreState_t ) entity->state ) {
 		case OGRE_CHASE: OgreChase( entity ); break;
@@ -101,7 +95,7 @@ void OgreStartChase( Entity* entity ) {
 
 void OgreChase( Entity* entity ) {
 	Ogre* ogre = ( Ogre* ) entity;
-	Vec3 playerPos = ogre->player->pos;
+	Vec3 playerPos = entityManager.player->pos;
 	playerPos.y = 0;
 	
 	//Check Attacks
@@ -138,7 +132,7 @@ void OgreThrow( Entity* entity ) {
 		ogre->hasThrownRock = true;
 		
 		Vec3 rockSpawn = entity->pos + Vec3( 0, 4, 0 );;
-		Vec3 velocity = glm::normalize( ( ogre->player->pos - rockSpawn ) ) * 10.0f;
+		Vec3 velocity = glm::normalize( ( entityManager.player->pos - rockSpawn ) ) * 10.0f;
 		Vec3 bounds = Vec3( 2.0f );
 
 		Projectile* rock = NewProjectile( rockSpawn, velocity, bounds, true);
@@ -146,7 +140,7 @@ void OgreThrow( Entity* entity ) {
 		if( rock ) {
 			rock->collider.owner = entity;
 			rock->owner = ogre;
-			rock->model.model = rockModel;
+			rock->model.model = Ogre::projectileModel;
 			rock->model.scale = Vec3( 1 );
 			rock->model.translation = Vec3( 0 );
 			rock->OnCollision = OgreRockCallback;
@@ -171,18 +165,18 @@ void OgreSwipe( Entity* entity ) {
 	if ( ogre->currentAnimationPercent >= 0.5f && !ogre->hasSwiped ) {
 		ogre->hasSwiped = true;
 
-		Vec3 delta = ogre->player->pos - ogre->pos;
+		Vec3 delta = entityManager.player->pos - ogre->pos;
 		delta.y = 0;
 
 		float dist = glm::length( delta );
 		if ( dist < 10 ) {
 			EntityHitInfo info{};
 			info.attacker = entity;
-			info.victim = ogre->player;
+			info.victim = entityManager.player;
 			info.projectile = 0;
 			info.damage = 1;
 
-			ogre->player->OnHit( info );
+			entityManager.player->OnHit( info );
 		}
 	}
 }
@@ -219,4 +213,24 @@ void OgreRockCallback( class Projectile* projectile, class Entity* entity ) {
 		entity->OnHit( info );
 	}
 	RemoveProjectile( projectile );
+}
+
+void OgreLoad( Parser* parser ) {
+	Ogre* ogre = CreateOgre( Vec3( 0 ) );
+	while( 1 ) {
+		char key[MAX_NAME_LENGTH]{};
+		char value[MAX_NAME_LENGTH]{};
+
+		parser->ParseString( key, MAX_NAME_LENGTH );
+		parser->ParseString( value, MAX_NAME_LENGTH );
+
+		if( !TryEntityField( ogre, key, value ) ) {
+			LOG_WARNING( LGS_GAME, "wizard has no kvp %s : %s", key, value );
+		}
+
+		if( parser->GetCurrent().subType == '}' ) {
+			parser->ReadToken();
+			break;
+		}
+	}
 }
