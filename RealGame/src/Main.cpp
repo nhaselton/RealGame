@@ -22,10 +22,11 @@
 
 	Decl Manager
 	Decl Types:
-		Projectiles:
-			List of created entitydefs for projectiles
-			When someone tries to get this projectile search through list of created ones first
-			If not there then load file and add it
+		Allow Decl to have a vartype of decl
+		Load in Decl type of CharacterController
+		Inside of projectile tell it it has a CharacterController and make it append those funcitons as  something like
+			"name" + forEach(Field in CC) ".Field"s
+
 		
 		Entities: (Must do paths then will be done)
 		Prototypes

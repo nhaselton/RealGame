@@ -12,6 +12,7 @@
 
 Model* Wizard::model;
 Model* Wizard::projectileModel;
+Projectile* Wizard::projectile;
 SkeletonPose* Wizard::deadPose;
 Sound Wizard::shootSound;
 Sound Wizard::ballExplosionSound;
@@ -299,13 +300,14 @@ void WizardRecievedAnimationEvent( Entity* ent, AnimationEvent* event ) {
 		{
 
 		Vec3 orbPos = wizard->pos + Vec3( 0, 3, 0 );
-		Vec3 velocity = glm::normalize( ( entityManager.player->pos - orbPos ) ) * 40.0f;
+		Vec3 velocity = glm::normalize( ( entityManager.player->pos - orbPos ) ) * Wizard::projectile->speed;
+
 		Projectile* orb = NewProjectile( orbPos, velocity, Vec3( .5f ), true );
 		if( orb ) {
 			orb->collider.owner = wizard;
-			orb->model.model = Wizard::projectileModel;
+			orb->model = Wizard::projectile->model;
 			orb->model.scale = Vec3( .5f );
-			orb->model.translation = Vec3( 0 );
+			orb->model.offset = Vec3( 0 );
 			orb->OnCollision = WizardBallCallback;
 			//PlaySound( wizard->audioSource, &Wizard::shootSound );
 		}

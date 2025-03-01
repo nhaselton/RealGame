@@ -1,4 +1,4 @@
 {
 "model"				"res/def/WizardModel.def"
-"projectileModel"	"res/def/WizardModel.def"
+"projectile"	"res/def/projectileTest.def"
 }

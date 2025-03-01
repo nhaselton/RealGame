@@ -40,34 +40,37 @@ struct RenderModel {
 	SkeletonPose* pose;
 	//todo pose
 
-	Vec3 translation;
+	Vec3 offset;
 	Quat rotation;
 	Vec3 scale;
 };
 //Projectiles are completely separated from entities becuase they share no functionality besides the charactercollider
 //In ray casts, shape casts, etc. the projectile is never queried against 
 // (TODO how to handle few exceptions)
-class Projectile {
+ENT_CLASS Projectile {
 public:
 	activeState_t state;
 	//I do want it to sweep
 	Vec3 velocity;
 	class Entity* owner;
 
-	float speed;
+	EVAR float speed;
 	CharacterCollider collider;
+	E_STRUCT_VAR( Vec3, "collider.bounds.width" );
 	void ( *OnCollision ) ( Projectile* projectile, Entity* entity );
 	float spawnTime;
 
 	RenderModel model;
+	E_STRUCT_VAR( Vec3, "model.offset" );
+	E_STRUCT_PATH( "Model*", "model.model" );
 
 	//Linear Functions
 	bool isLinear;
 	float staticImpactTime;
-	//todo float impactTime
-	//hitCallback?
-	//Damage?
-	//RenderModel
+
+	//Todo
+	//Particle Effect
+		//This way it can be a def
 };
 
 struct State {
@@ -120,3 +123,4 @@ inline Vec3 EntityForward( Entity* entity ) {
 }
 
 struct Model* DefLoadModel( const char* path );
+Projectile* DefLoadProjectile( const char* path );

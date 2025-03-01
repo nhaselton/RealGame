@@ -670,7 +670,7 @@ void RenderDrawEntity( Entity* entity ) {
 	if (entity->renderModel == 0)
 		return;
 
-	Mat4 t = glm::translate( Mat4( 1.0 ), entity->renderModel->translation + entity->pos );
+	Mat4 t = glm::translate( Mat4( 1.0 ), entity->renderModel->offset + entity->pos );
 	Mat4 rmr = glm::toMat4( entity->renderModel->rotation );
 	Mat4 entr = glm::toMat4( entity->rotation );
 	Mat4 r = entr * rmr;

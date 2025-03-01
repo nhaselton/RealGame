@@ -33,7 +33,8 @@ public:
 
 
 	static EPATH Model* model;
-	static EPATH Model* projectileModel;
+	static Model* projectileModel;
+	static EPATH Projectile* projectile;
 
 	static class Sound shootSound;
 	static class Sound ballExplosionSound;

@@ -55,10 +55,11 @@
 #define ENT_STRUCT struct
 #define EVAR //This is for literals, ints, vec3s, etc. (No structs. we are too poor for that)
 #define EPATH //This is for items that need a path to load. models, sounds, etc.
-//This is a hack because the parser doesnt let you define custom names but TB forces you to use origin
-#define ESTRUCT //This thing Can't exactly look through structs, so all variables come from name.EARG
+//Note make sure you put "" around fullname in E_STRUCT_VAR ex E_STRUCT_VAR(Vec3, "bounds.width")
+#define E_STRUCT_VAR(typeFullName)//This allows you to seralize a variable from a struct by just using the last word and type. Eg: ( E_STRUCT_VAR(Vec3,collider.bounds.width) makes bounds.width a Vec3 that will then edit collider.bounds.width
+#define E_STRUCT_PATH(typeFullName)//Same as STURCT_VAR but for paths
 
-#define ENT_RENAME(fileName)
+#define ENT_RENAME(fileName)//This is a hack because the parser doesnt let you define custom names but TB forces you to use origin
 #define ENT_PARENT(parent)
 
 

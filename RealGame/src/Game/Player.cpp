@@ -34,7 +34,7 @@ Player* CreatePlayer( Vec3 pos ) {
 	player->revolver.renderModel->model = revolverModel;
 	player->revolver.renderModel->rotation = Quat( 1.0, 0, 0, 0 );
 	player->revolver.renderModel->scale = Vec3( 1 );
-	player->revolver.renderModel->translation = Vec3( 0 );
+	player->revolver.renderModel->offset = Vec3( 0 );
 	player->revolver.renderModel->pose = ( SkeletonPose* ) ScratchArenaAllocateZero( &globalArena, sizeof( SkeletonPose ) );
 	player->revolver.renderModel->pose->globalPose = ( Mat4* ) ScratchArenaAllocateZero( &globalArena, revolverModel->skeleton->numNodes * sizeof( Mat4 ) );
 	player->revolver.renderModel->pose->pose = ( JointPose* ) ScratchArenaAllocateZero( &globalArena, revolverModel->skeleton->numNodes * sizeof( JointPose ) );

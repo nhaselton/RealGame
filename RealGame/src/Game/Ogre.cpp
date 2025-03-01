@@ -142,7 +142,7 @@ void OgreThrow( Entity* entity ) {
 			rock->owner = ogre;
 			rock->model.model = Ogre::projectileModel;
 			rock->model.scale = Vec3( 1 );
-			rock->model.translation = Vec3( 0 );
+			rock->model.offset = Vec3( 0 );
 			rock->OnCollision = OgreRockCallback;
 		}
 	}

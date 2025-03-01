@@ -4,9 +4,23 @@ bool SetProjectileSwitch_GENERATED ( Projectile* clas, char* key, char* value ) 
 	u64 hash = HashStringBad( key );
 	switch( hash ) { 
 	case 13773938832://speed
-	{break; 
+	{ 
 		clas->speed = atof(value);
-	}
+	}return true;
+	case 10413388796884379648://bounds.width
+	{ 
+		Vec3 in = StringToVec3( value, true );
+		clas->collider.bounds.width = in;
+	}return true;
+	case 1644888615552://offset
+	{ 
+		Vec3 in = StringToVec3( value, true );
+		clas->model.offset = in;
+	}return true;
+	case 13834349760://model
+	{ 
+		clas->model.model = DefLoadModel( value );
+ 	}return true;
 	}
 	return false;
 }

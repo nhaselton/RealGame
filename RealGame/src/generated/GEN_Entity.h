@@ -4,18 +4,18 @@ bool SetEntitySwitch_GENERATED ( Entity* clas, char* key, char* value ) {
 	u64 hash = HashStringBad( key );
 	switch( hash ) { 
 	case 1670643985920://origin
-	{break; 
+	{ 
 		Vec3 in = StringToVec3( value, true );
 		clas->pos = in;
-	}
+	}return true;
 	case 1405455842700://health
-	{break; 
+	{ 
 		clas->health = atoi(value);
-	}
+	}return true;
 	case 1274544189746427600://maxHealth
-	{break; 
+	{ 
 		clas->maxHealth = atoi(value);
-	}
+	}return true;
 	}
 	return false;
 }

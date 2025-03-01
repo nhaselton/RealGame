@@ -4,29 +4,29 @@ bool SetWizardSwitch_GENERATED ( Wizard* clas, char* key, char* value ) {
 	u64 hash = HashStringBad( key );
 	switch( hash ) { 
 	case 14174544042110304256://nextShootTime
-	{break; 
+	{ 
 		clas->nextShootTime = atof(value);
-	}
+	}return true;
 	case 8421743215140405248://shootCooldown
-	{break; 
+	{ 
 		clas->shootCooldown = atof(value);
-	}
+	}return true;
 	case 1446158846232850464://nextMelee
-	{break; 
+	{ 
 		clas->nextMelee = atof(value);
-	}
+	}return true;
 	case 120647329834172416://startMovingTime
-	{break; 
+	{ 
 		clas->startMovingTime = atof(value);
-	}
+	}return true;
 	case 13834349760://model
-	{break; 
+	{ 
 		clas->model = DefLoadModel( value );
- 	}
-	case 16985986084806885376://projectileModel
-	{break; 
-		clas->projectileModel = DefLoadModel( value );
- 	}
+ 	}return true;
+	case 16112309839061108224://projectile
+	{ 
+		clas->projectile = DefLoadProjectile( value );
+ 	}return true;
 	}
 	return SetEntitySwitch_GENERATED ( clas , key, value );
 }

@@ -13,7 +13,8 @@
 
 enum flags {
 	FLAG_NONE,//Normal var
-	FLAG_PATH
+	FLAG_PATH = ( 1 << 0 ),
+	FLAG_STRUCT_VAR = ( 1 << 1 ),
 };
 
 struct EntVar {
@@ -98,7 +99,7 @@ void ParseFile(const char* path) {
 
 			if( parser.GetCurrent().StringEquals( ( char* ) "EVAR" ) || parser.GetCurrent().StringEquals( ( char* ) "EPATH" ) ) {
 				bool isPath = parser.GetCurrent().StringEquals( ( char* ) "EPATH" );
-					
+
 
 				parser.ReadToken();
 
@@ -118,6 +119,7 @@ void ParseFile(const char* path) {
 				}
 
 				var->nameHash = HashStringBad( var->name );
+
 				if( isPath )
 					var->flags |= FLAG_PATH;
 
@@ -142,6 +144,36 @@ void ParseFile(const char* path) {
 				}
 				//parser.ExpectedTokenTypePunctuation( ';' );
 			}
+			else if( parser.GetCurrent().StringEquals( ( char* ) "E_STRUCT_VAR" ) || parser.GetCurrent().StringEquals( ( char* ) "E_STRUCT_PATH" ) ) {
+				EntVar* var = &newClass->vars[newClass->numVars++];
+				var->flags |= FLAG_STRUCT_VAR;
+
+				if( parser.GetCurrent().StringEquals( ( char* ) "E_STRUCT_PATH" ) ) {
+					var->flags |= FLAG_PATH;
+				}
+
+				parser.ReadToken();
+				parser.ExpectedTokenTypePunctuation( '(' );
+				parser.ParseString( var->type, MAX_NAME_LENGTH );
+				parser.ExpectedTokenTypePunctuation( ',' );
+				parser.ParseString( var->name, MAX_NAME_LENGTH );
+				parser.ExpectedTokenTypePunctuation( ')' );
+
+				//Remove first . from hash name
+				char tmp[64]{};
+				int i = 0;
+				for( i = 0; var->name[i] != '\0'; i++ ) {
+					if( var->name[i] == '.' ) {
+						i++;
+						break;
+					}
+				}
+				memcpy( tmp, var->name + i, strlen( var->name ) - i );
+				var->nameHash = HashStringBad( tmp );
+				strcpy( var->expecting, tmp );
+				
+			}
+
 			else if( parser.GetCurrent().StringEquals( ( char* ) "ENT_PARENT" ) ) {
 				parser.ReadToken();
 				parser.ExpectedTokenTypePunctuation( '(' );
@@ -165,6 +197,11 @@ bool ParseAndPrintTypePath( EntVar* var, char* buffer ) {
 		strcat( buffer, var->name );
 		strcat( buffer, " = DefLoadModel( value );\n " );
 		return 1;
+	}
+	else if( !strcmp( var->type, "Projectile*" ) ) {
+		strcat( buffer, "clas->" );
+		strcat( buffer, var->name );
+		strcat( buffer, " = DefLoadProjectile( value );\n " );
 	}
 	return 0;
 }
@@ -203,9 +240,9 @@ bool ParseAndPrintType( EntVar* var, char* buffer ) {
 
 void GenerateFile() {
 	for( int i = 0; i < numClasses; i++ ) {
-		EntClass* clas = classes + i;
+		EntClass* clas = &classes[i];
 #if 1
-		char name[MAX_PATH_LENGTH]{};
+		char name[MAX_PATH_LENGTH * 2]{};
 		strcpy( name, "c:/workspace/cpp/realgame/realgame/src/generated/GEN_" );
 		strcat( name, clas->name );
 		strcat( name, ".h" );
@@ -216,6 +253,7 @@ void GenerateFile() {
 #endif
 
 		char switchFunction[KB( 256 )]{};//fuck it we ball i guess
+
 		strcpy( switchFunction, "bool Set" );
 		strcat( switchFunction, clas->name );
 		strcat( switchFunction, "Switch_GENERATED ( " );
@@ -223,17 +261,17 @@ void GenerateFile() {
 		strcat( switchFunction, "* clas, char* key, char* value ) { \n" );
 		strcat( switchFunction, "\tu64 hash = HashStringBad( key );\n" );
 		strcat( switchFunction, "\tswitch( hash ) { \n" );
-
+		
 		for( int i = 0; i < clas->numVars; i++ ) {
 			EntVar* var = &clas->vars[i];
 			char hashAsStr[32]{};
-			sprintf_s( hashAsStr, 32, "%llu", var->nameHash );
 
+			sprintf_s( hashAsStr, 32, "%llu", var->nameHash );
 			strcat( switchFunction, "\tcase " );
 			strcat( switchFunction, hashAsStr );
 			strcat( switchFunction, "://" );
 			strcat( switchFunction, (var->expecting[0]) ? var->expecting : var->name );
-			strcat( switchFunction, "\n\t{break; \n\t\t");
+			strcat( switchFunction, "\n\t{ \n\t\t");
 			//in = atoi, atof etc.
 			char* useName = ( var->expecting[0] == '\0' ) ? var->name : var->expecting;
 
@@ -246,7 +284,7 @@ void GenerateFile() {
 			if( success )
 				strcat( switchFunction, "\t\treturn true;\n" );
 
-			strcat( switchFunction, "\t}\n" );
+			strcat( switchFunction, "\t}return true;\n" );
 		}
 		strcat( switchFunction, "\t}\n" );
 
