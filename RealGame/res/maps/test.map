@@ -25,13 +25,3 @@
 "classname" "info_ogre_start"
 "origin" "-167 -71 32"
 }
-// entity 3
-{
-"classname" "info_wizard_start"
-"origin" "-183 -199 51"
-}
-// entity 4
-{
-"classname" "info_wizard_start"
-"origin" "-183 41 51"
-}

@@ -1,9 +1,9 @@
 {
-	//"model"		"res/models/wizardsmooth.glb"
-	"model"		"res/models/wizardball.glb"
+	"model"		"res/gib.glb"
 	"modelscale" "1 1 1"
-	"offset"	"0 0 0" 		// Rendermodel Model Offset
+	"offset"	"0 0 0" 		// Model Offset
 	"linear"	"true" 			//Probably should default
-	"speed"		"50"
-	"bounds.width"		"2 2 2"
+	"size"		"2 2 2"
+	
+	
 }
