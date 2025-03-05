@@ -22,19 +22,17 @@ enum wizardAnimations_t {
 	WIZARD_ANIM_STAGGER,
 };
 
-ENT_CLASS Wizard : public Entity {
+class Wizard : public Entity {
 public:
-	ENT_PARENT( "Entity" )
-	EVAR float nextShootTime; 
-	EVAR float shootCooldown;
-	EVAR float nextMelee;
-	EVAR float startMovingTime;
+	float nextShootTime;
+	float shootCooldown;
+	float nextMelee;
+	float startMovingTime;
 	class AudioSource* audioSource;
 
 
-	static EPATH Model* model;
+	static Model* model;
 	static Model* projectileModel;
-	static EPATH Projectile* projectile;
 
 	static class Sound shootSound;
 	static class Sound ballExplosionSound;
@@ -43,8 +41,6 @@ public:
 	static class Sound deathSound;
 
 	static SkeletonPose* deadPose;
-
-	static Wizard prototype;
 };
 
 void WizardUpdate( Entity* entity );

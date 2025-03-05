@@ -20,32 +20,9 @@
 #include "game/Game.h"
 /*
 
-	Decl Manager
-	Decl Types:
-		Allow Decl to have a vartype of decl
-		Load in Decl type of CharacterController
-		Inside of projectile tell it it has a CharacterController and make it append those funcitons as  something like
-			"name" + forEach(Field in CC) ".Field"s
-
-		
-		Entities: (Must do paths then will be done)
-		Prototypes
-			Remove ALL static things besides 
-			ClassLoadPrototype();
-	Done:
-		Model: (Done but must fix function to not take parser)
-			Model Path
-			Anim Info
-
-
 	//===============================
 			 Demo (Done By Doom)
 	//===============================
-	Prototype class
-		Every object points to it's prototype
-		Only store whats new
-		Bitfield for all fields overriding
-
 	Def Files:
 		Goblin	
 		Ogre
@@ -225,20 +202,6 @@ void LoadDecls() {
 	WizardLoadDefFile( "res/def/wizard.def" );
 }
 
-bool TempDumpFile( const char* path, char** buffer, u32* length ) {
-	NFile file;
-	CreateNFile( &file, path, "rb" );
-	if( !file.file ) {
-		LOG_ERROR( LGS_IO, "Could not dump file %s\n", path );
-		return 0;
-	}
-	*length = file.length;
-	*buffer = ( char* ) TEMP_ALLOC( file.length );
-	NFileRead( &file, *buffer, file.length );
-	NFileClose( &file );
-	return true;
-}
-
 int main() {
 	CreateScratchArena( &globalArena, TOTAL_MEMORY, malloc( TOTAL_MEMORY ), NULL, "Global Arena" );
 	console.Init();
@@ -269,7 +232,7 @@ int main() {
 	LoadDecls();
 
 	//Wizard::model = ModelManagerAllocate( &modelManager, "res/models/wizardsmooth.glb" );
-	//Wizard::projectileModel = ModelManagerAllocate( &modelManager, "res/models/WizardBall.glb" );
+	Wizard::projectileModel = ModelManagerAllocate( &modelManager, "res/models/WizardBall.glb" );
 
 	RegisterCvar( "startencounter", ConsoleStartEncounter, CV_FUNC );
 	RegisterCvar( "maxfps", &maxFps, CV_INT );
@@ -304,10 +267,7 @@ int main() {
 	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
-	{
-		PROFILE( "Release" );
-		LoadLevel( &level, "res/maps/demo.cum" );
-	}
+	LoadLevel( &level, "res/maps/test.cum" );
 	Timer timer;
 
 	Player* player = (Player*) entityManager.player;

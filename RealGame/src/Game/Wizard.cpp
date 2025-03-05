@@ -5,21 +5,17 @@
 #include "Resources/ModelManager.h"
 #include "Renderer/DebugRenderer.h"
 #include "renderer/Renderer.h"
-#include "generated/GEN_Entity.h"
-#include "generated/GEN_Wizard.h"
 
 #include <AL/al.h>
 
 Model* Wizard::model;
 Model* Wizard::projectileModel;
-Projectile* Wizard::projectile;
 SkeletonPose* Wizard::deadPose;
 Sound Wizard::shootSound;
 Sound Wizard::ballExplosionSound;
 Sound Wizard::spotSound;
 Sound Wizard::staggerSound;
 Sound Wizard::deathSound;
-Wizard Wizard::prototype;
 
 void WizardStartShoot( Wizard* wizard ) {
 	wizard->state = WIZARD_SHOOT;
@@ -300,14 +296,13 @@ void WizardRecievedAnimationEvent( Entity* ent, AnimationEvent* event ) {
 		{
 
 		Vec3 orbPos = wizard->pos + Vec3( 0, 3, 0 );
-		Vec3 velocity = glm::normalize( ( entityManager.player->pos - orbPos ) ) * Wizard::projectile->speed;
-
+		Vec3 velocity = glm::normalize( ( entityManager.player->pos - orbPos ) ) * 40.0f;
 		Projectile* orb = NewProjectile( orbPos, velocity, Vec3( .5f ), true );
 		if( orb ) {
 			orb->collider.owner = wizard;
-			orb->model = Wizard::projectile->model;
+			orb->model.model = Wizard::projectileModel;
 			orb->model.scale = Vec3( .5f );
-			orb->model.offset = Vec3( 0 );
+			orb->model.translation = Vec3( 0 );
 			orb->OnCollision = WizardBallCallback;
 			//PlaySound( wizard->audioSource, &Wizard::shootSound );
 		}
@@ -341,12 +336,10 @@ void WizardLoad( Parser* parser ) {
 		parser->ParseString( key, MAX_NAME_LENGTH );
 		parser->ParseString( value, MAX_NAME_LENGTH );
 
-		
-
 		if( !TryEntityField( wizard, key, value ) ) {
 			LOG_WARNING( LGS_GAME, "wizard has no kvp %s : %s", key, value );
 		}
-		//SetWizardSwitch_GENERATED( wizard, key, value );
+
 		if( parser->GetCurrent().subType == '}' ) {
 			parser->ReadToken();
 			break;
@@ -360,16 +353,17 @@ void WizardLoad( Parser* parser ) {
 
 
 void WizardLoadDefFile( const char* path ) {
-	char* buffer = 0;
-	u32 len = 0;
-	if( !TempDumpFile( path, &buffer, &len ) ) {
-		printf( "Could not load wizard entitydef %s\n", path );
-		return;
+	NFile file;
+	CreateNFile( &file, path, "rb" );
+	if( !file.file ) {
+		LOG_ASSERT( LGS_GAME, "Could not load def file %s\n", path );
 	}
-
-	Parser parser( buffer, len );
+	char* buffer = ( char* ) TEMP_ALLOC( file.length + 1 );
+	NFileRead( &file, buffer, file.length );
+	buffer[file.length] = '\0';
+	Parser parser( buffer, file.length );
+	NFileClose( &file );
 	parser.ReadToken();
-	parser.ExpectedTokenTypePunctuation( '{' );
 	
 	while( parser.GetCurrent().type != TT_EOF ) {
 		if( parser.GetCurrent().subType == '}' ) {
@@ -387,12 +381,11 @@ void WizardLoadDefFile( const char* path ) {
 			LOG_WARNING( LGS_GAME, "Could not read key value %s : %s ", key, value );
 			goto wzfail;
 		}
-		SetWizardSwitch_GENERATED( &Wizard::prototype, key, value );
 
-		//if( !strcmp( key, "model" ) ) {
-		//	Wizard::model = DefLoadModel( value );
-		//	if( !Wizard::model ) goto wzfail;
-		//}
+		if( !strcmp( key, "model" ) ) {
+			Wizard::model = DefLoadModel( value, &parser );
+			if( !Wizard::model ) goto wzfail;
+		}
 	}
 
 	return;

@@ -2,8 +2,6 @@
 #include "Entity.h"
 #include "Physics\Physics.h"
 #include "Resources/ModelManager.h"
-#include "generated/GEN_Projectile.h"
-
 void EntityStartAnimation( Entity* entity, int index ) {
 	entity->currentAnimation =  entity->renderModel->model->animations[index];
 	entity->currentAnimationTime = 0;
@@ -62,7 +60,7 @@ void EntityGenerateRenderModel( Entity* entity, Model* model, ScratchArena* aren
 	entity->renderModel = (RenderModel*) ScratchArenaAllocate( arena, sizeof( RenderModel ) );
 	entity->renderModel->rotation = Quat( 1, 0, 0, 0 );
 	entity->renderModel->scale = Vec3( 1 );
-	entity->renderModel->offset = Vec3( 0 );
+	entity->renderModel->translation = Vec3( 0 );
 
 	entity->renderModel->model = model;
 	entity->renderModel->pose = (SkeletonPose*) ScratchArenaAllocate( arena, sizeof( SkeletonPose ) );
@@ -86,46 +84,16 @@ void EntityLookAtPlayer( Entity* entity ) {
 }
 
 
-Model* DefLoadModel( const char* path ) {
-	//If its a GLB file, just return the GLB. Not every model requires a whole .def
-	//If GLB there are no arguments for it
-	char lastThree[4];
-	int _len = strlen( path );
-	memcpy( lastThree, path + _len - 3, 4 );//Will copy '\0'
-	if( !strcmp( lastThree, "glb" ) ) {
-		Model* model = ModelManagerGetModel( path, false );;
-		if ( !model )
-			model = ModelManagerAllocate( &modelManager, path );
-		if( !model )
-			LOG_ERROR( LGS_RENDERER, "Could not find model %s\n", path );
-		return model;
-	}
-
-
-	u32 len = 0;
-	char* buffer = 0;
-	if( !TempDumpFile( path, &buffer, &len ) ) {
-		LOG_ERROR( LGS_RENDERER, "Could not load modeldef %s\n", path );
-		return 0;
-	}
-	Parser parser( buffer, len );
-	parser.ReadToken();
-
-	parser.ExpectedTokenTypePunctuation( '{' );
-	parser.ExpectedTokenString( "model" );
-	char glbPath[MAX_PATH_LENGTH]{};
-	parser.ParseString( glbPath, MAX_PATH_LENGTH );
-
-
+Model* DefLoadModel( const char* path, Parser* parser ) {
 	//Check if we already got the model (Can happen during reloads)
-	Model* model = ModelManagerGetModel( glbPath, false );
+	Model* model = ModelManagerGetModel( path, false );
 	//If not then load it
 	if( !model )
-		model = ModelManagerAllocate( &modelManager, glbPath );
+		model = ModelManagerAllocate( &modelManager, path );
 
 	//Make sure it actually loaded that time
 	if( !model ) {
-		LOG_ERROR( LGS_GAME, "No Wizard Model at %s\n", glbPath );
+		LOG_ERROR( LGS_GAME, "No Wizard Model at %s\n", path );
 		return 0;
 	}
 	ModelInfo* modelInfo = ( ModelInfo* ) ( ( char* ) model - 8 );
@@ -134,14 +102,14 @@ Model* DefLoadModel( const char* path ) {
 	char key[MAX_NAME_LENGTH]{};
 	char value[MAX_NAME_LENGTH]{};
 
-	if( parser.GetCurrent().subType == '{' ) {
-		parser.ReadToken();
+	if( parser->GetCurrent().subType == '{' ) {
+		parser->ReadToken();
 
 		while( 1 ) {
-			if( parser.GetCurrent().subType == '}' ) {
+			if( parser->GetCurrent().subType == '}' ) {
 				break;
 			}
-			if( !LoadKeyValue( &parser, key, value ) )
+			if( !LoadKeyValue( parser, key, value ) )
 				return 0;;
 
 			if( !strcmp( key, "animation" ) ) {
@@ -151,9 +119,9 @@ Model* DefLoadModel( const char* path ) {
 					LOG_ERROR( LGS_GAME, "Could not find animation %s for model %s in %s\n", value, model->path, path );
 					return 0;
 				}
-				parser.ExpectedTokenTypePunctuation( '{' );
+				parser->ExpectedTokenTypePunctuation( '{' );
 
-				if( !LoadKeyValue( &parser, key, value ) )
+				if( !LoadKeyValue( parser, key, value ) )
 					return 0;
 				if( !strcmp( "numevents", key ) ) {
 					int numEvents = atoi( value );
@@ -165,14 +133,14 @@ Model* DefLoadModel( const char* path ) {
 					}
 					for( int i = 0; i < animation->numEvents; i++ ) {
 						AnimationEvent* event = &animation->events[i];
-						parser.ExpectedTokenTypePunctuation( '{' );
+						parser->ExpectedTokenTypePunctuation( '{' );
 						while( 1 ) {
-							if( parser.GetCurrent().subType == '}' ) {
-								parser.ReadToken();
+							if( parser->GetCurrent().subType == '}' ) {
+								parser->ReadToken();
 								break;
 							}
 
-							if( !LoadKeyValue( &parser, key, value ) )
+							if( !LoadKeyValue( parser, key, value ) )
 								return 0;
 							if( !strcmp( "type", key ) ) {
 								if( !strcmp( "SHOOT_PROJECTILE", value ) ) {
@@ -196,49 +164,10 @@ Model* DefLoadModel( const char* path ) {
 						}
 					}
 					//End of Animation
-					parser.ExpectedTokenTypePunctuation( '}' );
+					parser->ExpectedTokenTypePunctuation( '}' );
 				}
 			}
 		}
 	}
 	return model;
-}
-
-Projectile* DefLoadProjectile( const char* path ){
-	char* buffer = 0;
-	u32 len = 0;
-	if( !TempDumpFile( path, &buffer, &len ) ) {
-		LOG_WARNING( LGS_GAME, "Could not read projectile def %s\n", path );
-		return 0;
-	}
-
-	Parser parser( buffer, len );
-	parser.ReadToken();
-
-
-	Projectile* projectile = ( Projectile* ) ScratchArenaAllocate( &globalArena, sizeof( Projectile ) );
-	char key[MAX_NAME_LENGTH];
-	char value[MAX_NAME_LENGTH];
-
-	projectile->collider.offset = Vec3(0);
-	projectile->collider.bounds.width = Vec3(1);
-	projectile->collider.bounds.center = Vec3( 0 );
-	projectile->spawnTime = gameTime;
-	projectile->speed = 5.0f;
-
-	parser.ExpectedTokenTypePunctuation( '{' );
-	while( 1 ) {
-		if( parser.GetCurrent().subType == '}' ) {
-			break;
-		}
-
-		LoadKeyValue( &parser, key, value );
-		
-		if( !SetProjectileSwitch_GENERATED( projectile, key, value ) ) {
-			LOG_WARNING( LGS_GAME, "Unkown Projectile key value pair %s : %s in %s\n", key, value, path );
-		}
-
-
-	}
-	return projectile;
 }

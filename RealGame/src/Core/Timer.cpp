@@ -52,9 +52,9 @@ f32 Timer::GetTimeMiliSeconds() {
 }
 
 void NSpinLock( u32 time ) {
-	u64 last = QueryHighFreqTimer();
+	u32 last = QueryHighFreqTimer();
 	while( time > 0 ) {
-		u64 now = QueryHighFreqTimer();
+		u32 now = QueryHighFreqTimer();
 		if( now > last + QueryCPUFrequency() / time )
 			break;
 	}

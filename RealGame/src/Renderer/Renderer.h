@@ -47,16 +47,16 @@ enum lightTypes {
 	LIGHT_SPOT
 };
 
-ENT_STRUCT Light{
-EVAR	Vec3 pos			ENT_RENAME( "origin" );
-EVAR	float cutoff;
-EVAR	Vec3 dir;
-EVAR	int type;
-EVAR	Vec3 color			ENT_RENAME("_color");
-EVAR	float intensity;
-		//Constant Linear Quadratic
-		Vec3 attenuation;
-EVAR	int isStatic;
+struct Light {
+	Vec3 pos;
+	float cutoff;
+	Vec3 dir;
+	int type;
+	Vec3 color;
+	float intensity;
+	//Constant Linear Quadratic
+	Vec3 attenuation;
+	int isStatic;
 };
 
 struct LightNode {
