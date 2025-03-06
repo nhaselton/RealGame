@@ -50,7 +50,12 @@ void EntityMove( Entity* entity, Vec3 velocity ) {
 	velocity.y = 0;
 
 	entity->pos = MoveAndSlide( entity->bounds, velocity, 3, true );
-	entity->pos = MoveAndSlide( entity->bounds, gravity, 0, true );
+	entity->pos = MoveAndSlide(entity->bounds, gravity, 0, true);
+
+	if (GroundCheck(entity->pos, .15f, entity->bounds->bounds.width)) {
+		entity->pos = SnapDown(entity->pos, entity->bounds->bounds.width, 1000.0f);
+		entity->bounds->offset = entity->pos;
+	}
 
 }
 

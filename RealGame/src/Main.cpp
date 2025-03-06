@@ -23,42 +23,6 @@
 	//===============================
 			 Demo (Done By Doom)
 	//===============================
-	Def Files:
-		Goblin	
-		Ogre
-
-	Codegen:
-		Whatever.cpp
-			#define PARSE_CLASS 
-			#define PARSE_VAR
-
-			#define CLASS_PROTOTYPE WHATEVER{
-			}
-
-			PARSE_CLASS class Whatever{
-				PARSE_VAR var whatever
-				var whatever2;
-				PARSE_VAR whatever3;
-			}
-	Prototype classes (Look at Tim Cain Video for ideas?)
-	Would be nice to be able to load in path and find prototype class from it 
-
-	Class types:
-		Entity
-		Projecitle
-		Partilce effect
-
-
-		Run comp.exe
-		CLASSGen.cpp
-		EntityGen.h
-			at compile-time turns into
-			void SetWhatever(Class* class, varType var){class->whatever = var;}
-			void SetWhatever3(Class* class, varType var){class->whatever3 = var;}
-
-
-		//Decl manager that all talk to each other
-
 
 	//====================
 	//Milestone 1
@@ -67,12 +31,6 @@
 	By April 1st?
 
 	Implement A Proper Character Controller
-	Must work at:
-		500fps
-		250fps
-		60fps
-		30fps
-
 	Weapons:
 		Pistol
 		Shotgun

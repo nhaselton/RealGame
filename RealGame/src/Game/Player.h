@@ -35,6 +35,9 @@ public:
 	struct AudioSource* audioSource;
 	bool noclip;
 
+	bool grounded;
+	float yVel;
+
 	static Sound revolverFireSound;
 	static Sound revolverReloadSound;
 	struct Light* light;

@@ -1,12 +1,12 @@
 {
 "classname" "spawner"
-"origin" "-424 1448 248"
+"origin" "-424 1448 296"
 "targetname" "pillar1"
 }
 // entity 2
 {
 "classname" "spawner"
-"origin" "744 1416 248"
+"origin" "744 1416 312"
 "targetname" "pillar2"
 }
 // entity 3

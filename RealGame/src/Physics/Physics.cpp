@@ -71,76 +71,120 @@ inline BoundsMinMax BoundsUnion( const BoundsMinMax& a, const BoundsMinMax& b ) 
 //https ://arxiv.org/pdf/1211.0059
 //https://www.youtube.com/watch?v=YR6Q7dUz2uk&t=425s
 #define VERY_SMALL_DISTANCE .0000005f //Increasing this will break high fps
-Vec3 MoveAndSlide( CharacterCollider* cc, Vec3 velocity, int maxBounces, bool adjustCharacterController ) {
+
+//Move and slide return
+struct MSRtn {
+	float t;
+	Vec3 point; //Start + velocity * t
+	Vec3 normal;
+	float dist;
+	bool didHit;
+};
+
+//Just get rid of the data i dont need so i dont have to use brainpower to make this function
+bool MSQuery(Vec3 pos, Vec3 vel, Vec3 rad, MSRtn* out) {
+	SweepInfo info{};
+	memset(out, 0, sizeof(*out));
+	
+	if (!PhysicsQuerySweepStatic(pos, vel, rad, &info))
+		return false;
+
+	out->didHit = true;
+	out->point = pos + vel * info.t;
+	out->t = info.t;
+	out->dist = info.eSpaceNearestDist;
+	out->normal = info.r3Norm;
+	return true;
+}
+
+
+Vec3 MoveAndSlide(CharacterCollider* cc, Vec3 velocity, int maxBounces, bool adjustCharacterController) {
 	Vec3 startPos = cc->bounds.center + cc->offset;
 	Vec3 startVel = velocity;
 
 	Vec3 pos = startPos;
 
-	if ( glm::length2( velocity ) < VERY_SMALL_DISTANCE ) return pos;
+	if (glm::length2(velocity) < VERY_SMALL_DISTANCE) return pos;
 
 	//Slight Epslion to keep from penetrating walls due to fp error
-	float skinWidth = .015f;
-	Vec3 r = cc->bounds.width - skinWidth;
-	//float r = 1.0f + ( -skinWidth );
-
+	float skinWidth = .015f ;
+	Vec3 r = cc->bounds.width - skinWidth * 2.0f;
 	int bounces = 0;
 	do {
-		SweepInfo info{};
-
-		//if ( !BruteCastSphere( pos, velocity, cc->bounds.width, &info ) ) {
-		if ( !PhysicsQuerySweepStatic( pos, velocity, cc->bounds.width, &info ) ) {
+		MSRtn info;
+		bool step = false;
+		if (!MSQuery(pos, velocity, cc->bounds.width, &info)) {
 			pos += velocity;
 			break;
 		}
 
-		Vec3 point = info.r3Position + info.r3Velocity * info.t;
-		//if ( glm::length( velocity ) < .01f )
-		//	break;
+		//Check for stair
+		Vec3 velNormal = glm::normalize(velocity);
+		float angle = glm::acos(glm::dot(info.normal, Vec3(0, 1, 0)));
+		//|| fabs(Angle) == 0.0f is a hack for when you hit a stair edge triangle thats the same plane you are trying to move on
+		if (1)
+		if ( fabs(angle) > glm::radians(60.0f) || fabs(angle) == 0.0f && fabs(velNormal.y) < .95 ) {
+			MSRtn stairInfo;
 
+			Vec3 stairPos = pos + Vec3(0, MAX_STEP_HEIGHT, 0);
+			MSQuery(stairPos, velocity, cc->bounds.width, &stairInfo);
 
-		Vec3 slidePlaneOrigin = WorldFromEllipse( info.eSpaceIntersection, info.radius );
-		Vec3 slidePlaneNormal = glm::normalize( point - slidePlaneOrigin );
-		float slidePlaneDist = glm::dot( slidePlaneNormal, slidePlaneOrigin );
+			if (!stairInfo.didHit) {
+				pos = stairPos + velocity;
+				break;
+			}
+			if (stairInfo.dist > info.dist && stairInfo.dist - info.dist >= MIN_STEP_DEPTH) {
+				pos = stairPos;
+				info = stairInfo;
+				step = true;
+			}
+		}
+		Vec3 point = info.point;
 
-		Vec3 velToSurface = glm::normalize( velocity ) * ( glm::length( point - pos ) - skinWidth );
+		Vec3 velToSurface = velNormal * (glm::length(point - pos) - skinWidth);
 		Vec3 remaining = velocity - velToSurface;
 
 		point = pos + velToSurface;
-		if( glm::any( glm::isnan( point ) ) )
+		if (glm::any(glm::isnan(point)))
 			return startPos;
-		assert( !glm::any( glm::isnan( point ) ) );
+		assert(!glm::any(glm::isnan(point)));
 		pos = point;
 
-		float mag = glm::length( remaining );
-		//Note: Can probably use info.r3Norm as the plane
-		remaining = ProjectOnPlane( slidePlaneNormal, remaining );
+		pos = SnapDown(pos, cc->bounds.width, 1000.0f);
 
 
-		if ( glm::length2( remaining ) == 0.0f )
+		float mag = glm::length(remaining);
+		remaining = ProjectOnPlane(info.normal, remaining);
+
+
+		if (glm::length2(remaining) == 0.0f)
 			break;
-		remaining = glm::normalize( remaining ) * mag;
+		remaining = glm::normalize(remaining) * mag;
 
-
-		//assert( !glm::any( glm::isnan( remaining ) ) );
 		pos = point;
 		velocity = remaining;
-	} while ( bounces++ < maxBounces );
+	} while (bounces++ < maxBounces);
 
 	//We only want to update the offset, not the local position of the bounds
 	pos -= cc->bounds.center;
 	Vec3 finalPos = pos;
 
-	//DebugDrawAABB( pos, Vec3( 1, 2, 1 ), 0, GREEN );
-	//DebugDrawCharacterCollider( characterController, GREEN );
-
-	if( glm::length( cc->offset - finalPos ) < .0001f )
+	//Keep from very tiny bouncing 
+	if (glm::length(cc->offset - finalPos) < .0001f)
 		return cc->offset;
 
-	if ( adjustCharacterController )
+	if (adjustCharacterController)
 		cc->offset = finalPos;
 
 	return finalPos;
+}
+
+Vec3 SnapDown(Vec3 pos, Vec3 r, float dist) {
+	SweepInfo info{ };
+	if (PhysicsQuerySweepStatic(pos, Vec3(0, -dist, 0), r, &info))
+		return info.r3Position + info.r3Velocity * info.t;
+	else
+		return pos;
 }
 
 bool PointInTriangle( const Vec3& q, Vec3 a, Vec3 b, Vec3 c ) {
@@ -747,4 +791,10 @@ void UpdateBoids() {
 		entity->boidVelocity = -avoidVelocity + ( targetDirection * speed );
 		entity->boidVelocity.y = 0;
 	}
+}
+
+//Todo faster query, we dont need closest just any
+bool GroundCheck(const Vec3& pos, float dist, const Vec3& rad) {
+	SweepInfo info;
+	return PhysicsQuerySweepStatic(pos, Vec3(0, -dist, 0), rad, &info);
 }

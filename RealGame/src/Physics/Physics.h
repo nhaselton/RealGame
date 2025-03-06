@@ -2,6 +2,9 @@
 #include "def.h"
 #include "Colliders.h"
 
+#define MAX_STEP_HEIGHT 1.0f
+#define MIN_STEP_DEPTH 1.5f
+
 struct BrushTri {
 	u32 v[3];
 };
@@ -159,3 +162,6 @@ inline bool FastAABB( const BoundsMinMax& a, const BoundsMinMax& b ) {
 			a.min.y < b.max.y && a.max.y > b.min.y &&
 			a.min.z < b.max.z && a.max.z > b.min.z );
 }
+
+bool GroundCheck(const Vec3& pos, float dist, const Vec3& rad);
+Vec3 SnapDown(Vec3 pos, Vec3 r, float dist);

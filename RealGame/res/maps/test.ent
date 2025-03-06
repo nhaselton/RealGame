@@ -1,9 +1,4 @@
 {
 "classname" "info_player_start"
 "origin" "169 -55 51"
-}
-// entity 2
-{
-"classname" "info_ogre_start"
-"origin" "-167 -71 32"
 }

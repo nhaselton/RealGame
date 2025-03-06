@@ -62,8 +62,6 @@ Player* CreatePlayer( Vec3 pos ) {
 	Mat4 revolverScale = glm::scale( Mat4( 1.0 ), Vec3( .25f ) );
 	Mat4 rot = glm::toMat4( glm::rotate( Quat( 1, 0, 0, 0 ), glm::radians( 90.0f ), Vec3( 0, 1, 0 ) ) );
 
-	player->noclip = true;
-
 	return player;
 }
 
@@ -97,10 +95,34 @@ void UpdatePlayer( Entity* entity ) {
 	if( console.IsOpen() )
 		wantDir = Vec3( 0 );
 
-	
 	if( !player->noclip ) {
+		//Move
 		wantDir.y = 0;
-		EntityMove( player, wantDir );
+		player->pos = MoveAndSlide(player->bounds, wantDir, 3, true);
+
+		//Check Grounded
+		bool grounded = GroundCheck(player->pos, .15f, player->bounds->bounds.width);
+		if (grounded) {
+			player->grounded = true;
+			player->yVel = 0.0f;
+
+			if (KeyPressed(KEY_SPACE)) {
+				player->yVel = 20.0f;
+				//player->pos += Vec3(0, 0.1f, 0);
+				player->bounds->offset = player->pos;
+				player->pos = MoveAndSlide(player->bounds, Vec3(0, player->yVel * dt, 0), 0, true);
+				grounded = false;
+			}
+
+		}
+		if ( !grounded )
+			player->yVel -= 20.0f * dt;
+
+		player->pos = MoveAndSlide(player->bounds, Vec3(0, player->yVel * dt, 0), 0, true);
+
+		if (!grounded)
+			player->yVel -= 20.0f * dt;
+
 	}
 	else {
 		entity->pos += wantDir;
@@ -154,7 +176,7 @@ void RevolverUpdate( Player* player ) {
 	}
 
 	//SHOOT STATE
-	if( KeyPressed( KEY_SPACE ) || ( window.cursorLocked && MousePressed( MOUSE_BUTTON_LEFT ) ) ) {
+	if( KeyPressed( KEY_LEFT_CONTROL ) || ( window.cursorLocked && MousePressed( MOUSE_BUTTON_LEFT ) ) ) {
 		if ( revolver->ammo == 0 ) {
 			PlaySound( player->audioSource, &Player::revolverReloadSound );
 			revolver->state = REVOLVER_RELOADING;
