@@ -40,6 +40,9 @@ enum revolverAnimation_t {
 class Revolver : public Weapon {
 public:
 	revolverState_t revolverState;
+	float shootCooldown;
+	float fastShootCooldown;
+	float currentShootCooldown;
 	float spread;
 	float spreadDecayRate;
 };

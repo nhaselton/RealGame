@@ -50,7 +50,6 @@ void RevolverUpdate(Player* player, Weapon* weapon) {
 		revolver->spread = 1.0f;
 		EntityStartAnimation(revolver, REVOLVER_ANIM_RELOAD);
 	}
-
 }
 
 void RevolverShoot(Player* player, Weapon* weapon) {
@@ -65,6 +64,11 @@ void RevolverShoot(Player* player, Weapon* weapon) {
 		EntityStartAnimation(revolver, REVOLVER_ANIM_RELOAD);
 		return;
 	}
+
+	if (revolver->currentShootCooldown > gameTime)
+		return;
+
+	revolver->currentShootCooldown = gameTime + revolver->shootCooldown;
 
 	EntityStartAnimation(revolver, REVOLVER_ANIM_SHOOT);
 	HitInfo info{};
@@ -88,6 +92,19 @@ void RevolverShoot(Player* player, Weapon* weapon) {
 	revolver->rotation = glm::rotate(revolver->rotation, -.3f, Vec3(0, 0, -1));
 	revolver->spread += 2.0f;
 	revolver->ammo--;
+}
+
+void RevolverAltShoot(Player* player, Weapon* weapon) {
+	//(Hack) Check if the ammo is lower to see if the gun shot properly. 
+	// If so then we can remove the shoot cooldown & add extra spread
+	int ammo = player->revolver.ammo;
+	RevolverShoot(player, weapon);
+
+	if (ammo != player->revolver.ammo) {
+		player->revolver.spread += 1.0f;
+		player->revolver.currentShootCooldown = 0.0f;
+	}
+
 }
 
 void CreateRevolver(Player* player) {
@@ -118,9 +135,13 @@ void CreateRevolver(Player* player) {
 	player->revolver.ammo = 6;
 	player->revolver.spreadDecayRate = 6.0f;
 
+	player->revolver.shootCooldown = .4f;
+	player->revolver.fastShootCooldown = .16f;
+
 	player->revolver.Equip = RevolverEquip;
 	player->revolver.Update = RevolverUpdate;
 	player->revolver.Shoot = RevolverShoot;
+	player->revolver.AltShoot = RevolverAltShoot;
 
 }
 

@@ -28,35 +28,35 @@
 	//Milestone 1
 	//		Gameplay
 	//===================
-	By March 12th
-
-	Guns
-		Pistol
-			LM Slow Shoot Accruate Little Spread
-			RM Fast Shoot Fast shooting lot of spread
-		Shotgun
-			Crosshair
-
-			Sounds
-				Primary
-				Secondary
-				Reload
-
-	Enemies
-		Grenade Wizard
-			Set Color to red
-		Small Ogre
-			New Animations
-		Chaingunner
-			Everything besides model
-	
+	By April 1st?
 
 	
-	Polish: (Optional)
-		Separate reload anims for shotgun primary and secondary. Secondary fire should not kick as much
+	3-5 -> 3-12
+		Guns
+			Pistol (DONE)
+			Shotgun
+				Sounds
+					Primary
+					Secondary
+					Reload
+
+		Enemies
+			Grenade Wizard
+				Set Color to red
+			Small Ogre
+				New Animations
+			Chaingunner
+				Everything besides model
+	
+
+		Proper Equip/Unequip Weapon Functions
+			Quickly pull them up with small delay? shouldnt be able to insta quickswap
+		-----------------------------------------------------------
+	
+		Polish: (Optional)
+			Separate reload anims for shotgun primary and secondary. Secondary fire should not kick as much
 		
 
-	By April 1st?
 
 	Implement A Proper Character Controller (mostly done, maybe make more robust)
 	Weapons:

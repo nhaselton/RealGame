@@ -37,7 +37,7 @@ Player* CreatePlayer( Vec3 pos ) {
 
 	CreateRevolver(player);
 	CreateShotgun(player);
-	player->currentWeapon = &player->shotgun;
+	player->currentWeapon = &player->revolver;
 
 	return player;
 }
