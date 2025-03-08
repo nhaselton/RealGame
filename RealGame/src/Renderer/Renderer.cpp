@@ -149,7 +149,8 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	renderer->worldView.projection = renderer->projection;
 	renderer->worldView.view = Mat4( 1.0 );
 
-	renderer->crosshairTex = TextureManagerLoadTextureFromFile( "res/textures/crosshair.png" );
+	renderer->crosshairTex = TextureManagerLoadTextureFromFile("res/textures/crosshair.png");
+	renderer->shotgunCrosshairTex = TextureManagerLoadTextureFromFile( "res/textures/ShotgunCrosshair.png" );
 	renderer->healthTex = TextureManagerLoadTextureFromFile( "res/textures/health.png" );
 
 	void* lightMemory = ScratchArenaAllocateZero( &globalArena, MAX_DYNAMIC_LIGHTS * sizeof( LightNode ));
@@ -620,9 +621,17 @@ void RenderEndFrame( Renderer* renderer ) {
 	sprintf_s( buffer, 2048, "ms: %.2f\nfps: %.0f", dt * 1000.0f, 1.0f / dt );
 	RenderDrawText( Vec2( 1000, 60 ), 32, buffer );
 
-	if (player->revolver.state != REVOLVER_RELOADING) {
-		Vec2 spreadSize( 16 * player->revolver.spread );
-		RenderDrawQuadTextured( Vec2( 640, 360 ) - spreadSize / 2.0f, spreadSize, renderer->crosshairTex );
+	//Crosshairs
+	if (player->currentWeapon == &player->revolver) {
+		if (player->revolver.state != REVOLVER_RELOADING) {
+			Vec2 spreadSize(16 * player->revolver.spread);
+			RenderDrawQuadTextured(Vec2(640, 360) - spreadSize / 2.0f, spreadSize, renderer->crosshairTex);
+		}
+	}
+	else if (player->currentWeapon == &player->shotgun) {
+		Vec2 size(128, 64);
+		RenderDrawQuadTextured(Vec2(640, 360) - size / 2.0f, size, renderer->shotgunCrosshairTex);
+
 	}
 
 	//Draw gun last (Will mess up post processing later on)

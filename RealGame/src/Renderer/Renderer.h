@@ -256,6 +256,7 @@ public:
 	u32 currentShaderID;
 
 	Texture* crosshairTex;
+	Texture* shotgunCrosshairTex;
 	Texture* healthTex;
 	Texture* fontTex;
 	Texture* whiteNoiseTex;

@@ -35,9 +35,8 @@
 			LM Slow Shoot Accruate Little Spread
 			RM Fast Shoot Fast shooting lot of spread
 		Shotgun
-			Animations
-			LM Single Shot (2x reloads)
-			RM Double Shot (reloads or 1 shots if 1 shot left)
+			Crosshair
+
 			Sounds
 				Primary
 				Secondary

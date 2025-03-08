@@ -144,6 +144,14 @@ void ShotgunUpdate(Player* player, Weapon* weapon) {
 			shotgun->mag = 2.0f;
 		}
 	}
+	else {
+		if (shotgun->mag < 2 && KeyDown(KEY_R)) {
+			EntityStartAnimation(shotgun, SHOTGUN_ANIM_RELOAD);
+			shotgun->state = SHOTGUN_RELOAD;
+		}
+			
+
+	}
 }
 
 static inline void ShotgunShootPellet(Player* player, Shotgun* shotgun, Vec3 start, Vec3 dir, float spread) {
@@ -153,11 +161,13 @@ static inline void ShotgunShootPellet(Player* player, Shotgun* shotgun, Vec3 sta
 	float max = spread;
 
 	float x = min + (float)(rand()) / (float(RAND_MAX / (max - min)));
-	float y = min + (float)(rand()) / (float(RAND_MAX / (max - min)));
-	float z = min + (float)(rand()) / (float(RAND_MAX / (max - min)));
-	
 
-	dir += Vec3(x, y, z);
+	//make it spread slightly less on the Y axis
+	max /= 2.0f;
+	min /= 2.0f;
+	float y = min + (float)(rand()) / (float(RAND_MAX / (max - min)));
+
+	dir = dir + x * player->camera.Right + y * player->camera.Up;
 	dir = glm::normalize(dir);
 	dir *= 550.0f;
 
@@ -172,8 +182,8 @@ static inline void ShotgunShootPellet(Player* player, Shotgun* shotgun, Vec3 sta
 		}
 	}
 
-	//for (int i = 0; i < 100.0f; i++)
-	//	DebugDrawAABB(start + glm::normalize(dir) * .3f * (float)i, Vec3(.05f), 10.0f);
+	for (int i = 0; i < 100.0f; i++)
+		DebugDrawAABB(start + glm::normalize(dir) * .3f * (float)i, Vec3(.05f), 10.0f);
 	//DebugDrawLine(start, start + dir, GREEN, 1.0f, true, false, 10.0f);
 }
 
@@ -188,7 +198,7 @@ void ShotgunAltShoot(Player* player, Weapon* weapon) {
 	ShotgunShootPellet(player, shotgun, player->camera.Position, player->camera.Front, 0);
 	//Shoot rest randomly
 	for (int i = 1; i < shotgun->numPellets / 3; i++) {
-		ShotgunShootPellet(player, shotgun, player->camera.Position, player->camera.Front, player->shotgun.spreadRadians / 4.0f);
+		ShotgunShootPellet(player, shotgun, player->camera.Position, player->camera.Front, player->shotgun.spreadRadians / 2.0f);
 	}
 
 	if (shotgun->mag == 0.0f) {
@@ -256,7 +266,7 @@ void CreateShotgun(Player* player) {
 	player->shotgun.mag = 2;
 	player->shotgun.spreadDecayRate = 6.0f;
 
-	player->shotgun.numPellets = 16;
+	player->shotgun.numPellets = 16;//Try to keep (count - 1) % 3 == 0 for secondary fire to have exactly 1/3rd the amount of pelettes
 	player->shotgun.spreadRadians = glm::radians(15.0f);
 
 	player->shotgun.Equip = ShotgunEquip;
