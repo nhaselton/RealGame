@@ -28,39 +28,16 @@ Player* CreatePlayer( Vec3 pos ) {
 	/* Create Revolver */
 	memset( &player->revolver, 0, sizeof( player->revolver ) );
 
-	Model* revolverModel = ModelManagerAllocate( &modelManager, "res/models/revolver.glb" );
-
-	player->revolver.renderModel = new RenderModel;
-	player->revolver.renderModel->model = revolverModel;
-	player->revolver.renderModel->rotation = Quat( 1.0, 0, 0, 0 );
-	player->revolver.renderModel->scale = Vec3( 1 );
-	player->revolver.renderModel->translation = Vec3( 0 );
-	player->revolver.renderModel->pose = ( SkeletonPose* ) ScratchArenaAllocateZero( &globalArena, sizeof( SkeletonPose ) );
-	player->revolver.renderModel->pose->globalPose = ( Mat4* ) ScratchArenaAllocateZero( &globalArena, revolverModel->skeleton->numNodes * sizeof( Mat4 ) );
-	player->revolver.renderModel->pose->pose = ( JointPose* ) ScratchArenaAllocateZero( &globalArena, revolverModel->skeleton->numNodes * sizeof( JointPose ) );
-	player->revolver.renderModel->pose->skeleton = revolverModel->skeleton;
-
-	player->revolver.maxMuzzleFlashTime = .1f;
-	player->revolver.animTimeScale = 1.0f;
-
-	player->revolver.state = REVOLVER_RELOADING;
-	player->revolver.currentAnimation = revolverModel->animations[0];
-
-	player->revolver.basePosition = Vec3( .5f, -.4f, -1.1f );
-	player->revolver.baseRotation = glm::rotate( Quat( 1, 0, 0, 0 ), glm::radians( 92.0f ), Vec3( 0, 1, 0 ) );
-	player->revolver.renderModel->scale = Vec3( .4f ) ;
-
-	player->revolver.pos = player->revolver.basePosition;
-	player->revolver.rotation = player->revolver.baseRotation;
-	player->revolver.ammo = 6;
-	player->revolver.spreadDecayRate = 6.0f;
-
 	player->audioSource = NewAudioSource();
 
 	player->OnHit = PlayerOnHit;
-	
+
 	Mat4 revolverScale = glm::scale( Mat4( 1.0 ), Vec3( .25f ) );
 	Mat4 rot = glm::toMat4( glm::rotate( Quat( 1, 0, 0, 0 ), glm::radians( 90.0f ), Vec3( 0, 1, 0 ) ) );
+
+	CreateRevolver(player);
+	CreateShotgun(player);
+	player->currentWeapon = &player->shotgun;
 
 	return player;
 }
@@ -129,9 +106,6 @@ void UpdatePlayer( Entity* entity ) {
 		entity->bounds->offset = entity->pos;
 	}
 
-	player->camera.Position = player->pos + Vec3( 0, 1, 0 );
-	RevolverUpdate(player);
-
 	//Check Triggers
 	Vec3 center = player->bounds->bounds.center + player->pos;
 	BoundsMinMax playerBounds{
@@ -146,87 +120,29 @@ void UpdatePlayer( Entity* entity ) {
 		}
 	}
 
+	//Update Weapon
+	player->camera.Position = player->pos + Vec3(0, 1, 0);
+	player->currentWeapon->Update(player, player->currentWeapon);
+
+	if (player->currentWeapon->fullAuto) {
+		if (KeyDown(KEY_LEFT_CONTROL) || (window.cursorLocked && MouseDown(MOUSE_BUTTON_LEFT)))
+			player->currentWeapon->Shoot(player, player->currentWeapon);
+	}
+	else {
+		if (KeyPressed(KEY_LEFT_CONTROL) || (window.cursorLocked && MousePressed(MOUSE_BUTTON_LEFT)))
+			player->currentWeapon->Shoot(player, player->currentWeapon);
+	}
+
+	if (player->currentWeapon->altFullAuto && window.cursorLocked && MouseDown(MOUSE_BUTTON_RIGHT))
+		player->currentWeapon->AltShoot(player, player->currentWeapon);
+
+	else if (!player->currentWeapon->altFullAuto && window.cursorLocked && MousePressed(MOUSE_BUTTON_RIGHT))
+		player->currentWeapon->AltShoot(player, player->currentWeapon);
+
+
 	if( player->light && ( player->lightStart + .2f < gameTime ) ) {
 		RemoveLight( player->light );
 		player->light = 0;
-	}
-}
-
-void RevolverUpdate( Player* player ) {
-	Revolver* revolver = &player->revolver;
-
-	EntityAnimationUpdate( revolver, dt * 1.25f );
-	
-	revolver->spread -= revolver->spreadDecayRate * dt;
-	if ( revolver->spread < 1.0f ) 
-		revolver->spread = 1.0f;
-
-	revolver->pos = glm::mix( revolver->pos, revolver->basePosition, .3f * dt );
-	revolver->rotation = glm::slerp( revolver->rotation, revolver->baseRotation, 2.f * dt );
-
-	//RELOAD STATE
-	if ( revolver->state == REVOLVER_RELOADING ) {
-		if ( revolver->currentAnimationPercent == 1.0f ) {
-			revolver->state = REVOLVER_IDLE;
-			revolver->ammo = 6;
-			revolver->spread = 1.0f;
-		}
-		//Dont allow any actions
-		return;
-	}
-
-	//SHOOT STATE
-	if( KeyPressed( KEY_LEFT_CONTROL ) || ( window.cursorLocked && MousePressed( MOUSE_BUTTON_LEFT ) ) ) {
-		if ( revolver->ammo == 0 ) {
-			PlaySound( player->audioSource, &Player::revolverReloadSound );
-			revolver->state = REVOLVER_RELOADING;
-			EntityStartAnimation( revolver, REVOLVER_ANIM_RELOAD );
-			return;
-		}
-
-		EntityStartAnimation( revolver, REVOLVER_ANIM_SHOOT );
-		HitInfo info{};
-		if ( PhysicsQueryRaycast( player->camera.Position, player->camera.Front * 100.0f, &info ) ) {
-			if ( info.entity != 0 && info.entity->OnHit != 0 ) {
-				EntityHitInfo attack{};
-				attack.attacker = player;
-				attack.victim = info.entity;
-				attack.projectile = 0;
-				attack.damage = 1;
-				info.entity->OnHit( attack );
-			}
-		}
-
-		AudioSource* fire = CreateTempAudioSource( player->camera.Position, &Player::revolverFireSound );
-		if ( fire ) 
-			alSourcef( fire->alSourceIndex, AL_GAIN, .25 );
-		
-		player->lightStart = gameTime;
-
-		if( !player->light )
-			player->light = NewLight();
-		if( player->light ) {
-			player->light->pos = player->camera.Position + player->camera.Front;
-			player->light->color = Vec3( 1, .6, 0 );
-			player->light->intensity = 4.0f;
-			player->light->type = LIGHT_POINT;
-			LightSetAttenuation( player->light, 50 );
-		}
-
-		revolver->pos += Vec3( 0, .02, 0 );
-		revolver->rotation = glm::rotate( revolver->rotation, -.3f, Vec3( 0, 0, -1 ) );
-		revolver->spread += 2.0f;
-		revolver->ammo--;
-		revolver->muzzleFlashTime = gameTime + revolver->maxMuzzleFlashTime;
-		return;
-	}
-
-	//DO RELOAD
-	if ( KeyPressed( KEY_R ) && revolver->ammo != 6 ) {
-		CreateTempAudioSource( player->camera.Position, &Player::revolverReloadSound );
-		revolver->state = REVOLVER_RELOADING;
-		revolver->spread = 1.0f;
-		EntityStartAnimation( revolver, REVOLVER_ANIM_RELOAD );
 	}
 }
 

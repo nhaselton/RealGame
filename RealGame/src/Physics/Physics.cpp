@@ -122,8 +122,7 @@ Vec3 MoveAndSlide(CharacterCollider* cc, Vec3 velocity, int maxBounces, bool adj
 		Vec3 velNormal = glm::normalize(velocity);
 		float angle = glm::acos(glm::dot(info.normal, Vec3(0, 1, 0)));
 		//|| fabs(Angle) == 0.0f is a hack for when you hit a stair edge triangle thats the same plane you are trying to move on
-		if (1)
-		if ( fabs(angle) > glm::radians(60.0f) || fabs(angle) == 0.0f && fabs(velNormal.y) < .95 ) {
+		if (fabs(angle) > glm::radians(60.0f) || (fabs(angle) == 0.0f && fabs(velNormal.y) < .95)) {
 			MSRtn stairInfo;
 
 			Vec3 stairPos = pos + Vec3(0, MAX_STEP_HEIGHT, 0);

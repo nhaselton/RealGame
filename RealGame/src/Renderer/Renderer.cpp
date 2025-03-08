@@ -1037,13 +1037,16 @@ void RenderDrawAllProjectiles() {
 
 void RenderDrawGun() {
 	Player* player = entityManager.player;
+	if (!player || !player->currentWeapon || !player->currentWeapon->renderModel->model)
+		return;
+
 	glClear( GL_DEPTH_BUFFER_BIT );
-	Mat4 t = glm::translate( Mat4( 1.0 ), player->revolver.pos );
-	Mat4 r = glm::toMat4( player->revolver.rotation );
-	Mat4 s = glm::scale( Mat4( 1.0 ), player->revolver.renderModel->scale );
+	Mat4 t = glm::translate( Mat4( 1.0 ), player->currentWeapon->pos );
+	Mat4 r = glm::toMat4( player->currentWeapon->rotation );
+	Mat4 s = glm::scale( Mat4( 1.0 ), player->currentWeapon->renderModel->scale );
 	Mat4 model = t * r * s;
 	model = glm::inverse( renderer.camera.GetViewMatrix() ) * model;
-	RenderDrawModel( &renderer, entityManager.player->revolver.renderModel->model, model, entityManager.player->revolver.renderModel->pose );
+	RenderDrawModel( &renderer, entityManager.player->currentWeapon->renderModel->model, model, entityManager.player->currentWeapon->renderModel->pose );
 }
 
 void RenderDrawAllRigidBodies() {

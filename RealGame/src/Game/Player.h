@@ -3,35 +3,11 @@
 #include "Entity.h"
 #include "renderer/Camera.h"
 #include "Resources/SoundManager.h"
-
-enum revolverState_t {
-	REVOLVER_IDLE,
-	REVOLVER_RELOADING,
-	REVOLVER_SHOOTING,
-};
-
-enum revolverAnimation_t {
-	REVOLVER_ANIM_RELOAD,
-	REVOLVER_ANIM_SHOOT,
-};
-
-class Revolver : public Entity {
-public:
-	revolverState_t revolverState;
-	Vec3 basePosition;
-	Quat baseRotation;
-
-	float muzzleFlashTime;
-	float maxMuzzleFlashTime;
-	float spread;
-	float spreadDecayRate;
-	int ammo;
-};
+#include "Game/Weapons.h"
 
 class Player : public Entity {
 public:
 	Camera camera;
-	Revolver revolver;
 	struct AudioSource* audioSource;
 	bool noclip;
 
@@ -42,10 +18,11 @@ public:
 	static Sound revolverReloadSound;
 	struct Light* light;
 	float lightStart;
+
+	Weapon* currentWeapon;
+	Revolver revolver;
+	Shotgun shotgun;
 };
-
-
-
 
 Player* CreatePlayer( Vec3 pos );
 void UpdatePlayer( Entity* entity );

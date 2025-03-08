@@ -28,9 +28,38 @@
 	//Milestone 1
 	//		Gameplay
 	//===================
+	By March 12th
+
+	Guns
+		Pistol
+			LM Slow Shoot Accruate Little Spread
+			RM Fast Shoot Fast shooting lot of spread
+		Shotgun
+			Animations
+			LM Single Shot (2x reloads)
+			RM Double Shot (reloads or 1 shots if 1 shot left)
+			Sounds
+				Primary
+				Secondary
+				Reload
+
+	Enemies
+		Grenade Wizard
+			Set Color to red
+		Small Ogre
+			New Animations
+		Chaingunner
+			Everything besides model
+	
+
+	
+	Polish: (Optional)
+		Separate reload anims for shotgun primary and secondary. Secondary fire should not kick as much
+		
+
 	By April 1st?
 
-	Implement A Proper Character Controller
+	Implement A Proper Character Controller (mostly done, maybe make more robust)
 	Weapons:
 		Pistol
 		Shotgun
@@ -38,15 +67,20 @@
 		Rocket Launcher
 
 	Enemies (Types)
-		Explosive Goblin (Threat when close)
-		Wizard (Fodder)
-			Different color for slightly more variation?
-		Chaingunner (Threat at distance)
-		Small Ogre (Annoyance/Body block)
-			Need Models
-		Kleer Type enemy (Forces you to never stop moving)
-		Bull type enemy (Heavy Kleer)
-		Reptaloid type enemy(Shootable homing projectiles) 
+		Done
+			Explosive Goblin (Threat when close)
+			Basic Wizard (Fodder)
+		Model Done
+			Fireball Wizard (Fires in arc?) (Fodder)
+				Different color same model?
+			Chaingunner (Threat at distance)
+				Need to animate
+			Small Ogre (Annoyance/Body block)
+				Need to set up stats
+		Nothing Done
+			Kleer Type enemy (Forces you to never stop moving)
+			Bull type enemy (Heavy Kleer)
+			Reptaloid type enemy(Shootable homing projectiles) 
 	Level:
 		10 Minutes long
 		Small Rooms to show off less enemies
@@ -215,6 +249,7 @@ int main() {
 	Ogre::model = ModelManagerAllocate( &modelManager, "res/models/ogre.glb" );
 	Ogre::projectileModel = ModelManagerAllocate( &modelManager, "res/models/rock.glb" );
 
+	Model* shotgun = ModelManagerAllocate(&modelManager, "res/models/shotgun.glb");
 
 	//Generate Deadpose
 	Wizard::deadPose = ( SkeletonPose* ) ScratchArenaAllocate( &globalArena, sizeof( SkeletonPose ) );

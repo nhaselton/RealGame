@@ -3,6 +3,7 @@
 #pragma once
 //Entity
 #include "Entity.h"
+#include "Weapons.h"
 #include "EntityManager.h"
 #include "Player.h"
 
