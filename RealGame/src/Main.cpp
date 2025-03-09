@@ -26,10 +26,8 @@
 
 	//====================
 	//Milestone 1
-	//		Gameplay
+	//		Gameplay (April 1st)
 	//===================
-	By April 1st?
-
 	
 	3-5 -> 3-12
 		Guns
@@ -41,14 +39,16 @@
 					Reload
 
 		Enemies
-			Grenade Wizard
-				Set Color to red
-			Small Ogre
-				New Animations
 			Chaingunner
-				Everything besides model
-	
-
+				Sounds:
+					Shoot
+					Stagger
+					Die
+				Models:
+					Bullets
+			Ogre
+				Make into functional non boss enemy
+			
 		Proper Equip/Unequip Weapon Functions
 			Quickly pull them up with small delay? shouldnt be able to insta quickswap
 		-----------------------------------------------------------
@@ -190,7 +190,9 @@ int maxFps;
 int sleepTime;
 
 void LoadDecls() {
-	WizardLoadDefFile( "res/def/wizard.def" );
+	Wizard::model = LoadModel("res/def/wizard.def");
+	Chaingunner::model = LoadModel("res/def/chaingunner.def");
+
 }
 
 int main() {
@@ -248,6 +250,7 @@ int main() {
 	Ogre::model = ModelManagerAllocate( &modelManager, "res/models/ogre.glb" );
 	Ogre::projectileModel = ModelManagerAllocate( &modelManager, "res/models/rock.glb" );
 
+
 	Model* shotgun = ModelManagerAllocate(&modelManager, "res/models/shotgun.glb");
 
 	//Generate Deadpose
@@ -257,6 +260,15 @@ int main() {
 	Wizard::deadPose->skeleton = Wizard::model->skeleton;
 	AnimatePose( Wizard::model->animations[WIZARD_ANIM_DEATH]->duration - .001f, Wizard::model->animations[WIZARD_ANIM_DEATH], Wizard::deadPose );
 	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
+
+#if 0
+	Chaingunner::deadPose = (SkeletonPose*)ScratchArenaAllocate(&globalArena, sizeof(SkeletonPose));
+	Chaingunner::deadPose->globalPose = (Mat4*)ScratchArenaAllocate(&globalArena, sizeof(Mat4) * Chaingunner::model->skeleton->numBones);
+	Chaingunner::deadPose->pose = (JointPose*)ScratchArenaAllocate(&globalArena, sizeof(Mat4) * Chaingunner::model->skeleton->numNodes);
+	Chaingunner::deadPose->skeleton = Chaingunner::model->skeleton;
+	AnimatePose(Chaingunner::model->animations[CG_ANIM_DEATH]->duration - .001f, Chaingunner::model->animations[CG_ANIM_DEATH], Chaingunner::deadPose);
+	UpdatePose(Chaingunner::deadPose->skeleton->root, Mat4(1.0), Chaingunner::deadPose);
+#endif
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
 	LoadLevel( &level, "res/maps/test.cum" );
@@ -269,6 +281,9 @@ int main() {
 	//Model
 	Goblin::model->animations[GOBLIN_ANIM_RUN]->looping = true;
 	Wizard::model->animations[WIZARD_ANIM_RUN]->looping = true;
+	Chaingunner::model->animations[CG_ANIM_SHOOT]->looping = true;
+	Chaingunner::model->animations[CG_ANIM_IDLE]->looping = true;
+	Chaingunner::model->animations[CG_ANIM_RUN]->looping = true;
 
 	PrintAllocators( &globalArena );
 	WindowSetVsync( &window, 0 );
@@ -280,12 +295,11 @@ int main() {
 	AudioSource* source = NewAudioSource();
 	alSourcef( source->alSourceIndex, AL_GAIN, .25f );
 
-	//RenderModel sponza;
-	//sponza.model = ModelManagerAllocate( &modelManager, "DevAssets/Models/sponza.glb" );
-
 	bool triggered = false;
 	ConsoleFullBright();
 	maxFps = 250;
+
+	Chaingunner* cg = CreateChaingunner(Vec3(0, 1, 0));
 	while( !WindowShouldClose( &window ) ) {
 		if( maxFps > 0 )
 			NSpinLock( maxFps );

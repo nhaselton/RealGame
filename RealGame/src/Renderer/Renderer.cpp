@@ -1099,13 +1099,13 @@ ParticleEmitter2* NewParticleEmitter() {
 
 //Complete Hack
 void RenderDrawMuzzleFlash( Texture* texture ) {
-	Revolver* revolver = &entityManager.player->revolver;
+	Weapon* weapon = entityManager.player->currentWeapon;
 
-	if (revolver->muzzleFlashTime <= gameTime)
+	if (weapon->muzzleFlashTime <= gameTime)
 		return;
 
 
-	Skeleton* skel = revolver->renderModel->model->skeleton;
+	Skeleton* skel = weapon->renderModel->model->skeleton;
 	Node* node = 0;
 	for (int i = 0; i < skel->numNodes; i++) {
 		if (!strcmp( skel->joints[i].name, "MuzzleFlash" )) {
@@ -1119,7 +1119,7 @@ void RenderDrawMuzzleFlash( Texture* texture ) {
 	//	Vec3 rpos = entityManager.player->pos + Vec3()
 	//		+ revolver->pos;
 	Player* player = entityManager.player;
-	Mat4 t = glm::translate( Mat4( 1.0 ), revolver->pos + Vec3( revolver->renderModel->pose->pose[node->index].t - Vec3( .2f, 0.35, 0 ) ) );
+	Mat4 t = glm::translate( Mat4( 1.0 ), weapon->pos + Vec3( weapon->renderModel->pose->pose[node->index].t - Vec3( .2f, 0.35, 0 ) ) );
 	Mat4 r = glm::toMat4( player->revolver.rotation );
 	Mat4 s = glm::scale( Mat4( 1.0 ), player->revolver.renderModel->scale );
 	Mat4 model2 = t * r * s;

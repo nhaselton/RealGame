@@ -37,7 +37,7 @@ Player* CreatePlayer( Vec3 pos ) {
 
 	CreateRevolver(player);
 	CreateShotgun(player);
-	player->currentWeapon = &player->revolver;
+	player->currentWeapon = &player->shotgun;
 
 	return player;
 }
@@ -119,6 +119,12 @@ void UpdatePlayer( Entity* entity ) {
 			TriggerTrigger(trigger);
 		}
 	}
+
+	if (KeyPressed(KEY_1))
+		player->currentWeapon = &player->revolver;
+
+	if (KeyPressed(KEY_2))
+		player->currentWeapon = &player->shotgun;
 
 	//Update Weapon
 	player->camera.Position = player->pos + Vec3(0, 1, 0);

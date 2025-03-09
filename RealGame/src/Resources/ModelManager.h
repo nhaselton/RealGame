@@ -72,3 +72,4 @@ void CreateModelManager( ModelManager* manager, u32 memorySize, void* memory, u3
 Model* ModelManagerAllocate( ModelManager* manager, const char* path );
 Model* ModelManagerGetModel( const char* path , bool warnOnFail);
 AnimationClip* ModelFindAnimation( Model* model, const char* animation );
+Model* LoadModel(const char* path);

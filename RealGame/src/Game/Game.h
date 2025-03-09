@@ -1,15 +1,17 @@
 //List of all game includes
 //Should have 0 logic
 #pragma once
+#include "def.h"
 //Entity
 #include "Entity.h"
 #include "Weapons.h"
 #include "EntityManager.h"
 #include "Player.h"
 
-#include "Goblin.h"
-#include "Ogre.h"
-#include "Wizard.h"
+#include "enemies/Goblin.h"
+#include "enemies/Ogre.h"
+#include "enemies/Wizard.h"
+#include "enemies/chaingunner.h"
 
 #include "Encounter.h"
 

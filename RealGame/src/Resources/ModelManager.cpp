@@ -594,3 +594,146 @@ AnimationClip* ModelFindAnimation( Model* model, const char* animation ) {
 	LOG_WARNING( LGS_GAME, "Could not find animation %s\n", animation );
 	return 0;
 }
+
+
+Model* DefLoadModel(const char* path, Parser* parser) {
+	//Check if we already got the model (Can happen during reloads)
+	Model* model = ModelManagerGetModel(path, false);
+	//If not then load it
+	if (!model)
+		model = ModelManagerAllocate(&modelManager, path);
+
+	//Make sure it actually loaded that time
+	if (!model) {
+		LOG_ERROR(LGS_GAME, "No Wizard Model at %s\n", path);
+		return 0;
+	}
+	ModelInfo* modelInfo = (ModelInfo*)((char*)model - 8);
+	//Editing animations
+
+	char key[MAX_NAME_LENGTH]{};
+	char value[MAX_NAME_LENGTH]{};
+
+	if (parser->GetCurrent().subType == '{') {
+		parser->ReadToken();
+
+		while (1) {
+			if (parser->GetCurrent().subType == '}') {
+				break;
+			}
+			if (!LoadKeyValue(parser, key, value))
+				return 0;;
+
+			if (!strcmp(key, "animation")) {
+				//Find Animation
+				AnimationClip* animation = ModelFindAnimation(model, value);
+				if (!animation) {
+					LOG_ERROR(LGS_GAME, "Could not find animation %s for model %s in %s\n", value, model->path, path);
+					return 0;
+				}
+				parser->ExpectedTokenTypePunctuation('{');
+
+				if (!LoadKeyValue(parser, key, value))
+					return 0;
+				if (!strcmp("numevents", key)) {
+					int numEvents = atoi(value);
+					//If hot reloading, we dont need to reallocate memory.
+					//Just override it
+					if (animation->numEvents != numEvents) {
+						animation->numEvents = numEvents;
+						animation->events = (AnimationEvent*)ScratchArenaAllocate(&modelInfo->arena, animation->numEvents * sizeof(AnimationEvent));
+					}
+					for (int i = 0; i < animation->numEvents; i++) {
+						AnimationEvent* event = &animation->events[i];
+						parser->ExpectedTokenTypePunctuation('{');
+						while (1) {
+							if (parser->GetCurrent().subType == '}') {
+								parser->ReadToken();
+								break;
+							}
+
+							if (!LoadKeyValue(parser, key, value))
+								return 0;
+							if (!strcmp("type", key)) {
+								if (!strcmp("SHOOT_PROJECTILE", value)) {
+									event->type = ANIM_EVENT_SHOOT_PROJECTILE;
+								}
+								else if (!strcmp("MELEE_ATTACK", value)) {
+									event->type = ANIM_EVENT_MELEE_ATTACK;
+								}
+								else {
+									LOG_WARNING(LGS_GAME, "Unkown Animation Event type %s\n", value);
+									//return 0;
+								}
+							}
+							else if (!strcmp("time", key)) {
+								event->time = atof(value);
+							}
+							else {
+								LOG_WARNING(LGS_GAME, "Unkown anim event arg %s\n");
+								return 0;
+							}
+						}
+					}
+					//End of Animation
+					parser->ExpectedTokenTypePunctuation('}');
+				}
+			}
+		}
+	}
+	return model;
+}
+
+Model* LoadModel(const char* path ) {
+	char ext[4]{};
+	int len = strlen(path);
+	ext[0] = path[len - 3];
+	ext[1] = path[len - 2];
+	ext[2] = path[len - 1];
+
+	if (!strcmp(ext, "glb")) {
+		return ModelManagerAllocate(&modelManager, path);
+	}
+
+
+	NFile file;
+	CreateNFile(&file, path, "rb");
+	if (!file.file) {
+		LOG_ASSERT(LGS_GAME, "Could not load def file %s\n", path);
+	}
+	Model* out = 0;
+	char* buffer = (char*)TEMP_ALLOC(file.length + 1);
+	NFileRead(&file, buffer, file.length);
+	buffer[file.length] = '\0';
+	Parser parser(buffer, file.length);
+	NFileClose(&file);
+	parser.ReadToken();
+
+	while (parser.GetCurrent().type != TT_EOF) {
+		if (parser.GetCurrent().subType == '}') {
+			parser.ReadToken();
+			break;
+		}
+
+		//Due to decl files sometimes using paths, buffers need to be large enough to account for it
+		char key[MAX_PATH_LENGTH]{};
+		char value[MAX_PATH_LENGTH]{};
+
+		bool a = parser.ParseString(key, MAX_PATH_LENGTH);
+		bool b = parser.ParseString(value, MAX_PATH_LENGTH);
+		if ((a && b) == 0) {
+			LOG_WARNING(LGS_GAME, "Could not read key value %s : %s ", key, value);
+			goto wzfail;
+		}
+
+		if (!strcmp(key, "model")) {
+			out = DefLoadModel(value, &parser);
+			if (!out) goto wzfail;
+		}
+	}
+
+	return out;
+wzfail:
+	LOG_ASSERT(LGS_GAME, "Error parsing %s\n", path);
+	return out;
+}

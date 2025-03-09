@@ -203,8 +203,8 @@ static inline void ShotgunShootPellet(Player* player, Shotgun* shotgun, Vec3 sta
 		}
 	}
 
-	for (int i = 0; i < 100.0f; i++)
-		DebugDrawAABB(start + glm::normalize(dir) * .3f * (float)i, Vec3(.05f), 10.0f);
+	//for (int i = 0; i < 100.0f; i++)
+	//	DebugDrawAABB(start + glm::normalize(dir) * .3f * (float)i, Vec3(.05f), 10.0f);
 	//DebugDrawLine(start, start + dir, GREEN, 1.0f, true, false, 10.0f);
 }
 

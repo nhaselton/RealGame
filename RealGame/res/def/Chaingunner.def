@@ -1,0 +1,13 @@
+"model"				"res/models/chaingunner.glb"	
+{
+
+	"animation"			"BAKED_Shoot"
+	{
+		"numevents"		"1"
+		{
+			"type"		"SHOOT_PROJECTILE"
+			"time"		"0.16"
+		}			
+	}
+
+}
