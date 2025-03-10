@@ -23,6 +23,7 @@ public:
 	Revolver revolver;
 	Shotgun shotgun;
 	PlasmaGun plasmaGun;
+	RocketLauncher rocketLauncher;
 };
 
 Player* CreatePlayer( Vec3 pos );

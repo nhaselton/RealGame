@@ -45,6 +45,13 @@
 					Shoot
 					Ambient hum?
 					Equip
+				Rocket Launcher
+					Function:
+						Proper Explosions
+					Sounds:
+						Equip
+						Fire
+						Reload
 
 		Enemies
 			Chaingunner

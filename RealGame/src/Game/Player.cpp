@@ -38,7 +38,8 @@ Player* CreatePlayer( Vec3 pos ) {
 	CreateRevolver(player);
 	CreateShotgun(player);
 	CreatePlasmaGun(player);
-	player->currentWeapon = &player->plasmaGun;
+	CreateRocketLauncher(player);
+	player->currentWeapon = &player->rocketLauncher;
 
 	return player;
 }
@@ -124,6 +125,7 @@ void UpdatePlayer( Entity* entity ) {
 	if (KeyPressed(KEY_1)) player->currentWeapon = &player->revolver;
 	if (KeyPressed(KEY_2)) player->currentWeapon = &player->shotgun;
 	if (KeyPressed(KEY_3)) player->currentWeapon = &player->plasmaGun;
+	if (KeyPressed(KEY_4)) player->currentWeapon = &player->rocketLauncher;
 
 
 	//Update Weapon

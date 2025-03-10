@@ -462,7 +462,7 @@ Model* ModelManagerAllocate( ModelManager* manager, const char* path ) {
 	// Animations
 	// ============
 	if ( json["animations"].size() == 0 ) {
-		StackArenaFreeToPrevious( &tempArena );
+		//StackArenaFreeToPrevious( &tempArena );
 		return model;
 	}
 

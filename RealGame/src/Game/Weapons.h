@@ -82,7 +82,6 @@ enum rlAnimation_t {
 
 class RocketLauncher : public Weapon {
 public:
-
 };
 
 void CreateRevolver(class Player* player);

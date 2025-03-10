@@ -365,3 +365,82 @@ void CreatePlasmaGun(class Player* player) {
 	player->plasmaGun.Shoot = PlasmaGunShoot;
 	player->plasmaGun.AltShoot = PlasmaGunAltShoot;
 }
+
+void RocketLauncherEquip(Player* player, Weapon* weapon) {
+
+};
+
+void RocketLauncherUpdate( Player* player, Weapon* weapon){
+	RocketLauncher* rpg = (RocketLauncher*)weapon;
+	EntityAnimationUpdate(weapon, dt);
+
+	if (rpg->state == RL_FIRE) {
+		if (rpg->currentAnimationPercent == 1.0f) {
+			rpg->state = RL_READY;
+			EntityStartAnimation(rpg, RL_ANIM_IDLE);
+		}
+	}
+
+	rpg->pos = glm::mix(rpg->pos, rpg->baseOffset, 5.0f * dt);
+	rpg->rotation = glm::slerp(rpg->rotation, rpg->baseRotation, 5.0f * dt);
+};
+
+void RocketLauncherShoot( Player* player, Weapon* weapon){
+	RocketLauncher* rpg = (RocketLauncher*)weapon;
+
+	if (rpg->state != RL_READY)
+		return;
+
+	rpg->state = RL_FIRE;
+	EntityStartAnimation(rpg, RL_ANIM_FIRE);
+
+
+	Vec3 start = player->camera.Position;
+	start += Vec3(0, -.8, 0);
+	start += player->camera.Front * 2.5f;
+	start += player->camera.Right * 0.7f;
+
+	rpg->rotation = glm::rotate(rpg->rotation, glm::radians(2.0f), Vec3(0, 0, 1));
+	Projectile* orb = NewProjectile(start, player->camera.Front * 40.0f, Vec3(.5f), true);
+	if (orb) {
+		orb->collider.owner = player;
+		orb->model.model = Wizard::projectileModel;
+		orb->model.scale = Vec3(.5f);
+		orb->model.translation = Vec3(0);
+		orb->OnCollision = WizardBallCallback;
+		//PlaySound( wizard->audioSource, &Wizard::shootSound );
+	}
+
+};
+
+void RocketLauncherAltShoot( Player* player, Weapon* weapon){
+
+};
+
+void CreateRocketLauncher(class Player* player) {
+	Model* rocketModel = ModelManagerAllocate(&modelManager, "res/models/RPG.glb");
+	player->rocketLauncher.renderModel = new RenderModel;
+	player->rocketLauncher.renderModel->model = rocketModel;
+	player->rocketLauncher.renderModel->rotation = Quat(1.0, 0, 0, 0);
+	player->rocketLauncher.renderModel->translation = Vec3(0);
+	player->rocketLauncher.renderModel->pose = (SkeletonPose*)ScratchArenaAllocateZero(&globalArena, sizeof(SkeletonPose));
+	player->rocketLauncher.renderModel->pose->globalPose = (Mat4*)ScratchArenaAllocateZero(&globalArena, rocketModel->skeleton->numNodes * sizeof(Mat4));
+	player->rocketLauncher.renderModel->pose->pose = (JointPose*)ScratchArenaAllocateZero(&globalArena, rocketModel->skeleton->numNodes * sizeof(JointPose));
+	player->rocketLauncher.renderModel->pose->skeleton = rocketModel->skeleton;
+
+	player->rocketLauncher.renderModel->scale = Vec3(.6f);
+	player->rocketLauncher.baseOffset = Vec3(.5f, -.6f, -.3);
+	player->rocketLauncher.baseRotation = glm::rotate(Quat(1, 0, 0, 0), glm::radians(96.0f), Vec3(0, 1, 0));
+
+	player->rocketLauncher.pos = player->plasmaGun.baseOffset;
+	player->rocketLauncher.rotation = player->plasmaGun.baseRotation;
+
+	player->rocketLauncher.state = RL_READY;
+	player->rocketLauncher.animTimeScale = 1.0f;
+	EntityStartAnimation(&player->rocketLauncher, RL_ANIM_IDLE);
+
+	player->rocketLauncher.Equip = RocketLauncherEquip;
+	player->rocketLauncher.Update = RocketLauncherUpdate;
+	player->rocketLauncher.Shoot = RocketLauncherShoot;
+	player->rocketLauncher.AltShoot = RocketLauncherAltShoot;
+}
