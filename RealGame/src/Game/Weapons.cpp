@@ -365,4 +365,3 @@ void CreatePlasmaGun(class Player* player) {
 	player->plasmaGun.Shoot = PlasmaGunShoot;
 	player->plasmaGun.AltShoot = PlasmaGunAltShoot;
 }
-

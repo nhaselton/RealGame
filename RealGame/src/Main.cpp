@@ -109,7 +109,6 @@
 *			Combine this with AABB collisions and it should be swag
 
 
-
 	//====================
 	//  Milestone 2
 	//		Visuals

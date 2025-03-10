@@ -70,6 +70,22 @@ public:
 	float shotCooldown;
 };
 
+enum rlState_t {
+	RL_READY,
+	RL_FIRE
+};
+
+enum rlAnimation_t {
+	RL_ANIM_IDLE,
+	RL_ANIM_FIRE
+};
+
+class RocketLauncher : public Weapon {
+public:
+
+};
+
 void CreateRevolver(class Player* player);
 void CreateShotgun(class Player* player);
 void CreatePlasmaGun(class Player* player);
+void CreateRocketLauncher(class Player* player);
