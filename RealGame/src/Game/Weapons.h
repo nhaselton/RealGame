@@ -57,8 +57,6 @@ enum shotgunAnimation_t{
 	SHOTGUN_ANIM_IDLE = 1,
 };
 
-
-
 class Shotgun : public Weapon {
 public:
 	int numPellets;
@@ -66,5 +64,12 @@ public:
 	int mag;
 };
 
+class PlasmaGun : public Weapon {
+public:
+	float currentCooldown;
+	float shotCooldown;
+};
+
 void CreateRevolver(class Player* player);
 void CreateShotgun(class Player* player);
+void CreatePlasmaGun(class Player* player);

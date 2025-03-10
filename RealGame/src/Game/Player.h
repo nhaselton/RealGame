@@ -22,11 +22,11 @@ public:
 	Weapon* currentWeapon;
 	Revolver revolver;
 	Shotgun shotgun;
+	PlasmaGun plasmaGun;
 };
 
 Player* CreatePlayer( Vec3 pos );
 void UpdatePlayer( Entity* entity );
-void RevolverUpdate( Player* player );
 void PlayerOnHit( EntityHitInfo info );
 void ConsoleToggleNoClip();
 void PlayerLoad( Parser* parser );

@@ -31,12 +31,20 @@
 	
 	3-5 -> 3-12
 		Guns
-			Pistol (DONE)
+			Pistol 
+				Sounds
+					Equip
 			Shotgun
 				Sounds
 					Primary
 					Secondary
 					Reload
+					Equip
+			PlasmaGun
+				Sounds
+					Shoot
+					Ambient hum?
+					Equip
 
 		Enemies
 			Chaingunner
@@ -51,18 +59,13 @@
 			
 		Proper Equip/Unequip Weapon Functions
 			Quickly pull them up with small delay? shouldnt be able to insta quickswap
-		-----------------------------------------------------------
-	
-		Polish: (Optional)
-			Separate reload anims for shotgun primary and secondary. Secondary fire should not kick as much
 		
-
 
 	Implement A Proper Character Controller (mostly done, maybe make more robust)
 	Weapons:
 		Pistol
 		Shotgun
-		Tommy gun clone
+		Tommy Gun Clone: Plasma Gun
 		Rocket Launcher
 
 	Enemies (Types)
@@ -111,7 +114,7 @@
 	//  Milestone 2
 	//		Visuals
 	//====================
-	By DOOM the dark ages
+	By May 9
 	Shadows
 		Either shadow map or do little shadows underneath
 			Could probably draw a sphere and if it intersects things it draws black
@@ -249,9 +252,6 @@ int main() {
 
 	Ogre::model = ModelManagerAllocate( &modelManager, "res/models/ogre.glb" );
 	Ogre::projectileModel = ModelManagerAllocate( &modelManager, "res/models/rock.glb" );
-
-
-	Model* shotgun = ModelManagerAllocate(&modelManager, "res/models/shotgun.glb");
 
 	//Generate Deadpose
 	Wizard::deadPose = ( SkeletonPose* ) ScratchArenaAllocate( &globalArena, sizeof( SkeletonPose ) );

@@ -123,8 +123,8 @@ void CreateRevolver(Player* player) {
 	player->revolver.maxMuzzleFlashTime = .1f;
 	player->revolver.animTimeScale = 1.0f;
 
-	player->revolver.state = REVOLVER_RELOADING;
-	player->revolver.currentAnimation = revolverModel->animations[0];
+	player->revolver.state = REVOLVER_IDLE;
+	player->revolver.currentAnimation = revolverModel->animations[REVOLVER_ANIM_SHOOT];
 
 	player->revolver.baseOffset = Vec3(.5f, -.4f, -1.1f);
 	player->revolver.baseRotation = glm::rotate(Quat(1, 0, 0, 0), glm::radians(92.0f), Vec3(0, 1, 0));
@@ -295,3 +295,74 @@ void CreateShotgun(Player* player) {
 	player->shotgun.Shoot = ShotgunShoot;
 	player->shotgun.AltShoot = ShotgunAltShoot;
 }
+
+void PlasmaGunUpdate(Player* player, Weapon* weapon) {
+	EntityAnimationUpdate(weapon, dt);
+	weapon->pos = glm::mix(weapon->pos, weapon->baseOffset, 5.0f * dt);
+	weapon->rotation = glm::slerp(weapon->rotation, weapon->baseRotation, 5.0f * dt);
+
+}
+
+void PlasmaGunShoot(Player* player, Weapon* weapon) {
+	PlasmaGun* pg = (PlasmaGun*)weapon;
+
+	if (gameTime - pg->currentCooldown >= 0) {
+		pg->currentCooldown = gameTime + pg->shotCooldown;
+
+		Vec3 start = player->camera.Position;
+		start += Vec3(0, -.8, 0);
+		start += player->camera.Front * 2.5f;
+		start += player->camera.Right * 0.7f;
+
+		pg->pos += Vec3(0, .1, .1);
+		pg->rotation = glm::rotate(pg->rotation, glm::radians(2.0f), Vec3(0, 0, 1));
+
+		Projectile* orb = NewProjectile(start, player->camera.Front * 40.0f, Vec3(.5f), true);
+		if (orb) {
+			orb->collider.owner = player;
+			orb->model.model = Wizard::projectileModel;
+			orb->model.scale = Vec3(.5f);
+			orb->model.translation = Vec3(0);
+			orb->OnCollision = WizardBallCallback;
+			//PlaySound( wizard->audioSource, &Wizard::shootSound );
+		}
+	}
+}
+
+void PlasmaGunAltShoot(Player* player, Weapon* weapon) {
+
+}
+
+void PlasmaGunEquip(Player* player, Weapon* weapon) {
+
+}
+
+void CreatePlasmaGun(class Player* player) {
+	Model* plasmaModel = ModelManagerAllocate(&modelManager, "res/models/plasma.glb");
+	player->plasmaGun.renderModel = new RenderModel;
+	player->plasmaGun.renderModel->model = plasmaModel;
+	player->plasmaGun.renderModel->rotation = Quat(1.0, 0, 0, 0);
+	player->plasmaGun.renderModel->translation = Vec3(0);
+	player->plasmaGun.renderModel->pose = (SkeletonPose*)ScratchArenaAllocateZero(&globalArena, sizeof(SkeletonPose));
+	player->plasmaGun.renderModel->pose->globalPose = (Mat4*)ScratchArenaAllocateZero(&globalArena, plasmaModel->skeleton->numNodes * sizeof(Mat4));
+	player->plasmaGun.renderModel->pose->pose = (JointPose*)ScratchArenaAllocateZero(&globalArena, plasmaModel->skeleton->numNodes * sizeof(JointPose));
+	player->plasmaGun.renderModel->pose->skeleton = plasmaModel->skeleton;
+
+	player->plasmaGun.currentAnimation = 0;
+	player->plasmaGun.renderModel->scale = Vec3(.6f);
+	player->plasmaGun.baseOffset = Vec3(.5f, -.6f, -.3);
+	player->plasmaGun.baseRotation = glm::rotate(Quat(1, 0, 0, 0), glm::radians(96.0f), Vec3(0, 1, 0));
+
+	player->plasmaGun.pos = player->plasmaGun.baseOffset;
+	player->plasmaGun.rotation = player->plasmaGun.baseRotation;
+
+	player->plasmaGun.shotCooldown = 1.0f / 10.0f;
+	player->plasmaGun.currentCooldown = 0.0f;
+	player->plasmaGun.fullAuto = true;
+	
+	player->plasmaGun.Equip = PlasmaGunEquip;
+	player->plasmaGun.Update = PlasmaGunUpdate;
+	player->plasmaGun.Shoot = PlasmaGunShoot;
+	player->plasmaGun.AltShoot = PlasmaGunAltShoot;
+}
+
