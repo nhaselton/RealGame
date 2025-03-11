@@ -3,17 +3,18 @@
 #pragma once
 #include "def.h"
 //Entity
-#include "Entity.h"
-#include "Weapons.h"
-#include "EntityManager.h"
-#include "Player.h"
+#include "game/Entity.h"
+#include "game/Weapons.h"
+#include "game/EntityManager.h"
+#include "game/Player.h"
 
-#include "enemies/Goblin.h"
-#include "enemies/Ogre.h"
-#include "enemies/Wizard.h"
-#include "enemies/chaingunner.h"
+#include "game/enemies/Goblin.h"
+#include "game/enemies/Ogre.h"
+#include "game/enemies/Wizard.h"
+#include "game/enemies/chaingunner.h"
+#include "game/enemies/boar.h"
 
-#include "Encounter.h"
+#include "game/Encounter.h"
 
 void GameLoadEntities( const char* path );
 void GameUnloadLevel();

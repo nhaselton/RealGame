@@ -151,6 +151,7 @@
     <ClCompile Include="src\Core\Parser.cpp" />
     <ClCompile Include="src\Core\Timer.cpp" />
     <ClCompile Include="src\Core\Window.cpp" />
+    <ClCompile Include="src\Game\Enemies\Boar.cpp" />
     <ClCompile Include="src\Game\Enemies\Chaingunner.cpp" />
     <ClCompile Include="src\Game\Encounter.cpp" />
     <ClCompile Include="src\Game\Entity.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="src\def.h" />
     <ClInclude Include="src\Core\Log.h" />
     <ClInclude Include="src\Core\NMemory.h" />
+    <ClInclude Include="src\Game\Enemies\Boar.h" />
     <ClInclude Include="src\Game\Enemies\Chaingunner.h" />
     <ClInclude Include="src\Game\Encounter.h" />
     <ClInclude Include="src\Game\Entity.h" />

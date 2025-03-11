@@ -56,8 +56,6 @@ void ChaingunnerShootBullet( Entity* entity ) {
 void ChaingunnerUpdate( Entity* entity ) {
 	EntityAnimationUpdate(entity, dt);
 
-	DebugDrawCharacterCollider(entity->bounds);
-
 	switch (entity->state) {
 		case CG_IDLE: ChaingunnerIdle(entity); break;
 		case CG_MOVING: ChaingunnerMoving(entity); break;

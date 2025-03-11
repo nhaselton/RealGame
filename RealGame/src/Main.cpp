@@ -29,7 +29,32 @@
 	//		Gameplay (April 1st)
 	//===================
 	
-	3-5 -> 3-12
+	Week of 3-9 - 3-16
+	Enemies
+		Bull Replacement
+			Charging Rhino Type thing
+
+	Give each entity a ReadKVP(); so that loading entities can check defaults then call that func ptr for the rest
+
+	
+	Enemies pt 2
+		Kleer Replacement
+			Charging Cyclops?
+		Fix up Ogre
+
+		Rocket Launcher
+			Function:
+				Proper Explosions
+
+		If Time:	
+			Reptaloid Replacement
+
+
+	Fixes:
+		Rotated AABB bodies?
+			Will need to then transform the aabb/oval into new aabb/oval
+
+	// Later //
 		Guns
 			Pistol 
 				Sounds
@@ -201,6 +226,7 @@ int sleepTime;
 void LoadDecls() {
 	Wizard::model = LoadModel("res/def/wizard.def");
 	Chaingunner::model = LoadModel("res/def/chaingunner.def");
+	Boar::model = LoadModel("res/models/boar.glb");
 
 }
 
@@ -290,6 +316,8 @@ int main() {
 	Chaingunner::model->animations[CG_ANIM_SHOOT]->looping = true;
 	Chaingunner::model->animations[CG_ANIM_IDLE]->looping = true;
 	Chaingunner::model->animations[CG_ANIM_RUN]->looping = true;
+	Boar::model->animations[BOAR_ANIM_CHARGE]->looping = true;
+	//Boar::model->animations[BOAR_ANIM_IDLE]->looping = true;
 
 	PrintAllocators( &globalArena );
 	WindowSetVsync( &window, 0 );
@@ -305,7 +333,7 @@ int main() {
 	ConsoleFullBright();
 	maxFps = 250;
 
-	Chaingunner* cg = CreateChaingunner(Vec3(0, 1, 0));
+	Boar* boar = CreateBoar(Vec3(0, 1, 0));
 	while( !WindowShouldClose( &window ) ) {
 		if( maxFps > 0 )
 			NSpinLock( maxFps );
