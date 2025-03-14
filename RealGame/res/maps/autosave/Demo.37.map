@@ -476,23 +476,23 @@
 // brush 52
 {
 ( -336 496 0 ) ( -336 497 0 ) ( -336 496 1 ) prototype/jpg128_blue_1 [ 0 -1 0 16 ] [ 0 0 -1 0 ] 0 1 1
-( -16 576 0 ) ( -16 576 1 ) ( -15 576 0 ) prototype/jpg128_blue_1 [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( -16 496 0 ) ( -16 496 1 ) ( -15 496 0 ) prototype/jpg128_blue_1 [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
 ( -16 496 0 ) ( -15 496 0 ) ( -16 497 0 ) prototype/jpg128_blue_1 [ -1 0 0 0 ] [ 0 -1 0 16 ] 0 1 1
 ( 288 864 448 ) ( 288 865 448 ) ( 289 864 448 ) prototype/jpg128_blue_1 [ 1 0 0 0 ] [ 0 -1 0 16 ] 0 1 1
-( 288 704 16 ) ( 289 704 16 ) ( 288 704 17 ) prototype/jpg128_blue_1 [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 288 864 16 ) ( 289 864 16 ) ( 288 864 17 ) prototype/jpg128_blue_1 [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
 ( 288 864 16 ) ( 288 864 17 ) ( 288 865 16 ) prototype/jpg128_blue_1 [ 0 1 0 -16 ] [ 0 0 -1 0 ] 0 1 1
 }
 }
 // entity 1
 {
 "classname" "spawner"
-"origin" "-424 1448 312"
+"origin" "-424 1448 296"
 "targetname" "pillar1"
 }
 // entity 2
 {
 "classname" "spawner"
-"origin" "744 1416 328"
+"origin" "744 1416 312"
 "targetname" "pillar2"
 }
 // entity 3
@@ -682,11 +682,6 @@
 }
 // entity 24
 {
-"classname" "info_ogre_start"
-"origin" "55 1337 32"
-}
-// entity 25
-{
-"classname" "info_ogre_start"
-"origin" "473 1529 32"
+"classname" "info_chaingunner_start"
+"origin" "-55 393 32"
 }

@@ -51,6 +51,9 @@ bool  AddEncounterAction( EncounterAction* action, char* key, char* value ) {
 	else if( !strcmp( key, "rate" ) ) {
 		action->spawnRate = atof( value );
 	}
+	else if (!strcmp(key, "flags")) {
+		action->spawnFlags = (spawnFlags_t)atoi(value);
+	}
 	else {
 		LOG_WARNING( LGS_GAME, "Unkown encounter action key value %s : %s", key, value );
 		return false;
@@ -186,11 +189,13 @@ void EncounterNotifyOnDeath( Encounter* encounter, Entity* entity ) {
 	}
 }
 
-void SpawnEnemy( Encounter* encounter, encounterEnemies_t enemy, Vec3 pos, SpawnTagGroup* spawnGroup ) {
+void SpawnEnemy( Encounter* encounter, encounterEnemies_t enemy, spawnFlags_t spawnFlags, Vec3 pos, SpawnTagGroup* spawnGroup ) {
 	Entity* e = 0; 
 	switch( enemy ) {
 		case ENCOUNTER_AI_GOBLIN: e = CreateGoblin( pos ); break;
-		case ENCOUNTER_AI_WIZARD: e = CreateWizard( pos ); break;
+		case ENCOUNTER_AI_WIZARD: e = CreateWizard(pos); break;
+		case ENCOUNTER_AI_CHAINGUNNER: e = CreateChaingunner(pos); break;
+		case ENCOUNTER_AI_BOAR: e = CreateBoar( pos ); break;
 		default:
 		LOG_WARNING( LGS_GAME, "Trying to spawn Enemy type %d that does not exist\n", enemy );
 	}
@@ -199,6 +204,8 @@ void SpawnEnemy( Encounter* encounter, encounterEnemies_t enemy, Vec3 pos, Spawn
 		LOG_ERROR( LGS_GAME, "Could not spawn entity for encounter. Could softlock\n" );
 		return;
 	}
+
+	e->spawnFlags = spawnFlags;
 
 	if( spawnGroup != 0 ) {
 		strcpy( e->spawnTag, spawnGroup->name );
@@ -263,7 +270,7 @@ void EncounterAddActions( Encounter* encounter ) {
 					spawnPos = PosFromSpawnZone( target );
 
 
-				SpawnEnemy( encounter, action->ai, spawnPos, group );
+				SpawnEnemy( encounter, action->ai, action->spawnFlags,spawnPos, group );
 			}break;
 			case ENCOUNTER_ACTION_SPAWN_MULTIPLE_AI: {
 				printf( "Encounter Spawn Multiple AI\n" );
@@ -290,7 +297,7 @@ void EncounterAddActions( Encounter* encounter ) {
 				}
 				for( int n = 0; n < toSpawn; n++ ) {
 					spawnPos = PosFromSpawnZone( target );
-					SpawnEnemy( encounter, action->ai, spawnPos, group );
+					SpawnEnemy( encounter, action->ai,action->spawnFlags, spawnPos, group );
 				}
 			}break;
 			case ENCOUNTER_ACTION_WAIT_FOR_SECONDS_BLOCK:
@@ -346,7 +353,7 @@ void UpdateEncounter( Encounter* encounter ) {
 
 				for( int n = 0; n < toSpawn; n++ ) {
 					spawnPos = PosFromSpawnZone( action->activeSpawnTarget );
-					SpawnEnemy( encounter, action->ai, spawnPos, group );
+					SpawnEnemy( encounter, action->ai,action->spawnFlags, spawnPos, group );
 				}
 
 				//if Finsihed remove
@@ -412,7 +419,7 @@ void TriggerTrigger( Trigger* trigger ) {
 		{
 			SpawnTarget* target = FindSpawnTarget( trigger->willTrigger );
 			if( target ) {
-				SpawnEnemy( 0, target->enemies, target->pos, 0 );
+				SpawnEnemy(0, target->enemies, SPAWN_FLAGS_NONE, target->pos, 0);
 			}
 			else
 				LOG_WARNING( LGS_GAME, "Trigger can not spawn target at %s\n", trigger->willTrigger );

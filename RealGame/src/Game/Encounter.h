@@ -4,9 +4,14 @@ enum encounterEnemies_t : u16 {
 	ENCOUNTER_AI_NONE = 0,
 	ENCOUNTER_AI_GOBLIN = 1,
 	ENCOUNTER_AI_WIZARD = 2,
+	ENCOUNTER_AI_CHAINGUNNER = 4,
+	ENCOUNTER_AI_BOAR = 8,
 };
 
-
+enum spawnFlags_t {
+	SPAWN_FLAGS_NONE = 0,
+	SPAWN_FLAGS_PERCH = 1
+};
 
 enum encounterAction_t : u16 {
 	ENCOUNTER_ACTION_SPAWN_SINGLE_AI = 1,
@@ -19,6 +24,7 @@ enum encounterAction_t : u16 {
 struct EncounterAction {
 	encounterAction_t type;
 	encounterEnemies_t ai;
+	spawnFlags_t spawnFlags;
 	u16 active;
 
 	char spawnTarget[MAX_NAME_LENGTH];

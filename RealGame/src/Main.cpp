@@ -31,10 +31,6 @@
 	
 	Week of 3-9 - 3-16
 	Enemies
-	Give each entity a ReadKVP(); so that loading entities can check defaults then call that func ptr for the rest
-
-	Enemies pt 2
-		Fix up Ogre
 
 		Rocket Launcher
 			Function:
@@ -42,10 +38,6 @@
 
 		If Time:	
 			Reptaloid Replacement
-
-	Fixes:
-		Rotated AABB bodies?
-			Will need to then transform the aabb/oval into new aabb/oval
 
 	// Later //
 		Guns

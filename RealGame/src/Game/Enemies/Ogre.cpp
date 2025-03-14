@@ -12,6 +12,7 @@ Model* Ogre::projectileModel;
 Ogre* CreateOgre( Vec3 pos ) {
 	//Ogre* entity = ( Ogre* ) ScratchArenaAllocateZero( &globalArena, KB( 1 ) );
 	Ogre* entity = ( Ogre* ) NewEntity();
+	CreateBoid(entity);
 	entity->pos = pos;
 
 	EntityGenerateRenderModel( entity, Ogre::model, &globalArena );
@@ -19,7 +20,7 @@ Ogre* CreateOgre( Vec3 pos ) {
 
 	entity->bounds->offset = pos;
 	entity->bounds->bounds.center = Vec3( 0, 1.9, 0 );
-	entity->bounds->bounds.width = Vec3( 1.75,1.9,1.75 );
+	entity->bounds->bounds.width = Vec3( 1.5,1.62,1.5 );
 	entity->bounds->owner = entity;
 	
 	entity->nextAttack = 0;
@@ -59,7 +60,7 @@ void OgreMove( Entity* entity, Vec3 target ) {
 	float dist = glm::length( dir );
 	dir /= dist;
 
-	float speed = 1.5f;
+	float speed = 8.5f;
 	dist = glm::min( dist, speed );
 	
 	entity->rotation = glm::quatLookAt( -dir, Vec3( 0, 1, 0 ) );
@@ -68,8 +69,8 @@ void OgreMove( Entity* entity, Vec3 target ) {
 
 void OgreUpdate( Entity* entity ) {
 	//Apply Gravity
+	entity->animTimeScale = 1.25f;
 	entity->pos = MoveAndSlide( entity->bounds, Vec3( 0, -10 * dt, 0 ), 0, true );
-	DebugDrawCharacterCollider( entity->bounds );
 
 	switch ( ( ogreState_t ) entity->state ) {
 		case OGRE_CHASE: OgreChase( entity ); break;
@@ -98,17 +99,20 @@ void OgreChase( Entity* entity ) {
 	//Check Attacks
 	if ( ogre->nextAttack <= gameTime ) {
 		float playerDistance = glm::length( playerPos - ogre->pos );
-		if ( playerDistance > 15.0f ) {
-			OgreStartThrow(entity);
-			return;
-		}
-		else if ( playerDistance < 8 ) {
+		//if ( playerDistance > 15.0f ) {
+		//	OgreStartThrow(entity);
+		//	return;
+		//}
+		//else 
+		if ( playerDistance < 6 ) {
 			OgreStartSwipe( entity );
 			return;
 		}
 	}
 
-	OgreMove(entity, playerPos );
+	ogre->target = entityManager.player->pos;
+	EntityLookAtPlayer(ogre);
+	EntityMove(ogre, ogre->boidVelocity * dt);
 }
 
 void OgreStartThrow( Entity* entity ) {

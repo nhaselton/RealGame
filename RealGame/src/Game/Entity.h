@@ -94,6 +94,7 @@ public:
 	float lastAnimationTime;
 
 	u32 state;
+	u32 spawnFlags;
 
 	int health;
 	int maxHealth;

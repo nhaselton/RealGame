@@ -139,6 +139,14 @@ void GameLoadEntities( const char* path ) {
 			newEnt = (Ogre*)CreateOgre(Vec3(0));
 			EntKVP = OgreLoadKVP;
 		}
+		else if (!strcmp(className, "info_chaingunner_start")) {
+			newEnt = (Chaingunner*)CreateChaingunner(Vec3(0));
+			EntKVP = ChaingunnerLoadKVP;
+		}
+		else if (!strcmp(className, "info_boar_start")) {
+			newEnt = (Boar*)CreateBoar(Vec3(0));
+			EntKVP = BoarLoadKVP;
+		}
 		else if( !strcmp( className, "trigger_once" ) ) {
 			newEnt = &entityManager.triggers[entityManager.numTriggers++];
 			EntKVP = TriggerLoadKVP;
@@ -157,7 +165,6 @@ void GameLoadEntities( const char* path ) {
 			memset(newEnt, 0, sizeof(SpawnTarget));
 			((SpawnTarget*)newEnt)->type = SPAWN_TARGET_ZONE;
 			isSpawnZone = true;
-
 		}
 		else if( !strcmp( className, "light" ) ) {
 			//Because static and dynamci lights go in differnt locations,
@@ -186,7 +193,6 @@ void GameLoadEntities( const char* path ) {
 			}
 		}
 		parser.ExpectedTokenTypePunctuation('}');
-
 		//Hack for light
 		if (isLight) LightHack((Light*)newEnt);
 		//Hack for spawnZone

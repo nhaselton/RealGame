@@ -54,3 +54,4 @@ void ChaingunnerMovingStart(Entity* entity);
 void ChaingunnerOnHit(EntityHitInfo info);
 void ChaingunnerStagger(Entity* entity);
 void ChaingunnerStaggerStart(Entity* entity);
+void ChaingunnerLoadKVP(void* ent, char* key, char* value);

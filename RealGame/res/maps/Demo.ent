@@ -1,12 +1,12 @@
 {
 "classname" "spawner"
-"origin" "-424 1448 296"
+"origin" "-424 1448 312"
 "targetname" "pillar1"
 }
 // entity 2
 {
 "classname" "spawner"
-"origin" "744 1416 312"
+"origin" "744 1416 328"
 "targetname" "pillar2"
 }
 // entity 3
@@ -144,4 +144,14 @@
 "type" "2"
 "intensity" "1"
 "attenuation" "325"
+}
+// entity 24
+{
+"classname" "info_ogre_start"
+"origin" "55 1337 32"
+}
+// entity 25
+{
+"classname" "info_ogre_start"
+"origin" "473 1529 32"
 }

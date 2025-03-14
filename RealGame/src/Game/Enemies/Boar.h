@@ -34,3 +34,4 @@ void BoarStagger(Entity* entity);
 void BoarUpdate(Entity* entity);
 void BoarHit(EntityHitInfo info);
 void BoarRecievedAnimationEvent(Entity* entity, AnimationEvent* event);
+void BoarLoadKVP(void* ent, char* key, char* value);

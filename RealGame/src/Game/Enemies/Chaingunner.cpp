@@ -99,8 +99,11 @@ void ChaingunnerMoving(Entity* entity) {
 	if (gameTime - chaingunner->startMovingTime > 3.0f || dist <= .1f) {
 		ChaingunnerShootingStart(entity);
 	}
-	entity->pos = MoveAndSlide(entity->bounds, entity->boidVelocity * dt, 3, true);
+
 	EntityLookAtPlayer(entity);
+	if ((entity->spawnFlags & SPAWN_FLAGS_PERCH) == 0) {
+		entity->pos = MoveAndSlide(entity->bounds, entity->boidVelocity * dt, 3, true);
+	}
 }
 
 void ChaingunnerMovingStart(Entity* entity) {
@@ -164,4 +167,12 @@ void ChaingunnerStagger(Entity* entity) {
 		ChaingunnerMovingStart(entity);
 	}
 
+}
+
+void ChaingunnerLoadKVP(void* ent, char* key, char* value) {
+	Chaingunner* chaingunner = (Chaingunner*)ent;
+
+	if (!TryEntityField(chaingunner, key, value)) {
+		LOG_WARNING(LGS_GAME, "chaingunner has no kvp %s : %s", key, value);
+	}
 }

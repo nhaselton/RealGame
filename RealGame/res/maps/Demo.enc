@@ -11,16 +11,18 @@
 	//Wizard on pillar 1
 	{
 		"type" 		"SPAWN_SINGLE_AI"
-		"ai"		"2"
+		"ai"		"4"
 		"target" 	"pillar1"
 		"tag"		"r0w0"
+		"flags"		"1"
 	}
 	//Wizard on pillar 2
 	{
 		"type" 		"SPAWN_SINGLE_AI"
-		"ai"		"2"
+		"ai"		"4"
 		"target" 	"pillar2"
 		"tag"		"r0w0"
+		"flags"		"1"
 	}
 	//Wizards up top
 	{

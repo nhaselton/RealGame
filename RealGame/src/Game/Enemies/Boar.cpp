@@ -73,10 +73,7 @@ void BoarCharge(Entity* entity) {
 
 	// Get the angle between the current rotation and the target rotation
 	float angle = glm::angle(entity->rotation * glm::inverse(finalRot));
-	printf("%f\t", angle);
 	float rotationSpeed = 1.0f; 
-	//angle = glm::clamp(angle, -rotationSpeed * dt, rotationSpeed * dt);
-	printf("%f\n", angle);
 	// Apply the rotation incrementally
 	if ( angle > 0)
 		entity->rotation = glm::slerp(entity->rotation, finalRot, (1.0f * dt) / angle);
@@ -124,4 +121,11 @@ void BoarStagger(Entity* entity) {
 
 void BoarRecievedAnimationEvent(Entity* entity, AnimationEvent* event) {
 
+}
+
+void BoarLoadKVP(void* ent, char* key, char* value) {
+	Boar* boar = (Boar*)ent;
+	if (!TryEntityField(boar, key, value)) {
+		LOG_WARNING(LGS_GAME, "Boar has no kvp %s : %s", key, value);
+	}
 }
