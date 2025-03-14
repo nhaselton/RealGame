@@ -307,24 +307,11 @@ void WizardRecievedAnimationEvent( Entity* ent, AnimationEvent* event ) {
 	}
 }
 
-void WizardLoad( Parser* parser ) {
-	Wizard* wizard = CreateWizard( Vec3( 0 ) );
+void WizardLoadKeyValue(void* ent, char* key, char* value) {
+	Wizard* wizard = (Wizard*)ent;
 
-	while( 1 ) {
-		char key[MAX_NAME_LENGTH]{};
-		char value[MAX_NAME_LENGTH]{};
-
-		parser->ParseString( key, MAX_NAME_LENGTH );
-		parser->ParseString( value, MAX_NAME_LENGTH );
-
-		if( !TryEntityField( wizard, key, value ) ) {
-			LOG_WARNING( LGS_GAME, "wizard has no kvp %s : %s", key, value );
-		}
-
-		if( parser->GetCurrent().subType == '}' ) {
-			parser->ReadToken();
-			break;
-		}
+	if (!TryEntityField(wizard, key, value)) {
+		LOG_WARNING(LGS_GAME, "wizard has no kvp %s : %s", key, value);
 	}
-}
 
+}

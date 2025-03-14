@@ -212,22 +212,9 @@ void OgreRockCallback( class Projectile* projectile, class Entity* entity ) {
 	RemoveProjectile( projectile );
 }
 
-void OgreLoad( Parser* parser ) {
-	Ogre* ogre = CreateOgre( Vec3( 0 ) );
-	while( 1 ) {
-		char key[MAX_NAME_LENGTH]{};
-		char value[MAX_NAME_LENGTH]{};
-
-		parser->ParseString( key, MAX_NAME_LENGTH );
-		parser->ParseString( value, MAX_NAME_LENGTH );
-
-		if( !TryEntityField( ogre, key, value ) ) {
-			LOG_WARNING( LGS_GAME, "wizard has no kvp %s : %s", key, value );
-		}
-
-		if( parser->GetCurrent().subType == '}' ) {
-			parser->ReadToken();
-			break;
-		}
+void OgreLoadKVP(void* _ogre, char* key, char* value) {
+	Ogre* ogre = (Ogre*)_ogre;
+	if (!TryEntityField(ogre, key, value)) {
+		LOG_WARNING(LGS_GAME, "Ogrehas no kvp %s : %s", key, value);
 	}
 }

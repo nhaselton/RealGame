@@ -30,4 +30,4 @@ Player* CreatePlayer( Vec3 pos );
 void UpdatePlayer( Entity* entity );
 void PlayerOnHit( EntityHitInfo info );
 void ConsoleToggleNoClip();
-void PlayerLoad( Parser* parser );
+void PlayerLoadKVP( void* player, char* key, char* value );

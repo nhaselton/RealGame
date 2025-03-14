@@ -105,6 +105,16 @@ void RenderCreateShaders( Renderer* renderer ) {
 	ShaderSetInt( renderer, renderer->shaders[SHADER_BILLBOARD], "albedo", S3D_SKYBOX );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_BILLBOARD], SHADER_ARG_MAT4, "model" );
 
+	//Standrard Skinned
+	renderer->shaders[SHADER_CELL_SHADER_SKINNED] = ShaderManagerCreateShader(&shaderManager, "res/shaders/CellShaderSkinned/CellShaderSkinned.vert", "res/shaders/CellShaderSkinned/CellShaderSkinned.frag");
+	RenderSetShader(renderer, renderer->shaders[SHADER_CELL_SHADER_SKINNED]);
+	ShaderAddArg(&shaderManager, renderer->shaders[SHADER_CELL_SHADER_SKINNED], SHADER_ARG_INT, "albedo");
+	ShaderSetInt(renderer, renderer->shaders[SHADER_CELL_SHADER_SKINNED], "albedo", S2D_ALBEDO);
+	ShaderAddArg(&shaderManager, renderer->shaders[SHADER_CELL_SHADER_SKINNED], SHADER_ARG_MAT4_ARRAY, "bones");
+	ShaderSetMat4Array(renderer, renderer->shaders[SHADER_CELL_SHADER_SKINNED], "bones", renderer->mat4Array, 100);
+	ShaderAddArg(&shaderManager, renderer->shaders[SHADER_CELL_SHADER_SKINNED], SHADER_ARG_MAT4, "model");
+	ShaderAddArg(&shaderManager, renderer->shaders[SHADER_CELL_SHADER_SKINNED], SHADER_ARG_INT, "fullbright");
+	ShaderSetInt(renderer, renderer->shaders[SHADER_CELL_SHADER_SKINNED], "fullbright", renderer->fullBright);
 
 	Shader* ui = renderer->shaders[SHADER_UI];
 	RenderSetShader( renderer, ui );
@@ -412,6 +422,9 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 		renderer->levelInfo.textureChains[i].numTriangles = 0;
 	}
 
+	for (int i = 0; i < renderer->worldView.numStaticLights; i++)
+		DebugDrawAABB(renderer->worldView.staticLights[i].pos, Vec3(1));
+
 	renderer->worldView.projection = renderer->projection;
 	renderer->worldView.view = renderer->camera.GetViewMatrix();
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->worldViewSSBO );
@@ -654,7 +667,8 @@ void RenderSetShader( Renderer* renderer, Shader* newShader ) {
 }
 
 void RenderDrawModel( Renderer* renderer, Model* model, Mat4 offset, SkeletonPose* pose ) {
-	Shader* shader = (model->skeleton == 0) ? renderer->shaders[SHADER_STANDARD] : renderer->shaders[SHADER_STANDARD_SKINNED];
+	//Shader* shader = (model->skeleton == 0) ? renderer->shaders[SHADER_STANDARD] : renderer->shaders[SHADER_STANDARD_SKINNED];
+	Shader* shader = (model->skeleton == 0) ? renderer->shaders[SHADER_STANDARD] : renderer->shaders[SHADER_CELL_SHADER_SKINNED];
 	RenderSetShader( renderer, shader );
 
 	if (model->skeleton && pose) {

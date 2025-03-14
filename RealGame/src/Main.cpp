@@ -31,15 +31,9 @@
 	
 	Week of 3-9 - 3-16
 	Enemies
-		Bull Replacement
-			Charging Rhino Type thing
-
 	Give each entity a ReadKVP(); so that loading entities can check defaults then call that func ptr for the rest
 
-	
 	Enemies pt 2
-		Kleer Replacement
-			Charging Cyclops?
 		Fix up Ogre
 
 		Rocket Launcher
@@ -48,7 +42,6 @@
 
 		If Time:	
 			Reptaloid Replacement
-
 
 	Fixes:
 		Rotated AABB bodies?
@@ -235,7 +228,7 @@ int main() {
 	console.Init();
 	CreateStackArena( &tempArena, TEMP_MEMORY, ScratchArenaAllocate( &globalArena, TEMP_MEMORY ), &globalArena, "Temp Arena" );
 
-	WindowInit( &window, 1280, 720, "Game for real this time guys" );
+	WindowInit( &window, 1920, 1080, "Game for real this time guys" );
 	WindowAddKeySubscription( &window, &console.sub );
 
 	CreateModelManager( &modelManager,
@@ -303,7 +296,7 @@ int main() {
 #endif
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
-	LoadLevel( &level, "res/maps/test.cum" );
+	LoadLevel( &level, "res/maps/demo.cum" );
 	Timer timer;
 
 	Player* player = (Player*) entityManager.player;
@@ -333,7 +326,7 @@ int main() {
 	ConsoleFullBright();
 	maxFps = 250;
 
-	Boar* boar = CreateBoar(Vec3(0, 1, 0));
+	//Boar* boar = CreateBoar(Vec3(0, 1, 0));
 	while( !WindowShouldClose( &window ) ) {
 		if( maxFps > 0 )
 			NSpinLock( maxFps );

@@ -57,5 +57,5 @@ void WizardMelee( Wizard* wizard );
 void WizardDie( Wizard* wizard );
 void WizardRecievedAnimationEvent( Entity* wizard, struct AnimationEvent* event );
 
+void WizardLoadKeyValue(void* ent, char* key, char* value);
 void WizardBallCallback( class Projectile* projectile, class Entity* entity );
-void WizardLoad( Parser* parser );

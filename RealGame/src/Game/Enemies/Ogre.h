@@ -49,4 +49,4 @@ void OgreStartDie(Entity* entity);
 void OgreDie( Entity* entity );
 
 void OgreRockCallback( class Projectile* projectile, class Entity* entity );
-void OgreLoad( class Parser* ogre );
+void OgreLoadKVP(void* goblin, char* key, char* value);
