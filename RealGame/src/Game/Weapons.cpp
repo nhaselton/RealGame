@@ -407,7 +407,7 @@ void RocketLauncherShoot( Player* player, Weapon* weapon){
 		orb->model.model = Wizard::projectileModel;
 		orb->model.scale = Vec3(.5f);
 		orb->model.translation = Vec3(0);
-		orb->OnCollision = WizardBallCallback;
+		orb->OnCollision = RocketCallback;
 		//PlaySound( wizard->audioSource, &Wizard::shootSound );
 	}
 
@@ -443,4 +443,28 @@ void CreateRocketLauncher(class Player* player) {
 	player->rocketLauncher.Update = RocketLauncherUpdate;
 	player->rocketLauncher.Shoot = RocketLauncherShoot;
 	player->rocketLauncher.AltShoot = RocketLauncherAltShoot;
+}
+
+void RocketCallback(Projectile* projectile, Entity* entity) {
+	TEMP_ARENA_SET;
+	Entity** list = (Entity**)TEMP_ALLOC(sizeof(void*) * 32);
+
+	//Get last tick so out of wall
+	Vec3 pos = projectile->collider.offset - projectile->velocity * dt;
+	int numHit = PhysicsQueryExplosion(pos, 12.0f, list, 32);
+	DebugDrawSphere(pos, 12.0f,Vec3(1,0,0),true,1,1,1.0f);
+
+	DebugDrawAABB(pos, projectile->collider.bounds.width, 1000.0f);
+	for (int i = 0; i < numHit; i++) {
+		if (list[i]->OnHit) {
+			EntityHitInfo info{};
+			info.attacker = projectile->owner;
+			info.victim = list[i];
+			info.projectile = projectile;
+			info.damage = 100;
+			list[i]->OnHit(info);
+		}
+	}
+
+	RemoveProjectile(projectile);
 }

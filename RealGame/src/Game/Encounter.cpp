@@ -54,6 +54,9 @@ bool  AddEncounterAction( EncounterAction* action, char* key, char* value ) {
 	else if (!strcmp(key, "flags")) {
 		action->spawnFlags = (spawnFlags_t)atoi(value);
 	}
+	else if (!strcmp(key, "waittime")) {
+			action->waitTime = atof(value);
+	}
 	else {
 		LOG_WARNING( LGS_GAME, "Unkown encounter action key value %s : %s", key, value );
 		return false;
@@ -195,6 +198,7 @@ void SpawnEnemy( Encounter* encounter, encounterEnemies_t enemy, spawnFlags_t sp
 		case ENCOUNTER_AI_GOBLIN: e = CreateGoblin( pos ); break;
 		case ENCOUNTER_AI_WIZARD: e = CreateWizard(pos); break;
 		case ENCOUNTER_AI_CHAINGUNNER: e = CreateChaingunner(pos); break;
+		case ENCOUNTER_AI_OGRE: e = CreateOgre(pos); break;
 		case ENCOUNTER_AI_BOAR: e = CreateBoar( pos ); break;
 		default:
 		LOG_WARNING( LGS_GAME, "Trying to spawn Enemy type %d that does not exist\n", enemy );
@@ -318,8 +322,12 @@ void EncounterAddActions( Encounter* encounter ) {
 			}
 		}
 	}
-	printf( "Encounter Ended\n" );
-	encounter->active = false;
+
+	//Note: Must check again here because the last element of an encounter can be a block
+	if (!encounter->block) {
+		printf("Encounter Ended\n");
+		encounter->active = false;
+	}
 }
 
 void StartEncounter( Encounter* encounter ) {
@@ -363,7 +371,6 @@ void UpdateEncounter( Encounter* encounter ) {
 					printf( "End Spawn Multi AI\n" );
 				}
 			}break;
-
 			default: {
 				LOG_WARNING( LGS_GAME, "unsupported action type %d trying to update\n", action->type );
 			}

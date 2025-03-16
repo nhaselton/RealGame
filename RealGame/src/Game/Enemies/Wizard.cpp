@@ -60,7 +60,7 @@ Wizard* CreateWizard( Vec3 pos ) {
 	wizard->bounds->offset = wizard->pos;
 	wizard->renderModel->scale = Vec3(2,2,2);
 
-	wizard->shootCooldown = 3.0f;
+	wizard->shootCooldown = 1.5f;
 	wizard->nextShootTime = gameTime + 1.0f;
 	wizard->nextMelee = gameTime + 1.0f;
 

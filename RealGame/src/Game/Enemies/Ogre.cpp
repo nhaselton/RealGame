@@ -50,26 +50,9 @@ void OgreTaunt( Entity* entity ) {
 	}
 }
 
-
-void OgreMove( Entity* entity, Vec3 target ) {
-	if ( target == entity->pos )
-		return;
-
-	Vec3 dir = target - entity->pos;
-	dir.y = 0;//Do not move on vertical plane
-	float dist = glm::length( dir );
-	dir /= dist;
-
-	float speed = 8.5f;
-	dist = glm::min( dist, speed );
-	
-	entity->rotation = glm::quatLookAt( -dir, Vec3( 0, 1, 0 ) );
-	entity->pos = MoveAndSlide( entity->bounds, dir * dist * dt, 0, true );
-}
-
 void OgreUpdate( Entity* entity ) {
 	//Apply Gravity
-	entity->animTimeScale = 1.25f;
+	entity->animTimeScale = 1.5f;
 	entity->pos = MoveAndSlide( entity->bounds, Vec3( 0, -10 * dt, 0 ), 0, true );
 
 	switch ( ( ogreState_t ) entity->state ) {
@@ -112,7 +95,7 @@ void OgreChase( Entity* entity ) {
 
 	ogre->target = entityManager.player->pos;
 	EntityLookAtPlayer(ogre);
-	EntityMove(ogre, ogre->boidVelocity * dt);
+	EntityMove(ogre, ogre->boidVelocity * 2.0f * dt);
 }
 
 void OgreStartThrow( Entity* entity ) {

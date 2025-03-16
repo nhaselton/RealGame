@@ -5,7 +5,9 @@ enum encounterEnemies_t : u16 {
 	ENCOUNTER_AI_GOBLIN = 1,
 	ENCOUNTER_AI_WIZARD = 2,
 	ENCOUNTER_AI_CHAINGUNNER = 4,
-	ENCOUNTER_AI_BOAR = 8,
+	ENCOUNTER_AI_OGRE = 8,
+	ENCOUNTER_AI_BOAR = 16,
+
 };
 
 enum spawnFlags_t {

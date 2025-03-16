@@ -81,14 +81,228 @@
 		"type" 		"SPAWN_MULTIPLE_AI"
 		"ai"		"1"
 		"target" 	"gobs1"
-		"count"		"200"
+		"count"		"3"
 	}
-
+	
 	{
 		"type" 		"SPAWN_MULTIPLE_AI"
 		"ai"		"1"
 		"target" 	"gobs1"
-		"count"		"8"
-		"rate"		".25"
+		"count"		"6"
+		"rate"		"1.25"
+	}
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		"target" 	"cp1"
+	}
+
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		"target" 	"cp2"
+	}	
+	
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		"target" 	"cp6"
+	}	
+	
+		{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"4"
+		"target" 	"cp7"
+	}	
+	
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		"target" 	"cp3"
+	}
+	
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		"target" 	"cp4"
+	}
+	
+	//Need this because it spawns the goblins above, without wait it will kill encounter too early
+	{
+		"type" 		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"		"5"
+	}	
+}
+
+
+//Start of the right path [3]
+{
+	"name"		"righte0"
+	
+	//3 Boars that charge you
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"16"
+		"count"		"3"
+		"rate"		"5.0"
+		target		"rbz"
+	}
+	
+	//Chaingunner Left
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"4"
+		target		"rl0"
+	}
+	
+	//Wizard Right
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		target		"rr0"
+	}	
+	
+	//Two chaingunners in back
+		//Chaingunner Left
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"4"
+		target		"rb0"
+	}
+	
+		//Chaingunner Left
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"4"
+		target		"rb1"
+	}
+	
+		//Little offset so goblins dont spawn at same time
+	{
+		"type" 		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"	"1.0"
+	}
+	
+	//Goblins up top
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"1"
+		"count"		"4"
+		"rate"		"2.5"
+		target		"rtop1"
+	}
+	
+	//Little offset so other side doesnt spawn at same time
+	{
+		"type" 		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"	"0.4"
+	}
+	
+	//Goblins other side, less and at a slower rate
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"1"
+		"count"		"3"
+		"rate"		"3.5"
+		target		"rtop2"
+	}
+
+	//Make sure everyone is done spawning 
+	{
+		"type" 		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"	"8.0"
+	}
+}
+
+//Half way through e0 fight [4]
+{
+	"name"		"righte01"
+	
+	//Wizard behind pillar
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"2"
+		"count"		"2"
+		target		"rightbehindkey"
+	}
+
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"8"
+		"count"		"2"
+		target		"rightlameflank"
+	}
+
+	//Back chaingunners
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		"target"	"rback1"
+		"flags"		"4"
+	}
+	
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		"target"	"rback0"
+		"flags"		"4"
+	}
+
+}
+
+//Right Trigger (Probably will be keycard) [5]
+
+{
+	"name"		"righte1"
+	
+	//Ogres that charge you
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"8"
+		"count"		"3"
+		target		"rightlameflank"
+	}
+	
+	//Boar
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"16"
+		"count"		"1"
+		target		"rightlameflank"
+	}
+	
+	//Wait then spawn the goblins up top again
+	{
+		"type" 		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"	"2.0"
+	}
+	
+	//Goblins up top
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"1"
+		"count"		"4"
+		"rate"		"1.5"
+		target		"rtop3"
+	}
+	//Offset for other side
+	{
+		"type" 		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"	"0.5"
+	}
+	
+	//Goblins up top
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"1"
+		"count"		"4"
+		"rate"		"1.5"
+		target		"rtop4"
+	}
+	
+	//Wait for all to spawn then end
+	{
+		"type" 		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"	"8.0"
 	}
 }

@@ -28,78 +28,30 @@
 	//Milestone 1
 	//		Gameplay (April 1st)
 	//===================
-	
-	Week of 3-9 - 3-16
-	Enemies
-
-		Rocket Launcher
-			Function:
-				Proper Explosions
-
-		If Time:	
-			Reptaloid Replacement
-
-	// Later //
-		Guns
-			Pistol 
-				Sounds
-					Equip
-			Shotgun
-				Sounds
-					Primary
-					Secondary
-					Reload
-					Equip
-			PlasmaGun
-				Sounds
-					Shoot
-					Ambient hum?
-					Equip
-				Rocket Launcher
-					Function:
-						Proper Explosions
-					Sounds:
-						Equip
-						Fire
-						Reload
-
-		Enemies
-			Chaingunner
-				Sounds:
-					Shoot
-					Stagger
-					Die
-				Models:
-					Bullets
-			Ogre
-				Make into functional non boss enemy
-			
-		Proper Equip/Unequip Weapon Functions
-			Quickly pull them up with small delay? shouldnt be able to insta quickswap
-		
-
-	Implement A Proper Character Controller (mostly done, maybe make more robust)
-	Weapons:
-		Pistol
-		Shotgun
-		Tommy Gun Clone: Plasma Gun
-		Rocket Launcher
+	Proper Equip/Unequip Weapon Functions
+		Quickly pull them up with small delay? shouldnt be able to insta quickswap
+		Animation Cancels
 
 	Enemies (Types)
 		Done
-			Explosive Goblin (Threat when close)
-			Basic Wizard (Fodder)
-		Model Done
-			Fireball Wizard (Fires in arc?) (Fodder)
-				Different color same model?
+			Explosive Goblin	
+				Make Blow up when Close
 			Chaingunner (Threat at distance)
-				Need to animate
+				More bullets per shoot event & add tiny bit of spread to them
 			Small Ogre (Annoyance/Body block)
-				Need to set up stats
-		Nothing Done
-			Kleer Type enemy (Forces you to never stop moving)
-			Bull type enemy (Heavy Kleer)
-			Reptaloid type enemy(Shootable homing projectiles) 
+				Remove entity at death
+			Bull 
+				Polish all parts
+					Try Keeping velocity frame by frame and just capping magnitude
+					Would no longer need to check if running wrong way
+					Note: Would always try to run in ent->forward direction adn slowly turn
+				MAYBE: Fireball Wizard (Fires in arc?)
+					Different color same model?
+
+	Balance enemy health values
+	Balance enemy stagger
+		Could do float staggerPercent and make damage contribute to it  but have it decay over time so fast damage is required for bigger things
+
 	Level:
 		10 Minutes long
 		Small Rooms to show off less enemies
@@ -125,7 +77,7 @@
 *		Customizable Boid settings (avoidance, interest in target etc.)
 *			Combine this with AABB collisions and it should be swag
 
-
+	EntityManagerCleanUp might be causing crashes
 	//====================
 	//  Milestone 2
 	//		Visuals
@@ -173,6 +125,40 @@
 	*		3) Indirect Drawing
 	*			Have particles write num particles alive to new buffer and draw indirect it
 	*		4) Fadeout over time
+	* 
+	//====================
+		Milestone 3 Polish
+	//====================
+	//Sounds
+		Guns
+			Pistol
+				Sounds
+					Equip
+			Shotgun
+				Sounds
+					Primary
+					Secondary
+					Reload
+					Equip
+			PlasmaGun
+				Sounds
+					Shoot
+					Ambient hum?
+					Equip
+				Rocket Launcher
+					Sounds:
+						Equip
+						Fire
+						Reload
+		Enemies
+			Chaingunner
+				Sounds:
+					Shoot
+					Stagger
+					Die
+			Boar
+
+
 */
 
 //Eventually
@@ -267,6 +253,8 @@ int main() {
 	LoadWavFile( &Goblin::staggerSound, "res/sounds/StgGoblin.wav" );
 	Goblin::model = ModelManagerAllocate( &modelManager, "res/models/goblinsmooth.glb" );
 
+	Chaingunner::projectileModel = ModelManagerAllocate(&modelManager, "res/models/CGBullet.glb");
+
 	Ogre::model = ModelManagerAllocate( &modelManager, "res/models/ogre.glb" );
 	Ogre::projectileModel = ModelManagerAllocate( &modelManager, "res/models/rock.glb" );
 
@@ -315,9 +303,7 @@ int main() {
 	alSourcef( source->alSourceIndex, AL_GAIN, .25f );
 
 	bool triggered = false;
-	ConsoleFullBright();
 	maxFps = 250;
-
 	//Boar* boar = CreateBoar(Vec3(0, 1, 0));
 	while( !WindowShouldClose( &window ) ) {
 		if( maxFps > 0 )

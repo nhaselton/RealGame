@@ -437,6 +437,7 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 	RenderDrawAllEntities();
 	RenderDrawAllProjectiles();
 	RenderDrawAllRigidBodies();
+	RenderDrawAllPickups();
 
 	DebugRendererFrame( renderer->camera.GetViewMatrix(), renderer->projection, dt );
 	//RenderDrawText( Vec2( 0,300 ), 32.0f, "The Quick Brown Fox Jumped Over The Lazy\nSleeping Dog" );
@@ -724,8 +725,8 @@ void TryLoadLightmap( Level* level ) {
 
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 1024, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, lightMap );
 
 	glActiveTexture( GL_TEXTURE0 + S2D_LIGHTMAP );
@@ -1053,7 +1054,8 @@ void RenderDrawAllProjectiles() {
 
 		Mat4 t = glm::translate( Mat4( 1.0 ), projectile->collider.offset + projectile->collider.bounds.center );
 		Mat4 s = glm::scale( Mat4( 1.0 ), projectile->model.scale );
-		Mat4 trs = t * s;
+		Mat4 r = glm::toMat4(projectile->model.rotation);
+		Mat4 trs = t * r * s;
 		RenderDrawModel( &renderer, projectile->model.model, trs );
 	}
 }
@@ -1070,6 +1072,20 @@ void RenderDrawGun() {
 	Mat4 model = t * r * s;
 	model = glm::inverse( renderer.camera.GetViewMatrix() ) * model;
 	RenderDrawModel( &renderer, entityManager.player->currentWeapon->renderModel->model, model, entityManager.player->currentWeapon->renderModel->pose );
+}
+
+void RenderDrawAllPickups() {
+	for (int i = 0; i < entityManager.numPickups; i++) {
+		RenderModel* rm = &entityManager.pickups[i].renderModel;
+		if (!rm->model)
+			return;
+
+		Mat4 t = glm::translate(Mat4(1.0), rm->translation);
+		Mat4 r = glm::toMat4(rm->rotation);
+		Mat4 s = glm::scale(Mat4(1.0), Vec3(rm->scale));
+		Mat4 trs = t * r * s;
+		RenderDrawModel(&renderer, rm->model, trs);
+	}
 }
 
 void RenderDrawAllRigidBodies() {

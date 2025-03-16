@@ -44,13 +44,16 @@ void ChaingunnerRecievedAnimEvent(Entity* entity , AnimationEvent* event) {
 void ChaingunnerShootBullet( Entity* entity ) {
 	Chaingunner* chaingunner = (Chaingunner*)entity;
 
-	Vec3 velocity = EntityForward(entity);
 	Vec3 start = entity->pos + Vec3(0, 2, 0);
-	Projectile* p = NewProjectile( start, entityManager.player->pos - start, Vec3(.25f), true  );
-	p->model.model = renderer.cube;
+	Vec3 velNormalized = glm::normalize(entityManager.player->pos - start);
+	Projectile* p = NewProjectile( start, velNormalized * 15.0f, Vec3(.25f), true  );
+	p->model.model = Chaingunner::projectileModel;
 	p->model.scale = Vec3(.25f);
 
-
+	p->model.rotation = glm::quatLookAt(velNormalized, glm::cross(velNormalized, Vec3(0, 1, 1)));
+	p->model.rotation *= Quat(1, 1, 0, 1);
+	p->model.rotation = glm::normalize(p->model.rotation);
+	p->OnCollision = WizardBallCallback;
 }
 
 void ChaingunnerUpdate( Entity* entity ) {
@@ -60,7 +63,9 @@ void ChaingunnerUpdate( Entity* entity ) {
 		case CG_IDLE: ChaingunnerIdle(entity); break;
 		case CG_MOVING: ChaingunnerMoving(entity); break;
 		case CG_DYING: ChaingunnerDying(entity); break;
+		case CG_STAGGER: ChaingunnerStagger (entity); break;
 		case CG_SHOOTING: ChaingunnerShooting(entity); break;
+		default:LOG_ASSERT(LGS_GAME,"bad CG state\n");
 	}
 
 	//Do gravity after move because sometimes he bugs out and shoots upwards in the other order

@@ -37,7 +37,6 @@ void OgreUpdate( Entity* entity );
 void OgreOnHit( EntityHitInfo info );
 
 //Ogre States
-void OgreMove( Entity* entity, Vec3 target );
 void OgreTaunt( Entity* entity );
 void OgreStartChase( Entity* entity );
 void OgreChase(Entity * entity);

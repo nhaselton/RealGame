@@ -5,6 +5,15 @@
 struct BoundsHalfWidth;
 struct SkeletonPose;
 
+enum pickupFlags_t : u64{
+	PICKUP_NONE = 0,
+	PICKUP_REVOLVER = 1,
+	PICKUP_SHOTGUN = 2,
+	PICKUP_PLASMA = 3,
+	PICKUP_RPG = 4,
+
+};
+
 enum entityType_t {
 	ENT_NONE,
 	ENT_PLAYER,
@@ -106,6 +115,15 @@ public:
 	void ( *OnHit ) ( struct EntityHitInfo info );
 	void ( *RecievedAnimationEvent ) ( class Entity* entity, struct AnimationEvent* event );
 };
+
+class Pickup {
+public:
+	BoundsHalfWidth bounds;
+	RenderModel renderModel;
+	u64 flags;
+};
+
+
 //Init
 void EntityGenerateRenderModel( Entity* entity, class Model* model, ScratchArena* arena );
 //Animation

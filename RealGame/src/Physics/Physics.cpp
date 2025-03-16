@@ -797,3 +797,35 @@ bool GroundCheck(const Vec3& pos, float dist, const Vec3& rad) {
 	SweepInfo info;
 	return PhysicsQuerySweepStatic(pos, Vec3(0, -dist, 0), rad, &info);
 }
+
+int PhysicsQueryExplosion(Vec3 pos ,float radius, Entity** entityList, int listSize) {
+	BoundsMinMax explosionAABB;
+	explosionAABB.min = pos - radius;
+	explosionAABB.max = pos + radius;
+	int numHit = 0;
+
+	for (int i = 0; i < MAX_ENTITIES; i++) {
+		if (entityManager.entities[i].state != ACTIVE_ACTIVE)
+			continue;
+
+		Entity* entity = &entityManager.entities[i].entity;
+		BoundsMinMax entityBounds;
+		Vec3 entPos = entity->bounds->offset + entity->bounds->bounds.center;
+
+		entityBounds.min = entPos - entity->bounds->bounds.width;
+		entityBounds.max = entPos + entity->bounds->bounds.width;
+
+		if (FastAABB(explosionAABB, entityBounds)) {
+			Vec3 vel = entPos - pos;
+			//Try shooting one at bottom and one at top
+			if ( !PhysicsRaycastStaticFast(pos, vel) || 
+				!PhysicsRaycastStaticFast(pos + Vec3(0, 2, 0), entPos - (pos + Vec3(0, 2, 0)))) {
+				entityList[numHit++] = entity;
+				if (numHit == listSize) {
+					return numHit;
+				}
+			}
+		}
+	}
+	return numHit;
+}

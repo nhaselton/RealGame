@@ -18,13 +18,13 @@ Goblin* CreateGoblin( Vec3 pos ) {
 	goblin->currentAnimation = goblin->renderModel->model->animations[0];
 	goblin->state = GOBLIN_CHASE;
 	goblin->health = 2;
-	goblin->maxHealth = 5;
+	goblin->maxHealth = 2;
 	goblin->currentAnimation = Goblin::model->animations[0];
-	goblin->renderModel->scale = Vec3( .45 );
+	goblin->renderModel->scale = Vec3( .45 ) * .777f;
 
 	goblin->bounds->bounds.center = Vec3( 0, -.3, 0 );
-	goblin->bounds->bounds.width = Vec3( 1.55f, 2, 1.55f );
-	goblin->bounds->bounds.center += Vec3( -.1f, .6f, 0 );
+	goblin->bounds->bounds.width = Vec3( 1.55f, 2, 1.55f ) * .777f;
+	goblin->bounds->bounds.center += Vec3( -.1f, .6f, 0 ) * .777f;
 	goblin->bounds->offset = goblin->pos;
 
 	goblin->animTimeScale = 2.0f;
@@ -61,7 +61,7 @@ void GoblinChase( Goblin* goblin ) {
 
 	Vec3 velocity = goblin->boidVelocity;
 	if ( glm::length2( velocity ) != 0 ) {
-		velocity = glm::normalize( velocity ) * 10.0f * dt;
+		velocity = glm::normalize( velocity ) * 18.0f * dt;
 		EntityMove( goblin, velocity );
 	}
 }

@@ -319,6 +319,7 @@ void RenderDrawModel(Renderer* renderer, class Model* model, Mat4 offset = Mat4(
 void RenderDrawLevel( Renderer* renderer );
 
 void RenderDrawEntity( class Entity* entity );
+void RenderDrawAllPickups();
 void RenderDrawAllEntities();
 void RenderDrawAllProjectiles();
 void RenderDrawAllRigidBodies();

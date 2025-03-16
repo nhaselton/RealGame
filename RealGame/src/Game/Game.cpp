@@ -174,6 +174,32 @@ void GameLoadEntities( const char* path ) {
 			//Hack
 			isLight = true;
 		}
+		else if (!strcmp(className, "pickup_weapon")) {
+			char key[64];
+			char value[64];
+			Pickup* pickup = &entityManager.pickups[entityManager.numPickups++];
+			LoadKeyValue(&parser, key, value);
+			pickup->bounds.center = StringToVec3(value, true);
+			pickup->bounds.width = Vec3(2, 1, 2);
+
+			LoadKeyValue(&parser, key, value);
+			int ivalue = atoi(value);
+			pickup->flags = ivalue;
+
+			switch (ivalue) {
+				case PICKUP_REVOLVER: pickup->renderModel.model = LoadModel("res/models/Revolver.glb"); break;
+				case PICKUP_SHOTGUN: pickup->renderModel.model = LoadModel("res/models/shotgun.glb"); break;
+				case PICKUP_PLASMA: pickup->renderModel.model = LoadModel("res/models/plasma.glb"); break;
+				case PICKUP_RPG: pickup->renderModel.model = LoadModel("res/models/rpg.glb"); break;
+			}
+			pickup->renderModel.scale = Vec3(1);
+			pickup->renderModel.rotation = Quat(1, 0, 0, 0);
+			pickup->renderModel.translation = Vec3(0, 1, 0);
+			pickup->renderModel.scale = Vec3(4.0f);
+			
+			parser.ExpectedTokenTypePunctuation('}');
+			continue;//SKip rest of loop
+		}
 		//Entity Does not exist, just skip over it
 		else {
 			LOG_WARNING( LGS_GAME, "Unkown classname %s\n", className );

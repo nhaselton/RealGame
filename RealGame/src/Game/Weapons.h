@@ -2,6 +2,14 @@
 #include "def.h"
 #include "Entity.h"
 
+enum weaponFlags_t {
+	WF_NONE,
+	WF_REVOLVER = 1 << 0,
+	WF_SHOTGUN = 1 << 1,
+	WF_PLASMA = 1 << 2,
+	WF_RPG = 1 << 3
+};
+
 class Weapon : public Entity {
 public:
 	Vec3 baseOffset;
@@ -88,3 +96,4 @@ void CreateRevolver(class Player* player);
 void CreateShotgun(class Player* player);
 void CreatePlasmaGun(class Player* player);
 void CreateRocketLauncher(class Player* player);
+void RocketCallback(Projectile* projectile, Entity* entity);

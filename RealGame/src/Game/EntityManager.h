@@ -57,6 +57,9 @@ public:
 
 	Encounter encounters[MAX_ENCOUNTERS];
 	int numEncounters;
+
+	Pickup pickups[512];
+	int numPickups;
 };
 extern EntityManager entityManager;
 

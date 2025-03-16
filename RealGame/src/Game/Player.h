@@ -14,6 +14,9 @@ public:
 	bool grounded;
 	float yVel;
 
+	//bitset for unlocked weapons
+	u16 weapons;
+
 	static Sound revolverFireSound;
 	static Sound revolverReloadSound;
 	struct Light* light;
@@ -31,3 +34,5 @@ void UpdatePlayer( Entity* entity );
 void PlayerOnHit( EntityHitInfo info );
 void ConsoleToggleNoClip();
 void PlayerLoadKVP( void* player, char* key, char* value );
+void PlayerCheckPickups(Player* player);
+void PlayerPickupItem(Pickup* pickup, class Entity* entity);

@@ -134,8 +134,10 @@ void PhysicsRigidBodiesUpdate();
 
 bool PhysicsQueryRaycast( Vec3 start, Vec3 velocity, HitInfo* best );
 bool PhysicsQuerySweepStatic( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo* bestSweep );
-bool PhysicsQuerySweepStatic2( Vec3 start, Vec3 velocity, Vec3 radius, SweepInfo* bestSweep );
 bool PhysicsQueryIntersectEntities( CharacterCollider* cc, EntityCollisonQuery* outQuery );
+//Fills up list with entities explosion hit (Inside of sphere radius and can drag a line from center to object)
+//Returns count
+int PhysicsQueryExplosion(Vec3 pos, float radius, Entity** entityList, int listSize);
 
 void CreateBoid( class Entity* entity );
 void RemoveBoid( class Entity* entity );

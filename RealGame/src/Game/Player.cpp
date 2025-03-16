@@ -6,6 +6,7 @@
 #include "Renderer/Renderer.h"
 #include "Resources/SoundManager.h"
 #include "AL/al.h"
+#include "Renderer/DebugRenderer.h"
 
 Sound Player::revolverFireSound;
 Sound Player::revolverReloadSound;
@@ -24,6 +25,8 @@ Player* CreatePlayer( Vec3 pos ) {
 
 	player->camera = Camera();
 	player->Update = UpdatePlayer;
+
+	player->weapons = WF_REVOLVER;
 
 	/* Create Revolver */
 	memset( &player->revolver, 0, sizeof( player->revolver ) );
@@ -122,11 +125,14 @@ void UpdatePlayer( Entity* entity ) {
 		}
 	}
 
-	if (KeyPressed(KEY_1)) player->currentWeapon = &player->revolver;
-	if (KeyPressed(KEY_2)) player->currentWeapon = &player->shotgun;
-	if (KeyPressed(KEY_3)) player->currentWeapon = &player->plasmaGun;
-	if (KeyPressed(KEY_4)) player->currentWeapon = &player->rocketLauncher;
-
+	if (KeyPressed(KEY_1) && (player->weapons & WF_REVOLVER)) 
+		player->currentWeapon = &player->revolver;
+	if (KeyPressed(KEY_2) && (player->weapons & WF_SHOTGUN))
+		player->currentWeapon = &player->shotgun;
+	if (KeyPressed(KEY_3) && (player->weapons & WF_PLASMA))
+		player->currentWeapon = &player->plasmaGun;
+	if (KeyPressed(KEY_4) && (player->weapons & WF_RPG))
+		player->currentWeapon = &player->rocketLauncher;
 
 	//Update Weapon
 	player->camera.Position = player->pos + Vec3(0, 1, 0);
@@ -152,6 +158,8 @@ void UpdatePlayer( Entity* entity ) {
 		RemoveLight( player->light );
 		player->light = 0;
 	}
+
+	PlayerCheckPickups(player);
 }
 
 void PlayerOnHit( EntityHitInfo info ) {
@@ -178,5 +186,46 @@ void PlayerLoadKVP(void* _player, char* key, char* value) {
 	Player* player = (Player*)_player;
 	if( !TryEntityField( player, key, value ) ) {
 		LOG_WARNING( LGS_GAME, "player has no kvp %s : %s", key, value );
+	}
+}
+
+void PlayerPickupItem(Pickup* pickup, class Entity* entity) {
+	Player* player = (Player*)entity;
+	switch (pickup->flags) {
+	case PICKUP_REVOLVER:
+		player->weapons |= WF_REVOLVER;
+		break;
+	case PICKUP_SHOTGUN:
+		player->weapons |= PICKUP_SHOTGUN;
+		break;
+	case PICKUP_PLASMA:
+		player->weapons |= WF_PLASMA;
+		break;
+	case PICKUP_RPG:
+		player->weapons |= WF_RPG;
+		break;
+	}
+}
+
+void PlayerCheckPickups(Player* player) {
+	Vec3 pos = player->pos + player->bounds->bounds.center;
+	BoundsMinMax playerBounds = {
+		pos - player->bounds->bounds.width,
+		pos + player->bounds->bounds.width,
+	};
+
+	for (int i = 0; i < entityManager.numPickups; i++) {
+		Pickup* pickup = entityManager.pickups + i;
+		BoundsMinMax pickupBounds = {
+			pickup->bounds.center - pickup->bounds.width,
+			pickup->bounds.center + pickup->bounds.width
+		};
+		DebugDrawAABB(pickup->bounds.center, pickup->bounds.width);
+		DebugDrawAABB(pos, player->bounds->bounds.width);
+		if (FastAABB(playerBounds, pickupBounds)) {
+			PlayerPickupItem(pickup, player);
+			entityManager.pickups[i] = entityManager.pickups[--entityManager.numPickups];
+			i--;//Go back a slot so we can try the thing we just placed here
+		}
 	}
 }

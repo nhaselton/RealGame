@@ -14,7 +14,7 @@ bool DRAW_TEXELS;
 
 bool LoadFile( const char* path ) {
     ATLAS_SIZE = 1024;
-    TEXEL_SIZE_WORLD_UNITS = 1.0f;
+    TEXEL_SIZE_WORLD_UNITS = 2.0f;
     DRAW_TEXELS = false;
 
     //Read Light File
@@ -38,6 +38,8 @@ bool LoadFile( const char* path ) {
     world.surfaces = ( LightSurface* ) malloc( sizeof( LightSurface ) * world.numFaces );
     world.imageRaw = ( u32* ) malloc( sizeof( u32 ) * ATLAS_SIZE * ATLAS_SIZE );
     memset( world.imageRaw, 0, sizeof( u32 ) * ATLAS_SIZE * ATLAS_SIZE );
+
+    //Set all alpha to 1.0
     for( int n = 0; n < ATLAS_SIZE * ATLAS_SIZE; n++ )
         world.imageRaw[n] = ( 255 << 24 );
 

@@ -99,7 +99,7 @@ void ProjSweep(Vec3 pos, Vec3 vel, Vec3 bounds) {
 }
 
 Projectile* NewProjectile( Vec3 pos, Vec3 velocity, Vec3 radius, bool linear ) {
-	if ( entityManager.numProjectiles == MAX_PROJECTILES ) {
+	if ( entityManager.numProjectiles >= MAX_PROJECTILES ) {
 		LOG_WARNING( LGS_GAME, "Can not spawn more projectiles.\n" );
 		return 0;
 	}
