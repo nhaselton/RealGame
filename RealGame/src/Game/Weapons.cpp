@@ -20,14 +20,17 @@ void CreatePlayerMuzzleLight(Weapon* weapon, Player* player) {
 	player->lightStart = gameTime;
 }
 
-void RevolverEquip(Player* player, Weapon* weapon) {
-	Revolver* revolver = (Revolver*)weapon;
-
-}
-
 void RevolverUpdate(Player* player, Weapon* weapon) {
 	Revolver* revolver = (Revolver*)weapon;
 	EntityAnimationUpdate(revolver, dt * 1.25f);
+
+	if( revolver->state == REVOLVER_EQUIPPING ) {
+		revolver->pos += Vec3( 0, 3, 0 ) * dt;
+		if( revolver->pos.y >= revolver->baseOffset.y ) {
+			revolver->state = REVOLVER_IDLE;
+		}
+		return;
+	}
 
 	revolver->spread -= revolver->spreadDecayRate * dt;
 	if (revolver->spread < 1.0f)
@@ -54,7 +57,7 @@ void RevolverUpdate(Player* player, Weapon* weapon) {
 
 void RevolverShoot(Player* player, Weapon* weapon) {
 	Revolver* revolver = (Revolver*)weapon;
-	if (revolver->state == REVOLVER_RELOADING)
+	if (revolver->state == REVOLVER_RELOADING || revolver->state == REVOLVER_EQUIPPING)
 		return;
 
 	//Try to shoot with no ammo in clip
@@ -104,7 +107,16 @@ void RevolverAltShoot(Player* player, Weapon* weapon) {
 		player->revolver.spread += 1.0f;
 		player->revolver.currentShootCooldown = 0.0f;
 	}
+}
 
+void RevolverEquip( Player* player, Weapon* weapon ) {
+	player->currentWeapon = weapon;
+	player->revolver.pos = player->revolver.baseOffset - Vec3( 0,1.0f,0 );
+	player->revolver.state = REVOLVER_EQUIPPING;
+	player->revolver.ammo = 6;
+	player->revolver.spread = 0;
+	player->revolver.rotation = player->revolver.baseRotation;
+	player->revolver.currentAnimationTime = 1.0f;
 }
 
 void CreateRevolver(Player* player) {
@@ -142,16 +154,30 @@ void CreateRevolver(Player* player) {
 	player->revolver.Update = RevolverUpdate;
 	player->revolver.Shoot = RevolverShoot;
 	player->revolver.AltShoot = RevolverAltShoot;
-
+	player->revolver.Equip = RevolverEquip;
 }
 
 void ShotgunEquip(Player* player, Weapon* weapon) {
 	Shotgun* shotgun = (Shotgun*)weapon;
-
+	player->currentWeapon = shotgun;
+	shotgun->state = SHOTGUN_EQUIPPING;
+	shotgun->mag = 2;
+	shotgun->pos = shotgun->baseOffset - Vec3( 0, 1.0f, 0 );
+	player->revolver.rotation = player->revolver.baseRotation;
+	EntityStartAnimation( shotgun, SHOTGUN_ANIM_IDLE );
 }
 
 void ShotgunUpdate(Player* player, Weapon* weapon) {
 	Shotgun* shotgun = (Shotgun*)weapon;
+
+	if( shotgun->state == SHOTGUN_EQUIPPING ) {
+		if( shotgun->pos.y >= shotgun->baseOffset.y ) {
+			shotgun->state = SHOTGUN_IDLE;
+		}
+		shotgun->pos.y += 3 * dt;
+		return;
+	}
+
 	EntityAnimationUpdate(weapon, dt);
 
 	shotgun->pos = glm::mix(shotgun->pos, shotgun->baseOffset, 5.0f * dt);
@@ -210,7 +236,7 @@ static inline void ShotgunShootPellet(Player* player, Shotgun* shotgun, Vec3 sta
 
 void ShotgunAltShoot(Player* player, Weapon* weapon) {
 	Shotgun* shotgun = (Shotgun*)weapon;
-	if (shotgun->state == SHOTGUN_RELOAD)
+	if( shotgun->state == SHOTGUN_RELOAD || shotgun->state == SHOTGUN_EQUIPPING )
 		return;
 
 	shotgun->mag--;
@@ -235,7 +261,7 @@ void ShotgunAltShoot(Player* player, Weapon* weapon) {
 void ShotgunShoot(Player* player, Weapon* weapon) {
 	Shotgun* shotgun = (Shotgun*)weapon;
 
-	if (shotgun->state == SHOTGUN_RELOAD)
+	if( shotgun->state == SHOTGUN_RELOAD || shotgun->state == SHOTGUN_EQUIPPING )
 		return;
 
 	//do an alt fire if only 1 shot left
@@ -298,13 +324,22 @@ void CreateShotgun(Player* player) {
 
 void PlasmaGunUpdate(Player* player, Weapon* weapon) {
 	EntityAnimationUpdate(weapon, dt);
+	PlasmaGun* plasma = (PlasmaGun*) weapon;
+	if( weapon->state == PLASMA_EQUIPPING ) {
+		if( plasma->pos.y >= plasma->baseOffset.y ) {
+			plasma->state = PLASMA_READY;
+		}
+		plasma->pos.y += 3 * dt;
+		return;
+	}
+
 	weapon->pos = glm::mix(weapon->pos, weapon->baseOffset, 5.0f * dt);
 	weapon->rotation = glm::slerp(weapon->rotation, weapon->baseRotation, 5.0f * dt);
-
 }
 
 void PlasmaGunShoot(Player* player, Weapon* weapon) {
 	PlasmaGun* pg = (PlasmaGun*)weapon;
+	if( pg->state == PLASMA_EQUIPPING ) return;
 
 	if (gameTime - pg->currentCooldown >= 0) {
 		pg->currentCooldown = gameTime + pg->shotCooldown;
@@ -334,7 +369,10 @@ void PlasmaGunAltShoot(Player* player, Weapon* weapon) {
 }
 
 void PlasmaGunEquip(Player* player, Weapon* weapon) {
-
+	player->currentWeapon = weapon;
+	PlasmaGun* pg = (PlasmaGun*) weapon;
+	pg->pos = pg->baseOffset + Vec3( 0, -1, 0 );
+	pg->state = PLASMA_EQUIPPING;
 }
 
 void CreatePlasmaGun(class Player* player) {
@@ -367,11 +405,24 @@ void CreatePlasmaGun(class Player* player) {
 }
 
 void RocketLauncherEquip(Player* player, Weapon* weapon) {
+	RocketLauncher* rpg = (RocketLauncher*) weapon;
 
+	player->currentWeapon = rpg;
+	rpg->pos = rpg->baseOffset + Vec3( 0, -3, 0 );
+	EntityStartAnimation( rpg, RL_ANIM_IDLE );
 };
 
 void RocketLauncherUpdate( Player* player, Weapon* weapon){
 	RocketLauncher* rpg = (RocketLauncher*)weapon;
+
+	if( rpg->state == RL_EQUIPPING) {
+		rpg->pos += Vec3( 0, 3, 0 ) * dt;
+		if( rpg->pos.y >= rpg->baseOffset.y ) {
+			rpg->state = RL_READY;
+		}
+		return;
+	}
+
 	EntityAnimationUpdate(weapon, dt);
 
 	if (rpg->state == RL_FIRE) {

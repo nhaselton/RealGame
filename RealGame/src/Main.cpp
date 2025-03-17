@@ -28,10 +28,6 @@
 	//Milestone 1
 	//		Gameplay (April 1st)
 	//===================
-	Proper Equip/Unequip Weapon Functions
-		Quickly pull them up with small delay? shouldnt be able to insta quickswap
-		Animation Cancels
-
 	Enemies (Types)
 		Done
 			Explosive Goblin	
@@ -45,8 +41,8 @@
 					Try Keeping velocity frame by frame and just capping magnitude
 					Would no longer need to check if running wrong way
 					Note: Would always try to run in ent->forward direction adn slowly turn
-				MAYBE: Fireball Wizard (Fires in arc?)
-					Different color same model?
+			MAYBE: Fireball Wizard (Fires in arc?)
+				Different color same model?
 
 	Balance enemy health values
 	Balance enemy stagger

@@ -35,6 +35,7 @@ public:
 };
 
 enum revolverState_t {
+	REVOLVER_EQUIPPING,
 	REVOLVER_IDLE,
 	REVOLVER_RELOADING,
 	REVOLVER_SHOOTING,
@@ -56,6 +57,7 @@ public:
 };
 
 enum shotgunState_t {
+	SHOTGUN_EQUIPPING, //Includes shoot
 	SHOTGUN_IDLE,
 	SHOTGUN_RELOAD //Includes shoot
 };
@@ -72,6 +74,11 @@ public:
 	int mag;
 };
 
+enum plasmaState_t {
+	PLASMA_EQUIPPING,
+	PLASMA_READY,
+};
+
 class PlasmaGun : public Weapon {
 public:
 	float currentCooldown;
@@ -80,7 +87,8 @@ public:
 
 enum rlState_t {
 	RL_READY,
-	RL_FIRE
+	RL_FIRE,
+	RL_EQUIPPING,
 };
 
 enum rlAnimation_t {

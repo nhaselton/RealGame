@@ -27,6 +27,7 @@ Player* CreatePlayer( Vec3 pos ) {
 	player->Update = UpdatePlayer;
 
 	player->weapons = WF_REVOLVER;
+	player->weapons = 0xffff;
 
 	/* Create Revolver */
 	memset( &player->revolver, 0, sizeof( player->revolver ) );
@@ -125,14 +126,14 @@ void UpdatePlayer( Entity* entity ) {
 		}
 	}
 
-	if (KeyPressed(KEY_1) && (player->weapons & WF_REVOLVER)) 
-		player->currentWeapon = &player->revolver;
-	if (KeyPressed(KEY_2) && (player->weapons & WF_SHOTGUN))
-		player->currentWeapon = &player->shotgun;
+	if( KeyPressed( KEY_1 ) && ( player->weapons & WF_REVOLVER ) )
+		player->revolver.Equip( player, &player->revolver );
+	if( KeyPressed( KEY_2 ) && ( player->weapons & WF_SHOTGUN ) )
+		player->shotgun.Equip( player, &player->shotgun );
 	if (KeyPressed(KEY_3) && (player->weapons & WF_PLASMA))
-		player->currentWeapon = &player->plasmaGun;
-	if (KeyPressed(KEY_4) && (player->weapons & WF_RPG))
-		player->currentWeapon = &player->rocketLauncher;
+		player->plasmaGun.Equip( player, &player->plasmaGun );
+	if( KeyPressed( KEY_4 ) && ( player->weapons & WF_RPG ) )
+		player->rocketLauncher.Equip( player, &player->rocketLauncher );
 
 	//Update Weapon
 	player->camera.Position = player->pos + Vec3(0, 1, 0);
