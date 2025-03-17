@@ -58,6 +58,7 @@ Wizard* CreateWizard( Vec3 pos ) {
 	wizard->bounds->bounds.center = Vec3( 0, 2.8, 0 );
 	wizard->bounds->bounds.width = Vec3( 1.25f, 2.4, 1.25f );
 	wizard->bounds->offset = wizard->pos;
+	wizard->bounds->canRaycast = true;
 	wizard->renderModel->scale = Vec3(2,2,2);
 
 	wizard->shootCooldown = 1.5f;
@@ -205,13 +206,8 @@ void WizardStartDeath(Wizard* wizard) {
 
 void WizardDie( Wizard* wizard ) {
 	if( wizard->currentAnimationPercent >= 1.0f ) {
-		RigidBody* deadBody = NewRigidBody();
-		deadBody->pos = wizard->pos + wizard->bounds->bounds.center / 2.0f;
-		deadBody->removeTime = gameTime + 10.0f;;
-		deadBody->radius = wizard->bounds->bounds.width.x;
-		deadBody->modelScale = wizard->renderModel->scale.x;
-		deadBody->model = wizard->model;
-		deadBody->pose = Wizard::deadPose;
+		CreateDeadBody( wizard->renderModel, Wizard::deadPose, wizard->pos, wizard->rotation, &wizard->bounds->bounds );
+		RemoveBoid( wizard );
 		RemoveEntity( wizard );
 	}
 }

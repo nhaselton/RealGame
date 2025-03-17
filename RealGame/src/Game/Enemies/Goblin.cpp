@@ -64,6 +64,14 @@ void GoblinChase( Goblin* goblin ) {
 		velocity = glm::normalize( velocity ) * 18.0f * dt;
 		EntityMove( goblin, velocity );
 	}
+
+	Player* player = entityManager.player;
+	Vec2 xz( goblin->pos.x - player->pos.x, goblin->pos.z - player->pos.z );
+	float len = glm::length( xz );
+
+	if( len < .25f ) {
+		GoblinExplode( goblin );
+	}
 }
 
 void GoblinStagger( Goblin* goblin ) {
@@ -73,99 +81,103 @@ void GoblinStagger( Goblin* goblin ) {
 	}
 }
 
+void GoblinExplode(Goblin* goblin) {
+	RemoveEntity( goblin );
+	RemoveBoid( goblin );
+	EncounterNotifyOnDeath( goblin->encounter, goblin );
+
+
+	//Explode
+	for( int i = 0; i < entityManager.numEntities; i++ ) {
+		if( entityManager.entities[i].state != ACTIVE_ACTIVE )
+			continue;
+		Entity* other = &entityManager.entities[i].entity;
+
+		float dist = glm::length( other->pos - goblin->pos );
+		if( dist > 10.0f )
+			continue;
+
+		if( other->OnHit != 0 ) {
+			EntityHitInfo info {};
+			info.attacker = goblin;
+			info.victim = other;
+			info.damage = 2.0f;
+			other->OnHit( info );
+		}
+	}
+	CreateTempAudioSource( goblin->pos, &explosion );
+
+	Vec3 velocities[] {
+		Vec3( -5,10,3 ),
+		Vec3( 10,10,-7 ),
+		Vec3( -3,10, 8 ),
+	};
+
+	Model* gibs = ModelManagerGetModel( "res/models/gib.glb", true );
+
+	//Smoke Emitter
+#if 1
+	ParticleEmitter2* emitter = NewParticleEmitter();
+	emitter->pos = goblin->pos + Vec3( 0, 1, 0 );
+	emitter->UV = Vec4( .03125, 0, .03125 + .03125, .03125 );
+	emitter->maxEmitterLifeTime = 1.0f;
+	emitter->maxParticles = 200;
+	emitter->spawnRate = 10;
+	emitter->scale = Vec2( 1.0f );
+	emitter->acceleration = Vec3( 0, 5, 0 );
+	emitter->radius = 6.0f;
+	emitter->emitterSpawnType = EMITTER_INSTANT;
+#endif	
+	//Explosion Emitter
+	ParticleEmitter2* emitter2 = NewParticleEmitter();
+	emitter2->pos = goblin->pos + Vec3( 0, 1, 0 );
+	emitter2->UV = Vec4( .03125 * 2, 0, .03125 * 3, .03125 );
+	emitter2->maxEmitterLifeTime = 3.0f;
+	emitter2->maxParticles = 60;
+	emitter2->spawnRate = 10;
+	emitter2->scale = Vec2( 2.5f );
+	emitter2->acceleration = Vec3( 0, -1, 0 );
+	emitter2->radius = 2.0f;
+	emitter2->emitterSpawnType = EMITTER_INSTANT;
+
+	for( int i = 0; i < 3; i++ ) {
+		RigidBody* gib = NewRigidBody();
+		if( gib ) {
+			gib->pos = goblin->pos + Vec3( 0, 2, 0 );
+			gib->velocity = velocities[i];
+			gib->removeTime = gameTime + 10.0f;;
+			float gibsize = ( (float) ( rand() % 2 + 1 ) ) / 2.0f;
+			gib->radius = gibsize;
+			gib->modelScale = gibsize;
+			gib->model = gibs;
+		}
+
+		//Blood Emitter
+#if 1
+		ParticleEmitter2* emitter = NewParticleEmitter();
+		emitter->pos = Vec3( 0, 0, 1 );
+		emitter->UV = Vec4( 0, 0, .03125, .03125 );
+		emitter->maxEmitterLifeTime = 3.0f;
+		emitter->maxParticles = 400;
+		emitter->spawnRate = 100;
+		emitter->scale = Vec2( 0.6f );
+		emitter->acceleration = Vec3( 0, -10, 0 );
+		emitter->radius = 1.0f;
+		emitter->emitterSpawnType = EMITTER_OVERTIME;
+
+		if( gib )
+			gib->emitter = emitter;
+#endif
+	}
+	return;
+}
+
 void GoblinOnHit( EntityHitInfo info ) {
 	Goblin* goblin = (Goblin*) info.victim;
 	goblin->health-= info.damage;
 
 	if ( goblin->health <= 0 ) {
-		RemoveEntity( goblin );	
-		RemoveBoid( goblin );
-		EncounterNotifyOnDeath( goblin->encounter, goblin );
-
-
-		//Explode
-		for (int i = 0; i < entityManager.numEntities; i++) {
-			if (entityManager.entities[i].state != ACTIVE_ACTIVE)
-				continue;
-			Entity* other = &entityManager.entities[i].entity;
-
-			float dist = glm::length( other->pos - goblin->pos );
-			if (dist > 10.0f )
-				continue;
-
-			if (other->OnHit != 0) {
-				EntityHitInfo info{};
-				info.attacker = goblin;
-				info.victim = other;
-				info.damage = 2.0f;
-				other->OnHit ( info );
-			}
-		}
-		CreateTempAudioSource( goblin->pos, &explosion );
-
-		Vec3 velocities []{
-			Vec3( -5,10,3 ),
-			Vec3( 10,10,-7 ),
-			Vec3( -3,10, 8 ),
-		};
-
-		Model* gibs = ModelManagerGetModel( "res/models/gib.glb", true );
-
-		//Smoke Emitter
-#if 1
-		ParticleEmitter2* emitter = NewParticleEmitter();
-		emitter->pos = goblin->pos + Vec3( 0, 1, 0 );
-		emitter->UV = Vec4( .03125, 0, .03125 + .03125, .03125 );
-		emitter->maxEmitterLifeTime = 1.0f;
-		emitter->maxParticles = 200;
-		emitter->spawnRate = 10;
-		emitter->scale = Vec2( 1.0f );
-		emitter->acceleration = Vec3( 0, 5, 0 );
-		emitter->radius = 6.0f;
-		emitter->emitterSpawnType = EMITTER_INSTANT;
-#endif	
-		//Explosion Emitter
-		ParticleEmitter2* emitter2 = NewParticleEmitter();
-		emitter2->pos = goblin->pos + Vec3( 0, 1, 0 );
-		emitter2->UV = Vec4( .03125 * 2, 0, .03125 * 3, .03125 );
-		emitter2->maxEmitterLifeTime = 3.0f;
-		emitter2->maxParticles = 60;
-		emitter2->spawnRate = 10;
-		emitter2->scale = Vec2( 2.5f );
-		emitter2->acceleration = Vec3( 0, -1, 0 );
-		emitter2->radius = 2.0f;
-		emitter2->emitterSpawnType = EMITTER_INSTANT;
-
-		for( int i = 0; i < 3; i++ ) {
-			RigidBody* gib = NewRigidBody();
-			if( gib ) {
-				gib->pos = goblin->pos + Vec3( 0, 2, 0 );
-				gib->velocity = velocities[i];
-				gib->removeTime = gameTime + 10.0f;;
-				float gibsize = ( ( float ) ( rand() % 2 + 1 ) ) / 2.0f;
-				gib->radius = gibsize;
-				gib->modelScale = gibsize;
-				gib->model = gibs;
-			}
-
-			//Blood Emitter
-#if 1
-			ParticleEmitter2* emitter = NewParticleEmitter();
-			emitter->pos = Vec3( 0, 0, 1 );
-			emitter->UV = Vec4( 0, 0, .03125, .03125 );
-			emitter->maxEmitterLifeTime = 3.0f;
-			emitter->maxParticles = 400;
-			emitter->spawnRate = 100;
-			emitter->scale = Vec2( 0.6f );
-			emitter->acceleration = Vec3( 0, -10, 0 );
-			emitter->radius = 1.0f;
-			emitter->emitterSpawnType = EMITTER_OVERTIME;
-
-			if ( gib )
-				gib->emitter = emitter;
-#endif
-		}
-		return;
+		GoblinExplode(goblin);
 	}
 	else {
 		PlaySound( goblin->audioSource, &Goblin::staggerSound );

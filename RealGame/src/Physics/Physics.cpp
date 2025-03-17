@@ -640,6 +640,9 @@ bool PhysicsRaycastDynamic( Vec3 start, Vec3 velocity, HitInfo* out ) {
 		HitInfo thisHit{};
 		BoundsHalfWidth bounds;
 		CharacterCollider* collider = physics.activeColliders[i];
+		if( !collider->canRaycast )
+			continue;
+
 		bounds.center = collider->offset + collider->bounds.center;
 		bounds.width = collider->bounds.width;
 

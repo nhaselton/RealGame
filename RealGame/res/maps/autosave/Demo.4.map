@@ -120,22 +120,80 @@
 ( -64 -240 -16 ) ( -64 -240 -15 ) ( -63 -240 -16 ) prototype/jpg128_blue_1 [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
 ( -64 -64 -16 ) ( -63 -64 -16 ) ( -64 -63 -16 ) prototype/jpg128_blue_1 [ -1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
 ( 64 64 0 ) ( 64 65 0 ) ( 65 64 0 ) prototype/jpg128_blue_1 [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
-( 64 1200 16 ) ( 65 1200 16 ) ( 64 1200 17 ) prototype/jpg128_blue_1 [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 64 2016 16 ) ( 65 2016 16 ) ( 64 2016 17 ) prototype/jpg128_blue_1 [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
 ( 736 64 16 ) ( 736 64 17 ) ( 736 65 16 ) prototype/jpg128_blue_1 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
 }
 }
 // entity 1
 {
 "classname" "info_player_start"
-"origin" "400 -32 56"
+"origin" "-64 -48 56"
 }
 // entity 2
 {
-"classname" "encounter"
-"origin" "-120 728 280"
-"targetname" "first"
+"classname" "spawner"
+"origin" "-136 1016 200"
+"targetname" "spawn1"
 }
 // entity 3
+{
+"classname" "spawner"
+"origin" "552 1016 200"
+"targetname" "spawn2"
+}
+// entity 4
+{
+"classname" "spawn_zone"
+"targetname" "zone0"
+// brush 0
+{
+( -48 928 0 ) ( -48 929 0 ) ( -48 928 1 ) Util/SpawnZone [ 0 -1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( -80 928 0 ) ( -80 928 1 ) ( -79 928 0 ) Util/SpawnZone [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( -80 928 16 ) ( -79 928 16 ) ( -80 929 16 ) Util/SpawnZone [ -1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 336 1104 112 ) ( 336 1105 112 ) ( 337 1104 112 ) Util/SpawnZone [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 336 1104 16 ) ( 337 1104 16 ) ( 336 1104 17 ) Util/SpawnZone [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 448 1104 16 ) ( 448 1104 17 ) ( 448 1105 16 ) Util/SpawnZone [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+}
+}
+// entity 5
+{
+"classname" "spawner"
+"origin" "56 424 8"
+"targetname" "spawnguy"
+"types" "2"
+}
+// entity 6
+{
+"classname" "trigger_once"
+"target" "spawnguy"
+"triggertype" "4"
+"targetname" "spawnone"
+// brush 0
+{
+( -192 176 0 ) ( -192 177 0 ) ( -192 176 1 ) Util/Trigger [ 0 -1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( -192 176 0 ) ( -192 176 1 ) ( -191 176 0 ) Util/Trigger [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( -192 176 0 ) ( -191 176 0 ) ( -192 177 0 ) Util/Trigger [ -1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 32 192 304 ) ( 32 193 304 ) ( 33 192 304 ) Util/Trigger [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 32 192 16 ) ( 33 192 16 ) ( 32 192 17 ) Util/Trigger [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 32 192 16 ) ( 32 192 17 ) ( 32 193 16 ) Util/Trigger [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+}
+}
+// entity 7
+{
+"classname" "trigger_once"
+"target" "second"
+"triggertype" "2"
+// brush 0
+{
+( 0 544 0 ) ( 0 545 0 ) ( 0 544 1 ) Util/Trigger [ 0 -1 0 -96 ] [ 0 0 -1 0 ] 0 1 1
+( 0 544 0 ) ( 0 544 1 ) ( 1 544 0 ) Util/Trigger [ 1 0 0 64 ] [ 0 0 -1 0 ] 0 1 1
+( 0 544 0 ) ( 1 544 0 ) ( 0 545 0 ) Util/Trigger [ -1 0 0 -64 ] [ 0 -1 0 -96 ] 0 1 1
+( 224 624 304 ) ( 224 625 304 ) ( 225 624 304 ) Util/Trigger [ 1 0 0 64 ] [ 0 -1 0 -96 ] 0 1 1
+( 224 624 16 ) ( 225 624 16 ) ( 224 624 17 ) Util/Trigger [ -1 0 0 -64 ] [ 0 0 -1 0 ] 0 1 1
+( 640 624 16 ) ( 640 624 17 ) ( 640 625 16 ) Util/Trigger [ 0 1 0 96 ] [ 0 0 -1 0 ] 0 1 1
+}
+}
+// entity 8
 {
 "classname" "trigger_once"
 "target" "first"
@@ -150,65 +208,13 @@
 ( -192 784 16 ) ( -192 784 17 ) ( -192 785 16 ) Util/Trigger [ 0 1 0 -64 ] [ 0 0 -1 0 ] 0 1 1
 }
 }
-// entity 4
-{
-"classname" "spawner"
-"origin" "-136 1016 200"
-"targetname" "spawn1"
-}
-// entity 5
-{
-"classname" "spawner"
-"origin" "552 1016 200"
-"targetname" "spawn2"
-}
-// entity 6
-{
-"classname" "trigger_once"
-"target" "second"
-"triggertype" "2"
-// brush 0
-{
-( 0 704 0 ) ( 0 705 0 ) ( 0 704 1 ) Util/Trigger [ 0 -1 0 64 ] [ 0 0 -1 0 ] 0 1 1
-( 0 704 0 ) ( 0 704 1 ) ( 1 704 0 ) Util/Trigger [ 1 0 0 64 ] [ 0 0 -1 0 ] 0 1 1
-( 0 704 0 ) ( 1 704 0 ) ( 0 705 0 ) Util/Trigger [ -1 0 0 -64 ] [ 0 -1 0 64 ] 0 1 1
-( 224 784 304 ) ( 224 785 304 ) ( 225 784 304 ) Util/Trigger [ 1 0 0 64 ] [ 0 -1 0 64 ] 0 1 1
-( 224 784 16 ) ( 225 784 16 ) ( 224 784 17 ) Util/Trigger [ -1 0 0 -64 ] [ 0 0 -1 0 ] 0 1 1
-( 640 784 16 ) ( 640 784 17 ) ( 640 785 16 ) Util/Trigger [ 0 1 0 -64 ] [ 0 0 -1 0 ] 0 1 1
-}
-}
-// entity 7
-{
-"classname" "spawn_zone"
-"targetname" "zone0"
-// brush 0
-{
-( -80 928 0 ) ( -80 929 0 ) ( -80 928 1 ) Util/SpawnZone [ 0 -1 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( -80 928 0 ) ( -80 928 1 ) ( -79 928 0 ) Util/SpawnZone [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( -80 928 0 ) ( -79 928 0 ) ( -80 929 0 ) Util/SpawnZone [ -1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
-( 336 1104 112 ) ( 336 1105 112 ) ( 337 1104 112 ) Util/SpawnZone [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
-( 336 1104 16 ) ( 337 1104 16 ) ( 336 1104 17 ) Util/SpawnZone [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 480 1104 16 ) ( 480 1104 17 ) ( 480 1105 16 ) Util/SpawnZone [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
-}
-}
-// entity 8
-{
-"classname" "spawner"
-"origin" "248 488 8"
-"targetname" "spawnguy"
-}
 // entity 9
 {
-"classname" "trigger_once"
-"target" "spawnguy"
-"triggertype" "4"
-// brush 0
-{
-( -192 176 0 ) ( -192 177 0 ) ( -192 176 1 ) Util/Trigger [ 0 -1 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( -192 176 0 ) ( -192 176 1 ) ( -191 176 0 ) Util/Trigger [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( -192 176 0 ) ( -191 176 0 ) ( -192 177 0 ) Util/Trigger [ -1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
-( 32 192 304 ) ( 32 193 304 ) ( 33 192 304 ) Util/Trigger [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
-( 32 192 16 ) ( 33 192 16 ) ( 32 192 17 ) Util/Trigger [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 32 192 16 ) ( 32 192 17 ) ( 32 193 16 ) Util/Trigger [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+"classname" "info_goblin_start"
+"origin" "89 873 32"
 }
+// entity 10
+{
+"classname" "info_goblin_start"
+"origin" "249 809 32"
 }

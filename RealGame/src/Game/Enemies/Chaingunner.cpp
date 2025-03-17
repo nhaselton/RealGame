@@ -23,7 +23,7 @@ Chaingunner* CreateChaingunner(Vec3 pos) {
 	chaingunner->renderModel->scale = Vec3(1);
 	chaingunner->renderModel->rotation = Quat(1, 0, 0, 0);//glm::normalize(Quat(0, 0, 1, 0));
 
-	chaingunner->shootCooldown = 3.0f;
+	chaingunner->shootCooldown = 2.0f;
 	chaingunner->nextShootTime = gameTime + 1.0f;
 	chaingunner->rotation = glm::normalize(Quat(1, 0, 0, 0));
 
@@ -44,16 +44,31 @@ void ChaingunnerRecievedAnimEvent(Entity* entity , AnimationEvent* event) {
 void ChaingunnerShootBullet( Entity* entity ) {
 	Chaingunner* chaingunner = (Chaingunner*)entity;
 
-	Vec3 start = entity->pos + Vec3(0, 2, 0);
-	Vec3 velNormalized = glm::normalize(entityManager.player->pos - start);
-	Projectile* p = NewProjectile( start, velNormalized * 15.0f, Vec3(.25f), true  );
-	p->model.model = Chaingunner::projectileModel;
-	p->model.scale = Vec3(.25f);
+	Vec3 start = entity->pos + Vec3(0, 3, 0);
+	start += EntityForward( entity );
 
-	p->model.rotation = glm::quatLookAt(velNormalized, glm::cross(velNormalized, Vec3(0, 1, 1)));
-	p->model.rotation *= Quat(1, 1, 0, 1);
-	p->model.rotation = glm::normalize(p->model.rotation);
-	p->OnCollision = WizardBallCallback;
+	float max = 0.1f;
+	float min = -0.1f;
+
+	for( int i = 0; i < 1; i++ ) {
+		float x = min + (float) ( rand() ) / ( float( RAND_MAX / ( max - min ) ) );
+		float y = min + (float) ( rand() ) / ( float( RAND_MAX / ( max - min ) ) );
+		float z = min + (float) ( rand() ) / ( float( RAND_MAX / ( max - min ) ) );
+
+		Vec3 orbPos = entity->pos + Vec3( 0, 3, 0 );
+		Vec3 velocity = glm::normalize( ( entityManager.player->pos - orbPos ) );
+		velocity += Vec3( x, y, z );
+		velocity *= 40.0f;
+
+		Projectile* orb = NewProjectile( orbPos, velocity, Vec3( .5f ), true );
+		if( orb ) {
+			orb->collider.owner = entity;
+			orb->model.model = Wizard::projectileModel;
+			orb->model.scale = Vec3( .5f );
+			orb->model.translation = Vec3( 0 );
+			orb->OnCollision = WizardBallCallback;
+		}
+	}
 }
 
 void ChaingunnerUpdate( Entity* entity ) {
@@ -141,7 +156,9 @@ void ChaingunnerDyingStart(Entity* entity) {
 void ChaingunnerDying(Entity* entity) {
 	Chaingunner* chaingunner = (Chaingunner*)entity;
 	if (entity->currentAnimationPercent >= 1.0f) {
+		RemoveBoid( entity );
 		RemoveEntity(entity);
+		CreateDeadBody( entity->renderModel, Chaingunner::deadPose, chaingunner->bounds->offset, chaingunner->rotation, &chaingunner->bounds->bounds );
 	}
 }
 

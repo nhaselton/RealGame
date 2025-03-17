@@ -251,7 +251,6 @@
 }
 
 //Right Trigger (Probably will be keycard) [5]
-
 {
 	"name"		"righte1"
 	
@@ -304,5 +303,82 @@
 	{
 		"type" 		"WAIT_FOR_SECONDS_BLOCK"
 		"waittime"	"8.0"
+	}
+}
+
+//Left enter pillars [6]
+{
+	"name"		"lefte1"
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"8"
+		target		"col31"
+	}
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"8"
+		target		"col23"
+	}
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"8"
+		target		"col30"
+	}
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"4"
+		target		"col10"
+	}
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"2"
+		target		"col00"
+	}
+}
+
+//Left enter pillars [7]
+{
+	"name"		"lefte2"
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"8"
+		target		"col31"
+	}
+	
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"1"
+		"count"		"2"
+		target		"leftgobs"
+	}
+	
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"8"
+		target		"col20"
+	}
+
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"8"
+		target		"col30"
+	}
+	
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"4"
+		target		"col33"
+	}
+	
+	{
+		"type"		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"	"2.0"
+	}
+	
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"1"
+		"count"		"2"
+		target		"leftgobs2"
 	}
 }

@@ -30,23 +30,19 @@
 	//===================
 	Enemies (Types)
 		Done
-			Explosive Goblin	
-				Make Blow up when Close
-			Chaingunner (Threat at distance)
-				More bullets per shoot event & add tiny bit of spread to them
-			Small Ogre (Annoyance/Body block)
-				Remove entity at death
 			Bull 
 				Polish all parts
 					Try Keeping velocity frame by frame and just capping magnitude
 					Would no longer need to check if running wrong way
 					Note: Would always try to run in ent->forward direction adn slowly turn
-			MAYBE: Fireball Wizard (Fires in arc?)
-				Different color same model?
 
 	Balance enemy health values
 	Balance enemy stagger
 		Could do float staggerPercent and make damage contribute to it  but have it decay over time so fast damage is required for bigger things
+	
+
+	2 KeyCards for gate
+	Gate open animation?
 
 	Level:
 		10 Minutes long
@@ -73,7 +69,7 @@
 *		Customizable Boid settings (avoidance, interest in target etc.)
 *			Combine this with AABB collisions and it should be swag
 
-	EntityManagerCleanUp might be causing crashes
+	* Restart Button
 	//====================
 	//  Milestone 2
 	//		Visuals
@@ -121,6 +117,7 @@
 	*		3) Indirect Drawing
 	*			Have particles write num particles alive to new buffer and draw indirect it
 	*		4) Fadeout over time
+	* 
 	* 
 	//====================
 		Milestone 3 Polish
@@ -262,14 +259,20 @@ int main() {
 	AnimatePose( Wizard::model->animations[WIZARD_ANIM_DEATH]->duration - .001f, Wizard::model->animations[WIZARD_ANIM_DEATH], Wizard::deadPose );
 	UpdatePose( Wizard::deadPose->skeleton->root, Mat4( 1.0 ), Wizard::deadPose );
 
-#if 0
 	Chaingunner::deadPose = (SkeletonPose*)ScratchArenaAllocate(&globalArena, sizeof(SkeletonPose));
 	Chaingunner::deadPose->globalPose = (Mat4*)ScratchArenaAllocate(&globalArena, sizeof(Mat4) * Chaingunner::model->skeleton->numBones);
 	Chaingunner::deadPose->pose = (JointPose*)ScratchArenaAllocate(&globalArena, sizeof(Mat4) * Chaingunner::model->skeleton->numNodes);
 	Chaingunner::deadPose->skeleton = Chaingunner::model->skeleton;
 	AnimatePose(Chaingunner::model->animations[CG_ANIM_DEATH]->duration - .001f, Chaingunner::model->animations[CG_ANIM_DEATH], Chaingunner::deadPose);
 	UpdatePose(Chaingunner::deadPose->skeleton->root, Mat4(1.0), Chaingunner::deadPose);
-#endif
+
+	Ogre::deadPose = (SkeletonPose*) ScratchArenaAllocate( &globalArena, sizeof( SkeletonPose ) );
+	Ogre::deadPose->globalPose = (Mat4*) ScratchArenaAllocate( &globalArena, sizeof( Mat4 ) * Ogre::model->skeleton->numBones );
+	Ogre::deadPose->pose = (JointPose*) ScratchArenaAllocate( &globalArena, sizeof( Mat4 ) * Ogre::model->skeleton->numNodes );
+	Ogre::deadPose->skeleton = Ogre::model->skeleton;
+	AnimatePose( Ogre::model->animations[OGRE_ANIM_DYING]->duration - .1f, Ogre::model->animations[OGRE_ANIM_DYING], Ogre::deadPose );
+	UpdatePose( Ogre::deadPose->skeleton->root, Mat4( 1.0 ), Ogre::deadPose );
+
 
 	CreateLevel( &level, ScratchArenaAllocate( &globalArena, LEVEL_MEMORY ), LEVEL_MEMORY );
 	LoadLevel( &level, "res/maps/demo.cum" );

@@ -8,6 +8,7 @@
 
 Model* Ogre::model;
 Model* Ogre::projectileModel;
+SkeletonPose* Ogre::deadPose;
 
 Ogre* CreateOgre( Vec3 pos ) {
 	//Ogre* entity = ( Ogre* ) ScratchArenaAllocateZero( &globalArena, KB( 1 ) );
@@ -22,6 +23,7 @@ Ogre* CreateOgre( Vec3 pos ) {
 	entity->bounds->bounds.center = Vec3( 0, 1.9, 0 );
 	entity->bounds->bounds.width = Vec3( 1.5,1.62,1.5 );
 	entity->bounds->owner = entity;
+	entity->bounds->canRaycast = true;
 	
 	entity->nextAttack = 0;
 	entity->attackCooldown = 5.0f;
@@ -183,7 +185,13 @@ void OgreStartDie( Entity* entity ) {
 }
 
 void OgreDie( Entity* entity ) {
+	Ogre* ogre = (Ogre*) entity;
+	if( entity->currentAnimationPercent == 1.0f ) {
+		CreateDeadBody( ogre->renderModel, Ogre::deadPose, ogre->pos, ogre->rotation, &ogre->bounds->bounds );
 
+		RemoveBoid( entity );
+		RemoveEntity(entity);
+	}
 }
 
 void OgreRockCallback( class Projectile* projectile, class Entity* entity ) {

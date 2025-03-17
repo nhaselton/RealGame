@@ -352,5 +352,317 @@
 // entity 55
 {
 "classname" "info_player_start"
-"origin" "393 105 51"
-}
+"origin" "-4409 3961 179"
+}
+// entity 56
+{
+"classname" "trigger_once"
+"triggertype" "2"
+"target" "lefte1"
+"bounds" "true"
+"boundsmin" "67.50 -0.00 157.00"
+"boundsmax" "71.00 8.50 168.00"
+}
+{
+"classname" "spawner"
+"origin" "-2904 6056 168"
+"targetname" "col00"
+}
+// entity 58
+{
+"classname" "spawner"
+"origin" "-2888 5384 136"
+"targetname" "col01"
+}
+// entity 59
+{
+"classname" "spawner"
+"origin" "-2872 4744 136"
+"targetname" "col02"
+}
+// entity 60
+{
+"classname" "spawner"
+"origin" "-2872 4120 152"
+"targetname" "col03"
+}
+// entity 61
+{
+"classname" "spawner"
+"origin" "-2872 4120 152"
+"targetname" "col03"
+}
+// entity 62
+{
+"classname" "spawner"
+"origin" "-2872 4744 136"
+"targetname" "col02"
+}
+// entity 63
+{
+"classname" "spawner"
+"origin" "-2888 5384 136"
+"targetname" "col01"
+}
+// entity 64
+{
+"classname" "spawner"
+"origin" "-2904 6056 168"
+"targetname" "col00"
+}
+// entity 65
+{
+"classname" "spawner"
+"origin" "-2872 4120 152"
+"targetname" "col03"
+}
+// entity 66
+{
+"classname" "spawner"
+"origin" "-2872 4744 136"
+"targetname" "col02"
+}
+// entity 67
+{
+"classname" "spawner"
+"origin" "-2888 5384 136"
+"targetname" "col01"
+}
+// entity 68
+{
+"classname" "spawner"
+"origin" "-2904 6056 168"
+"targetname" "col00"
+}
+// entity 69
+{
+"classname" "spawner"
+"origin" "-2872 4120 152"
+"targetname" "col03"
+}
+// entity 70
+{
+"classname" "spawner"
+"origin" "-2872 4744 136"
+"targetname" "col02"
+}
+// entity 71
+{
+"classname" "spawner"
+"origin" "-2888 5384 136"
+"targetname" "col01"
+}
+// entity 72
+{
+"classname" "spawner"
+"origin" "-2904 6056 168"
+"targetname" "col00"
+}
+// entity 73
+{
+"classname" "spawner"
+"origin" "-2872 4120 152"
+"targetname" "col03"
+}
+// entity 74
+{
+"classname" "spawner"
+"origin" "-2872 4744 136"
+"targetname" "col02"
+}
+// entity 75
+{
+"classname" "spawner"
+"origin" "-2888 5384 136"
+"targetname" "col01"
+}
+// entity 76
+{
+"classname" "spawner"
+"origin" "-2904 6056 168"
+"targetname" "col00"
+}
+// entity 77
+{
+"classname" "spawner"
+"origin" "-2872 4120 152"
+"targetname" "col03"
+}
+// entity 78
+{
+"classname" "spawner"
+"origin" "-2872 4744 136"
+"targetname" "col02"
+}
+// entity 79
+{
+"classname" "spawner"
+"origin" "-2888 5384 136"
+"targetname" "col01"
+}
+// entity 80
+{
+"classname" "spawner"
+"origin" "-2904 6056 168"
+"targetname" "col00"
+}
+// entity 81
+{
+"classname" "spawner"
+"origin" "-2872 4120 152"
+"targetname" "col03"
+}
+// entity 82
+{
+"classname" "spawner"
+"origin" "-2872 4744 136"
+"targetname" "col02"
+}
+// entity 83
+{
+"classname" "spawner"
+"origin" "-2888 5384 136"
+"targetname" "col01"
+}
+// entity 84
+{
+"classname" "spawner"
+"origin" "-2904 6056 168"
+"targetname" "col00"
+}
+// entity 85
+{
+"classname" "spawner"
+"origin" "-2872 4120 152"
+"targetname" "col03"
+}
+// entity 86
+{
+"classname" "spawner"
+"origin" "-2872 4744 136"
+"targetname" "col02"
+}
+// entity 87
+{
+"classname" "spawner"
+"origin" "-2888 5384 136"
+"targetname" "col01"
+}
+// entity 88
+{
+"classname" "spawner"
+"origin" "-2904 6056 168"
+"targetname" "col00"
+}
+// entity 89
+{
+"classname" "spawner"
+"origin" "-2872 4120 152"
+"targetname" "col03"
+}
+// entity 90
+{
+"classname" "spawner"
+"origin" "-2872 4744 136"
+"targetname" "col02"
+}
+// entity 91
+{
+"classname" "spawner"
+"origin" "-2888 5384 136"
+"targetname" "col01"
+}
+// entity 92
+{
+"classname" "spawner"
+"origin" "-2904 6056 168"
+"targetname" "col00"
+}
+// entity 93
+{
+"classname" "spawner"
+"origin" "-3624 4120 152"
+"targetname" "col13"
+}
+// entity 94
+{
+"classname" "spawner"
+"origin" "-3624 4744 136"
+"targetname" "col12"
+}
+// entity 95
+{
+"classname" "spawner"
+"origin" "-3640 5384 136"
+"targetname" "col11"
+}
+// entity 96
+{
+"classname" "spawner"
+"origin" "-3656 6056 168"
+"targetname" "col10"
+}
+// entity 97
+{
+"classname" "spawner"
+"origin" "-4184 4120 152"
+"targetname" "col23"
+}
+// entity 98
+{
+"classname" "spawner"
+"origin" "-4184 4744 136"
+"targetname" "col22"
+}
+// entity 99
+{
+"classname" "spawner"
+"origin" "-4200 5384 136"
+"targetname" "col21"
+}
+// entity 100
+{
+"classname" "spawner"
+"origin" "-4216 6056 168"
+"targetname" "col20"
+}
+// entity 101
+{
+"classname" "spawner"
+"origin" "-4856 4120 152"
+"targetname" "col33"
+}
+// entity 102
+{
+"classname" "spawner"
+"origin" "-4856 4744 136"
+"targetname" "col32"
+}
+// entity 103
+{
+"classname" "spawner"
+"origin" "-4872 5384 136"
+"targetname" "col31"
+}
+// entity 104
+{
+"classname" "spawner"
+"origin" "-4888 6056 168"
+"targetname" "col30"
+}
+// entity 105
+{
+"classname" "trigger_once"
+"triggertype" "2"
+"target" "lefte2"
+"bounds" "true"
+"boundsmin" "124.50 5.00 123.00"
+"boundsmax" "128.00 10.50 126.00"
+}
+{
+"classname" "spawn_zone"
+"targetname" "leftgobs"
+"bounds" "true"
+"boundsmin" "76.00 4.50 160.50"
+"boundsmax" "79.50 5.00 171.00"
+}

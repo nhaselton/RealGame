@@ -1097,8 +1097,9 @@ void RenderDrawAllRigidBodies() {
 		//DebugDrawSphere( body->pos, body->radius );
 		if (body->model) {
 			Mat4 t = glm::translate( Mat4( 1.0 ), body->pos + body->visualOffset );
+			Mat4 r = glm::toMat4( body->rotOffset );
 			Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( body->modelScale ) );
-			Mat4 trs = t * s;
+			Mat4 trs = t * r * s;
 			RenderDrawModel( &renderer, body->model, trs, body->pose );
 		}
 	}

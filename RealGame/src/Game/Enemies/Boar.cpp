@@ -106,6 +106,7 @@ void BoarHit(EntityHitInfo info) {
 
 	if (boar->health <= 0) {
 		RemoveEntity(boar);
+		RemoveBoid( boar );
 	}
 	else {
 		boar->state = BOAR_STAGGER;

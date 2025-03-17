@@ -17,6 +17,7 @@ struct CharacterCollider {
 	Vec3 offset;
 	BoundsHalfWidth bounds;
 	struct Entity* owner;
+	bool canRaycast;
 };
 
 struct EntityHitInfo {

@@ -34,6 +34,7 @@ Entity* NewEntity() {
 		//Add Bounds
 		stored->entity.bounds = &physics.entityColliders[i];
 		memset( stored->entity.bounds, 0, sizeof( *stored->entity.bounds ) );
+		stored->entity.bounds->canRaycast = true;
 
 		physics.activeColliders[physics.numActiveColliders++] = &physics.entityColliders[i];
 		stored->entity.bounds->owner = &stored->entity;
@@ -48,6 +49,9 @@ Entity* NewEntity() {
 //Note: Make sure you manually remove boids.
 void RemoveEntity( Entity* e ) {
 	StoredEntity* storedEntity = ( StoredEntity* ) e;
+	if( e->bounds )
+		e->bounds->canRaycast = false;
+
 	storedEntity->state = ACTIVE_WAIT_FOR_REMOVE;
 	entityManager.removeEntities[entityManager.numRemoveEntities++] = storedEntity;
 

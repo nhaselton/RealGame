@@ -87,3 +87,17 @@ void EntityLookAtPlayer( Entity* entity ) {
 	
 	entity->rotation = glm::quatLookAt( -dir, Vec3( 0, 1, 0 ) );
 }
+
+void CreateDeadBody( RenderModel* model, SkeletonPose* pose, Vec3 pos, Quat rot, BoundsHalfWidth* bounds ) {
+	RigidBody* deadBody = NewRigidBody();
+	if( !deadBody )
+		return;
+
+	deadBody->pos = pos + bounds->center / 2.0f;
+	deadBody->removeTime = gameTime + 10.0f;;
+	deadBody->radius = bounds->width.x;
+	deadBody->modelScale = model->scale.x;
+	deadBody->rotOffset = rot;
+	deadBody->model = model->model;
+	deadBody->pose = Chaingunner::deadPose;
+}

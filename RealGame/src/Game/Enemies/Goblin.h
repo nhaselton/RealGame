@@ -28,3 +28,4 @@ void GoblinOnHit( EntityHitInfo info );
 void GoblinChase( Goblin* goblin );
 void GoblinStagger( Goblin* goblin );
 void GoblinLoadKVP(void* _player, char* key, char* value);
+void GoblinExplode( Goblin* goblin );

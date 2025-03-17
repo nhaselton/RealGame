@@ -29,6 +29,7 @@ public:
 
 	static Model* model;
 	static Model* projectileModel;
+	static SkeletonPose* deadPose;
 };
 
 Ogre* CreateOgre( Vec3 pos );

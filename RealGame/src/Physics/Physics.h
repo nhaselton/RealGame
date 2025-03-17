@@ -65,6 +65,7 @@ struct RigidBody {
 	//For Drawing
 	class Model* model;
 	Vec3 visualOffset;
+	Quat rotOffset;
 	float modelScale;
 	class ParticleEmitter2* emitter;
 	struct SkeletonPose* pose; //CAN be null

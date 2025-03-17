@@ -138,3 +138,4 @@ inline Vec3 EntityForward( Entity* entity ) {
 }
 
 struct Model* DefLoadModel( const char* path, Parser* parser );
+void CreateDeadBody( RenderModel* model, SkeletonPose* pose, Vec3 pos, Quat rot, BoundsHalfWidth* bounds );
