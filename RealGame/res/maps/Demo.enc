@@ -382,3 +382,87 @@
 		target		"leftgobs2"
 	}
 }
+
+//First entering the gates [8]
+{
+
+	"name"			"gatee1"
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"1"
+		"count"		"2"
+		target		"gatesz0"
+	}
+	
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"4"
+		"count"		"4"
+		target		"gatecg"
+		"flags"		"1"
+	}
+	
+	{
+		"type"		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"	"2.0"
+	}
+	//Bulls
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"16"
+		target		"gateb0"
+	}
+
+	{
+		"type"		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"	"2.0"
+	}
+	
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"8"
+		target		"gate01"
+	}
+	
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"16"
+		target		"gateb1"
+	}
+
+	{
+		"type"		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"	"2.0"
+	}
+	
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"16"
+		target		"gateb2"
+	}
+	
+		
+	{
+		"type" 		"SPAWN_SINGLE_AI"
+		"ai"		"8"
+		target		"gate00"
+	}
+	
+	
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"2"
+		"count"		"32"
+		target		"wzzone"
+	}
+	
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"2"
+		"count"		"32"
+		target		"gbzone"
+	}
+	
+	
+
+}

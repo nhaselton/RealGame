@@ -59,6 +59,7 @@ struct RenderModel {
 class Projectile {
 public:
 	activeState_t state;
+	int index;
 	//I do want it to sweep
 	Vec3 velocity;
 	class Entity* owner;

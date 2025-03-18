@@ -727,7 +727,7 @@ void TryLoadLightmap( Level* level ) {
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 1024, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, lightMap );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, mapSize, mapSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, lightMap );
 
 	glActiveTexture( GL_TEXTURE0 + S2D_LIGHTMAP );
 	glBindTexture( GL_TEXTURE_2D, lighttexid );
@@ -1049,9 +1049,6 @@ void RenderDrawAllEntities() {
 void RenderDrawAllProjectiles() {
 	for (int i = 0; i < entityManager.numProjectiles; i++) {
 		Projectile* projectile = &entityManager.projectiles[i];
-		if (projectile->state != ACTIVE_ACTIVE || projectile->model.model == 0)
-			continue;
-
 		Mat4 t = glm::translate( Mat4( 1.0 ), projectile->collider.offset + projectile->collider.bounds.center );
 		Mat4 s = glm::scale( Mat4( 1.0 ), projectile->model.scale );
 		Mat4 r = glm::toMat4(projectile->model.rotation);

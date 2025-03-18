@@ -741,8 +741,7 @@ void CreateBoid( Entity* entity ) {
 }
 
 void RemoveBoid( Entity* entity ) {
-	return;
-	for ( int i = 0; i < MAX_ENTITIES; i++ ) {
+	for ( int i = 0; i < physics.numBoids; i++ ) {
 		if (physics.boids[i] == entity) {
 			physics.boids[i] = physics.boids[--physics.numBoids];
 			return;

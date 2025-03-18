@@ -13,7 +13,7 @@ bool USE_AA;
 bool DRAW_TEXELS;
 
 bool LoadFile( const char* path ) {
-    ATLAS_SIZE = 1024;
+    ATLAS_SIZE = 2048;
     TEXEL_SIZE_WORLD_UNITS = 2.0f;
     DRAW_TEXELS = false;
 

@@ -368,6 +368,7 @@ void RemoveLight( Light* light );
 //Keep this inline in header file for the lightmapper
 inline void LightSetAttenuation( Light* light, int index ) {
 	switch( index ) {
+		case 0:	light->attenuation = Vec3( 1.0, 0.0, 0.0 ); break;
 		case 7:	light->attenuation = Vec3( 1.0, 0.7, 1.8 ); break;
 		case 13:	light->attenuation = Vec3( 1.0, 0.35, 0.44 ); break;
 		case 20:	light->attenuation = Vec3( 1.0, 0.22, 0.20 ); break;

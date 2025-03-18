@@ -34,13 +34,8 @@ public:
 	//ActiveEntity* activeHead;
 	StoredEntity entities[MAX_ENTITIES];
 
-	//Because projectiles have such a short lifespan, I'm just going to brute force this
-	Projectile projectiles[MAX_PROJECTILES];
-	int numProjectiles;
-	int lastProjectileIndex; //How far into the array would it possibly have to go.
-
 	//indices of projectiles that should be removed at the end of the frame
-	u16 removeProjectiles[MAX_PROJECTILES];
+	int removeProjectiles[MAX_PROJECTILES];
 	int numRemoveProjectiles;
 	
 	StoredEntity* removeEntities[MAX_ENTITIES];
@@ -60,6 +55,12 @@ public:
 
 	Pickup pickups[512];
 	int numPickups;
+
+	int projSparseList[MAX_PROJECTILES];
+	Projectile projectiles[MAX_PROJECTILES];
+
+	int numProjectiles;
+	int lastProjectileIndex; //How far into the array would it possibly have to go.
 };
 extern EntityManager entityManager;
 

@@ -64,7 +64,7 @@
 "targetname" "gobs1"
 "bounds" "true"
 "boundsmin" "-64.50 1.00 186.00"
-"boundsmax" "55.00 3.00 237.00"
+"boundsmax" "55.00 3.00 229.50"
 }
 {
 "classname" "trigger_once"
@@ -76,62 +76,55 @@
 }
 {
 "classname" "light"
-"origin" "476 9556 3124"
-"intensity" "2"
-"attenuation" "3250"
+"origin" "52 2732 324"
 }
 // entity 13
 {
 "classname" "light"
-"origin" "52 2732 324"
+"origin" "-956 3180 324"
 }
 // entity 14
 {
 "classname" "light"
-"origin" "-956 3180 324"
+"origin" "1308 3244 4"
 }
 // entity 15
 {
 "classname" "light"
-"origin" "1308 3244 4"
-}
-// entity 16
-{
-"classname" "light"
 "origin" "376 -28 216"
 }
-// entity 17
+// entity 16
 {
 "classname" "light"
 "origin" "160 2472 724"
 "intensity" "3"
 "attenuation" "50"
 }
-// entity 18
+// entity 17
 {
 "classname" "light"
 "origin" "-92 2520 400"
 "attenuation" "50"
 }
-// entity 19
+// entity 18
 {
 "classname" "light"
 "origin" "576 2468 416"
 "attenuation" "50"
 }
-// entity 20
+// entity 19
 {
 "classname" "light"
 "origin" "152 2180 464"
 "attenuation" "50"
 }
-// entity 21
+// entity 20
 {
 "classname" "light"
 "origin" "-516 2232 448"
 "attenuation" "50"
 }
-// entity 22
+// entity 21
 {
 "classname" "light"
 "origin" "-274 978 727"
@@ -140,38 +133,38 @@
 "intensity" "1"
 "attenuation" "325"
 }
-// entity 23
+// entity 22
 {
 "classname" "spawner"
 "origin" "312 5496 136"
 "targetname" "cp1"
 "angle" "0"
 }
-// entity 24
+// entity 23
 {
 "classname" "spawner"
 "origin" "504 5464 168"
 "targetname" "cp2"
 }
-// entity 25
+// entity 24
 {
 "classname" "spawner"
 "origin" "-1656 4920 136"
 "targetname" "cp3"
 }
-// entity 26
+// entity 25
 {
 "classname" "spawner"
 "origin" "1304 4216 136"
 "targetname" "cp4"
 }
-// entity 27
+// entity 26
 {
 "classname" "spawner"
 "origin" "1688 3960 136"
 "targetname" "cp5"
 }
-// entity 28
+// entity 27
 {
 "classname" "spawn_zone"
 "targetname" "cpz1"
@@ -184,13 +177,13 @@
 "origin" "-264 7096 328"
 "targetname" "cp6"
 }
-// entity 30
+// entity 29
 {
 "classname" "spawner"
 "origin" "1016 7000 104"
 "targetname" "cp7"
 }
-// entity 31
+// entity 30
 {
 "classname" "trigger_once"
 "triggertype" "2"
@@ -226,23 +219,29 @@
 "origin" "2712 3720 104"
 "targetname" "rl0"
 }
-// entity 36
+// entity 35
 {
 "classname" "spawner"
 "origin" "2664 5144 24"
 "targetname" "rr0"
 }
-// entity 37
+// entity 36
 {
 "classname" "spawner"
 "origin" "8184 5800 40"
 "targetname" "rb0"
 }
-// entity 38
+// entity 37
 {
 "classname" "spawner"
 "origin" "8360 3192 72"
 "targetname" "rb1"
+}
+// entity 38
+{
+"classname" "spawner"
+"origin" "7656 6488 488"
+"targetname" "rp0"
 }
 // entity 39
 {
@@ -253,40 +252,34 @@
 // entity 40
 {
 "classname" "spawner"
-"origin" "7656 6488 488"
-"targetname" "rp0"
-}
-// entity 41
-{
-"classname" "spawner"
 "origin" "6792 6488 488"
 "targetname" "rp1"
 }
-// entity 42
+// entity 41
 {
 "classname" "spawner"
 "origin" "5704 6472 520"
 "targetname" "rp2"
 }
-// entity 43
+// entity 42
 {
 "classname" "spawner"
 "origin" "5000 2696 520"
 "targetname" "lp2"
 }
-// entity 44
+// entity 43
 {
 "classname" "spawner"
 "origin" "6088 2712 488"
 "targetname" "lp1"
 }
-// entity 45
+// entity 44
 {
 "classname" "spawner"
 "origin" "6952 2712 488"
 "targetname" "lp0"
 }
-// entity 46
+// entity 45
 {
 "classname" "trigger_once"
 "target" "righte1"
@@ -316,13 +309,13 @@
 "origin" "8600 4968 376"
 "targetname" "rback1"
 }
-// entity 50
+// entity 49
 {
 "classname" "spawner"
 "origin" "8616 3864 360"
 "targetname" "rback0"
 }
-// entity 51
+// entity 50
 {
 "classname" "spawn_zone"
 "targetname" "rightlameflank"
@@ -345,12 +338,6 @@
 "boundsmax" "-102.00 18.00 90.50"
 }
 {
-"classname" "pickup_weapon"
-"origin" "-68 32 41"
-"weapon" "2"
-}
-// entity 55
-{
 "classname" "trigger_once"
 "triggertype" "2"
 "target" "lefte1"
@@ -363,289 +350,289 @@
 "origin" "-2904 6056 168"
 "targetname" "col00"
 }
-// entity 57
+// entity 55
 {
 "classname" "spawner"
 "origin" "-2888 5384 136"
 "targetname" "col01"
+}
+// entity 56
+{
+"classname" "spawner"
+"origin" "-2872 4744 136"
+"targetname" "col02"
+}
+// entity 57
+{
+"classname" "spawner"
+"origin" "-2872 4120 152"
+"targetname" "col03"
 }
 // entity 58
 {
 "classname" "spawner"
-"origin" "-2872 4744 136"
-"targetname" "col02"
+"origin" "-2872 4120 152"
+"targetname" "col03"
 }
 // entity 59
 {
 "classname" "spawner"
-"origin" "-2872 4120 152"
-"targetname" "col03"
+"origin" "-2872 4744 136"
+"targetname" "col02"
 }
 // entity 60
 {
 "classname" "spawner"
-"origin" "-2872 4120 152"
-"targetname" "col03"
+"origin" "-2888 5384 136"
+"targetname" "col01"
 }
 // entity 61
 {
 "classname" "spawner"
-"origin" "-2872 4744 136"
-"targetname" "col02"
+"origin" "-2904 6056 168"
+"targetname" "col00"
 }
 // entity 62
 {
 "classname" "spawner"
-"origin" "-2888 5384 136"
-"targetname" "col01"
+"origin" "-2872 4120 152"
+"targetname" "col03"
 }
 // entity 63
 {
 "classname" "spawner"
-"origin" "-2904 6056 168"
-"targetname" "col00"
+"origin" "-2872 4744 136"
+"targetname" "col02"
 }
 // entity 64
 {
 "classname" "spawner"
-"origin" "-2872 4120 152"
-"targetname" "col03"
+"origin" "-2888 5384 136"
+"targetname" "col01"
 }
 // entity 65
 {
 "classname" "spawner"
-"origin" "-2872 4744 136"
-"targetname" "col02"
+"origin" "-2904 6056 168"
+"targetname" "col00"
 }
 // entity 66
 {
 "classname" "spawner"
-"origin" "-2888 5384 136"
-"targetname" "col01"
+"origin" "-2872 4120 152"
+"targetname" "col03"
 }
 // entity 67
 {
 "classname" "spawner"
-"origin" "-2904 6056 168"
-"targetname" "col00"
+"origin" "-2872 4744 136"
+"targetname" "col02"
 }
 // entity 68
 {
 "classname" "spawner"
-"origin" "-2872 4120 152"
-"targetname" "col03"
+"origin" "-2888 5384 136"
+"targetname" "col01"
 }
 // entity 69
 {
 "classname" "spawner"
-"origin" "-2872 4744 136"
-"targetname" "col02"
+"origin" "-2904 6056 168"
+"targetname" "col00"
 }
 // entity 70
 {
 "classname" "spawner"
-"origin" "-2888 5384 136"
-"targetname" "col01"
+"origin" "-2872 4120 152"
+"targetname" "col03"
 }
 // entity 71
 {
 "classname" "spawner"
-"origin" "-2904 6056 168"
-"targetname" "col00"
+"origin" "-2872 4744 136"
+"targetname" "col02"
 }
 // entity 72
 {
 "classname" "spawner"
-"origin" "-2872 4120 152"
-"targetname" "col03"
+"origin" "-2888 5384 136"
+"targetname" "col01"
 }
 // entity 73
 {
 "classname" "spawner"
-"origin" "-2872 4744 136"
-"targetname" "col02"
+"origin" "-2904 6056 168"
+"targetname" "col00"
 }
 // entity 74
 {
 "classname" "spawner"
-"origin" "-2888 5384 136"
-"targetname" "col01"
+"origin" "-2872 4120 152"
+"targetname" "col03"
 }
 // entity 75
 {
 "classname" "spawner"
-"origin" "-2904 6056 168"
-"targetname" "col00"
+"origin" "-2872 4744 136"
+"targetname" "col02"
 }
 // entity 76
 {
 "classname" "spawner"
-"origin" "-2872 4120 152"
-"targetname" "col03"
+"origin" "-2888 5384 136"
+"targetname" "col01"
 }
 // entity 77
 {
 "classname" "spawner"
-"origin" "-2872 4744 136"
-"targetname" "col02"
+"origin" "-2904 6056 168"
+"targetname" "col00"
 }
 // entity 78
 {
 "classname" "spawner"
-"origin" "-2888 5384 136"
-"targetname" "col01"
+"origin" "-2872 4120 152"
+"targetname" "col03"
 }
 // entity 79
 {
 "classname" "spawner"
-"origin" "-2904 6056 168"
-"targetname" "col00"
+"origin" "-2872 4744 136"
+"targetname" "col02"
 }
 // entity 80
 {
 "classname" "spawner"
-"origin" "-2872 4120 152"
-"targetname" "col03"
+"origin" "-2888 5384 136"
+"targetname" "col01"
 }
 // entity 81
 {
 "classname" "spawner"
-"origin" "-2872 4744 136"
-"targetname" "col02"
+"origin" "-2904 6056 168"
+"targetname" "col00"
 }
 // entity 82
 {
 "classname" "spawner"
-"origin" "-2888 5384 136"
-"targetname" "col01"
+"origin" "-2872 4120 152"
+"targetname" "col03"
 }
 // entity 83
 {
 "classname" "spawner"
-"origin" "-2904 6056 168"
-"targetname" "col00"
+"origin" "-2872 4744 136"
+"targetname" "col02"
 }
 // entity 84
 {
 "classname" "spawner"
-"origin" "-2872 4120 152"
-"targetname" "col03"
+"origin" "-2888 5384 136"
+"targetname" "col01"
 }
 // entity 85
 {
 "classname" "spawner"
-"origin" "-2872 4744 136"
-"targetname" "col02"
-}
-// entity 86
-{
-"classname" "spawner"
-"origin" "-2888 5384 136"
-"targetname" "col01"
-}
-// entity 87
-{
-"classname" "spawner"
 "origin" "-2904 6056 168"
 "targetname" "col00"
 }
-// entity 88
+// entity 86
 {
 "classname" "spawner"
 "origin" "-2872 4120 152"
 "targetname" "col03"
 }
-// entity 89
+// entity 87
 {
 "classname" "spawner"
 "origin" "-2872 4744 136"
 "targetname" "col02"
 }
-// entity 90
+// entity 88
 {
 "classname" "spawner"
 "origin" "-2888 5384 136"
 "targetname" "col01"
 }
-// entity 91
+// entity 89
 {
 "classname" "spawner"
 "origin" "-2904 6056 168"
 "targetname" "col00"
 }
-// entity 92
+// entity 90
 {
 "classname" "spawner"
 "origin" "-3624 4120 152"
 "targetname" "col13"
 }
-// entity 93
+// entity 91
 {
 "classname" "spawner"
 "origin" "-3624 4744 136"
 "targetname" "col12"
 }
-// entity 94
+// entity 92
 {
 "classname" "spawner"
 "origin" "-3640 5384 136"
 "targetname" "col11"
 }
-// entity 95
+// entity 93
 {
 "classname" "spawner"
 "origin" "-3656 6056 168"
 "targetname" "col10"
 }
-// entity 96
+// entity 94
 {
 "classname" "spawner"
 "origin" "-4184 4120 152"
 "targetname" "col23"
 }
-// entity 97
+// entity 95
 {
 "classname" "spawner"
 "origin" "-4184 4744 136"
 "targetname" "col22"
 }
-// entity 98
+// entity 96
 {
 "classname" "spawner"
 "origin" "-4200 5384 136"
 "targetname" "col21"
 }
-// entity 99
+// entity 97
 {
 "classname" "spawner"
 "origin" "-4216 6056 168"
 "targetname" "col20"
 }
-// entity 100
+// entity 98
 {
 "classname" "spawner"
 "origin" "-4856 4120 152"
 "targetname" "col33"
 }
-// entity 101
+// entity 99
 {
 "classname" "spawner"
 "origin" "-4856 4744 136"
 "targetname" "col32"
 }
-// entity 102
+// entity 100
 {
 "classname" "spawner"
 "origin" "-4872 5384 136"
 "targetname" "col31"
 }
-// entity 103
+// entity 101
 {
 "classname" "spawner"
 "origin" "-4888 6056 168"
 "targetname" "col30"
 }
-// entity 104
+// entity 102
 {
 "classname" "trigger_once"
 "triggertype" "2"
@@ -666,8 +653,106 @@
 "origin" "-4552 6296 216"
 "targetname" "leftgobs2"
 }
+// entity 105
+{
+"classname" "pickup_weapon"
+"origin" "192 2944 16"
+"weapon" "3"
+}
+// entity 106
+{
+"classname" "pickup_weapon"
+"origin" "-2112 5232 32"
+"weapon" "2"
+}
 // entity 107
 {
+"classname" "pickup_weapon"
+"origin" "7856 4464 160"
+"weapon" "4"
+}
+// entity 108
+{
+"classname" "light"
+"origin" "132 2868 6676"
+"intensity" "4"
+"attenuation" "3250"
+}
+// entity 109
+{
+"classname" "light"
+"origin" "-412 6644 292"
+"intensity" "4"
+"attenuation" "3250"
+}
+// entity 110
+{
+"classname" "trigger_once"
+"target" "gatee1"
+"triggertype" "2"
+"bounds" "true"
+"boundsmin" "-23.50 -0.00 241.50"
+"boundsmax" "15.50 26.50 250.50"
+}
+{
+"classname" "spawn_zone"
+"targetname" "gatesz0"
+"bounds" "true"
+"boundsmin" "74.50 2.00 258.00"
+"boundsmax" "94.00 2.50 277.50"
+}
+{
+"classname" "spawner"
+"origin" "-10200 8680 56"
+"target" "gateb0"
+}
+// entity 113
+{
+"classname" "spawner"
+"origin" "-10184 9720 40"
+"target" "gateb1"
+}
+// entity 114
+{
+"classname" "spawner"
+"origin" "-10488 9224 24"
+"target" "gateb2"
+}
+// entity 115
+{
+"classname" "spawn_zone"
+"targetname" "wzzone"
+"bounds" "true"
+"boundsmin" "205.00 1.00 403.00"
+"boundsmax" "335.50 1.50 647.00"
+}
+{
+"classname" "spawn_zone"
+"targetname" "gbzone"
+"bounds" "true"
+"boundsmin" "38.00 -0.00 459.00"
+"boundsmax" "168.50 0.50 703.00"
+}
+{
+"classname" "spawner"
+"origin" "-6152 15640 56"
+"targetname" "gate01"
+}
+// entity 118
+{
+"classname" "spawner"
+"origin" "-6072 18392 8"
+"targetname" "gate00"
+}
+// entity 119
+{
+"classname" "spawn_zone"
+"targetname" "gatecg"
+"bounds" "true"
+"boundsmin" "-119.00 58.00 421.00"
+"boundsmax" "179.50 58.50 427.00"
+}
+{
 "classname" "info_player_start"
-"origin" "329 -9 163"
+"origin" "471 8279 99"
 }

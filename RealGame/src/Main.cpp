@@ -28,7 +28,13 @@
 	//Milestone 1
 	//		Gameplay (April 1st)
 	//===================
-	RemoveBoid() is broken
+
+
+	Rewrite Projectile System but faster.
+		Make it require handles for stored references
+		Otherwise give an INT back
+		Array[0][index] = Index into ptr array
+		Array[1][array[0][index] = ptr
 
 	2 KeyCards for gate
 	Gate open animation?
@@ -371,7 +377,7 @@ int main() {
 			AnimateEntities();
 		}
 
-
+		printf( "%d\n", entityManager.numProjectiles );
 		char buffer[2048]{};
 		sprintf_s( buffer, 2048, "Player pos: %.2f %.2f %.2f\n", player->pos.x, player->pos.y, player->pos.z );
 		RenderDrawText( Vec2( 0, 360 ), 16, buffer );
