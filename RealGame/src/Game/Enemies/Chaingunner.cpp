@@ -13,8 +13,8 @@ Chaingunner* CreateChaingunner(Vec3 pos) {
 	EntityGenerateRenderModel(chaingunner, Chaingunner::model, &globalArena);
 	chaingunner->pos = pos;
 	chaingunner->state = 0;
-	chaingunner->health = 2;
-	chaingunner->maxHealth = 2;
+	chaingunner->health = 16;
+	chaingunner->maxHealth = 16;
 	chaingunner->currentAnimation = Chaingunner::model->animations[CG_ANIM_IDLE];
 
 	chaingunner->bounds->bounds.center = Vec3(0, 2, 0);

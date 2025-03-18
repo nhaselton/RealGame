@@ -68,7 +68,7 @@ public:
 	float spawnTime;
 
 	RenderModel model;
-
+	int damage;
 	//Linear Functions
 	bool isLinear;
 	float staticImpactTime;

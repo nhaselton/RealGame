@@ -33,8 +33,8 @@ Ogre* CreateOgre( Vec3 pos ) {
 	entity->OnHit = OgreOnHit;
 
 	entity->nextAttack = gameTime + 1.0f;
-	entity->health = 12;
-	entity->maxHealth = 12;
+	entity->health = 32;
+	entity->maxHealth = 32;
 	entity->hasThrownRock = false;
 	entity->hasSwiped = false;
 
@@ -168,11 +168,7 @@ void OgreSwipe( Entity* entity ) {
 }
 
 void OgreOnHit( EntityHitInfo info ) {
-	if ( info.victim->state == OGRE_DIE ) {
-		return;
-	}
-
-	info.victim->health -= 1;
+	info.victim->health -= info.damage;
 
 	if ( info.victim->health <= 0 )
 		OgreStartDie( info.victim );

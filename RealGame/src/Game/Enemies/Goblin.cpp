@@ -17,8 +17,8 @@ Goblin* CreateGoblin( Vec3 pos ) {
 	goblin->pos = pos;
 	goblin->currentAnimation = goblin->renderModel->model->animations[0];
 	goblin->state = GOBLIN_CHASE;
-	goblin->health = 2;
-	goblin->maxHealth = 2;
+	goblin->health = 5;
+	goblin->maxHealth = 5;
 	goblin->currentAnimation = Goblin::model->animations[0];
 	goblin->renderModel->scale = Vec3( .45 ) * .777f;
 

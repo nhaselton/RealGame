@@ -21,7 +21,7 @@ struct CharacterCollider {
 };
 
 struct EntityHitInfo {
-	float damage;
+	int damage;
 	//Can be NULL. I dont think this is needed
 	class Projectile* projectile;
 	class Entity* attacker;

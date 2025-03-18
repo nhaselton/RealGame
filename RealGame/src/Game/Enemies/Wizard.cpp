@@ -51,8 +51,8 @@ Wizard* CreateWizard( Vec3 pos ) {
 	EntityGenerateRenderModel( wizard, Wizard::model, &globalArena );
 	wizard->pos = pos;
 	wizard->state = 0;
-	wizard->health = 2;
-	wizard->maxHealth = 2;
+	wizard->health = 8;
+	wizard->maxHealth = 8;
 	wizard->currentAnimation = Wizard::model->animations[0];
 
 	wizard->bounds->bounds.center = Vec3( 0, 2.8, 0 );

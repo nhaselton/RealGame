@@ -23,6 +23,7 @@ public:
 	float spread;
 	float spreadDecayRate;
 	int ammo;
+	int damage;
 
 	bool owned;
 	bool fullAuto;

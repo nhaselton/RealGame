@@ -13,8 +13,8 @@ Boar* CreateBoar(Vec3 pos) {
 	EntityGenerateRenderModel(boar, Boar::model, &globalArena);
 	boar->pos = pos;
 	boar->state = 0;
-	boar->health = 2;
-	boar->maxHealth = 2;
+	boar->health = 48;
+	boar->maxHealth = 48;
 	boar->currentAnimation = Boar::model->animations[BOAR_ANIM_IDLE];
 
 	boar->bounds->bounds.center = Vec3(0, 2.75f, 0.5);

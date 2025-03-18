@@ -81,7 +81,7 @@ void RevolverShoot(Player* player, Weapon* weapon) {
 			attack.attacker = player;
 			attack.victim = info.entity;
 			attack.projectile = 0;
-			attack.damage = 1;
+			attack.damage = revolver->damage;
 			info.entity->OnHit(attack);
 		}
 	}
@@ -141,6 +141,7 @@ void CreateRevolver(Player* player) {
 	player->revolver.baseOffset = Vec3(.5f, -.4f, -1.1f);
 	player->revolver.baseRotation = glm::rotate(Quat(1, 0, 0, 0), glm::radians(92.0f), Vec3(0, 1, 0));
 	player->revolver.renderModel->scale = Vec3(.4f);
+	player->revolver.damage = 4;
 
 	player->revolver.pos = player->revolver.baseOffset;
 	player->revolver.rotation = player->revolver.baseRotation;
@@ -224,7 +225,7 @@ static inline void ShotgunShootPellet(Player* player, Shotgun* shotgun, Vec3 sta
 			attack.attacker = player;
 			attack.victim = info.entity;
 			attack.projectile = 0;
-			attack.damage = 1;
+			attack.damage = shotgun->damage;
 			info.entity->OnHit(attack);
 		}
 	}
@@ -312,6 +313,7 @@ void CreateShotgun(Player* player) {
 	player->shotgun.ammo = 2;
 	player->shotgun.mag = 2;
 	player->shotgun.spreadDecayRate = 6.0f;
+	player->shotgun.damage = 2;
 
 	player->shotgun.numPellets = 16;//Try to keep (count - 1) % 3 == 0 for secondary fire to have exactly 1/3rd the amount of pelettes
 	player->shotgun.spreadRadians = glm::radians(15.0f);
@@ -359,6 +361,7 @@ void PlasmaGunShoot(Player* player, Weapon* weapon) {
 			orb->model.scale = Vec3(.5f);
 			orb->model.translation = Vec3(0);
 			orb->OnCollision = WizardBallCallback;
+			orb->damage = pg->damage;
 			//PlaySound( wizard->audioSource, &Wizard::shootSound );
 		}
 	}
@@ -397,6 +400,7 @@ void CreatePlasmaGun(class Player* player) {
 	player->plasmaGun.shotCooldown = 1.0f / 10.0f;
 	player->plasmaGun.currentCooldown = 0.0f;
 	player->plasmaGun.fullAuto = true;
+	player->plasmaGun.damage = 2;
 	
 	player->plasmaGun.Equip = PlasmaGunEquip;
 	player->plasmaGun.Update = PlasmaGunUpdate;
@@ -459,6 +463,7 @@ void RocketLauncherShoot( Player* player, Weapon* weapon){
 		orb->model.scale = Vec3(.5f);
 		orb->model.translation = Vec3(0);
 		orb->OnCollision = RocketCallback;
+		orb->damage = rpg->damage;
 		//PlaySound( wizard->audioSource, &Wizard::shootSound );
 	}
 
@@ -486,6 +491,8 @@ void CreateRocketLauncher(class Player* player) {
 	player->rocketLauncher.pos = player->plasmaGun.baseOffset;
 	player->rocketLauncher.rotation = player->plasmaGun.baseRotation;
 
+	player->rocketLauncher.damage = 40;
+
 	player->rocketLauncher.state = RL_READY;
 	player->rocketLauncher.animTimeScale = 1.0f;
 	EntityStartAnimation(&player->rocketLauncher, RL_ANIM_IDLE);
@@ -512,7 +519,7 @@ void RocketCallback(Projectile* projectile, Entity* entity) {
 			info.attacker = projectile->owner;
 			info.victim = list[i];
 			info.projectile = projectile;
-			info.damage = 100;
+			info.damage = projectile->damage;
 			list[i]->OnHit(info);
 		}
 	}
