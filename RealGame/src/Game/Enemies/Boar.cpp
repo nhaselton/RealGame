@@ -23,6 +23,11 @@ Boar* CreateBoar(Vec3 pos) {
 	boar->renderModel->scale = Vec3(1.5f, 1, 1);
 	boar->renderModel->rotation = Quat(1, 0, 0, 0);//glm::normalize(Quat(0, 0, 1, 0));
 
+	boar->staggerAt = boar->health / 3.0f;
+	boar->staggerNow = 0.0f;
+	boar->staggerPerDamage = 1.0f;
+	boar->staggerDecay = 0.5f ;
+
 	boar->rotation = glm::normalize(Quat(1, 0, 0, 0));
 
 	boar->Update = BoarUpdate;
@@ -35,6 +40,9 @@ Boar* CreateBoar(Vec3 pos) {
 
 void BoarUpdate(Entity* entity) {
 	Boar* boar = (Boar*)entity;
+	entity->staggerNow -= dt;
+	if( entity->staggerNow <= 0.0f )
+		entity->staggerNow = 0.0f;
 
 	EntityAnimationUpdate(entity, dt);
 	DebugDrawCharacterCollider(entity->bounds);
@@ -127,8 +135,10 @@ void BoarHit(EntityHitInfo info) {
 		RemoveBoid( boar );
 	}
 	else {
-		boar->state = BOAR_STAGGER;
-		EntityStartAnimation(boar, BOAR_ANIM_IDLE);
+		if( EntityApplyStagger( boar, info.damage ) ) {
+			boar->state = BOAR_STAGGER;
+			EntityStartAnimation( boar, BOAR_ANIM_IDLE );
+		}
 	}
 }
 

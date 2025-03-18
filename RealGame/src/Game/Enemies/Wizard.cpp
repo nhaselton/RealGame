@@ -55,6 +55,11 @@ Wizard* CreateWizard( Vec3 pos ) {
 	wizard->maxHealth = 8;
 	wizard->currentAnimation = Wizard::model->animations[0];
 
+	wizard->staggerAt = 1.0;
+	wizard->staggerNow = 0.0f;
+	wizard->staggerPerDamage = .25f;
+	wizard->staggerDecay = 0.0f;
+
 	wizard->bounds->bounds.center = Vec3( 0, 2.8, 0 );
 	wizard->bounds->bounds.width = Vec3( 1.25f, 2.4, 1.25f );
 	wizard->bounds->offset = wizard->pos;
@@ -219,7 +224,8 @@ void WizardOnHit( EntityHitInfo info ) {
 		return;
 	wizard->health -= info.damage;
 	if( wizard->health > 0 ) {
-		WizardStartStagger( wizard );
+		if ( EntityApplyStagger(wizard,info.damage) )
+			WizardStartStagger( wizard );
 	}
 	else {
 		WizardStartDeath( wizard );

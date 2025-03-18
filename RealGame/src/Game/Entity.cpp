@@ -101,3 +101,12 @@ void CreateDeadBody( RenderModel* model, SkeletonPose* pose, Vec3 pos, Quat rot,
 	deadBody->model = model->model;
 	deadBody->pose = Chaingunner::deadPose;
 }
+
+bool EntityApplyStagger( Entity* entity, int damage ) {
+	entity->staggerNow += damage * entity->staggerPerDamage;
+	if( entity->staggerNow >= entity->staggerAt ) {
+		entity->staggerNow = 0;
+		return true;
+	}
+	return false;
+}

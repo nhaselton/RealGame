@@ -23,6 +23,11 @@ Chaingunner* CreateChaingunner(Vec3 pos) {
 	chaingunner->renderModel->scale = Vec3(1);
 	chaingunner->renderModel->rotation = Quat(1, 0, 0, 0);//glm::normalize(Quat(0, 0, 1, 0));
 
+	chaingunner->staggerAt = 1.0f;
+	chaingunner->staggerNow = 0.0f;
+	chaingunner->staggerPerDamage = 1.0f / 7.0f;
+	chaingunner->staggerDecay = 1.0f / 10.0f;
+
 	chaingunner->shootCooldown = 2.0f;
 	chaingunner->nextShootTime = gameTime + 1.0f;
 	chaingunner->rotation = glm::normalize(Quat(1, 0, 0, 0));
@@ -73,6 +78,9 @@ void ChaingunnerShootBullet( Entity* entity ) {
 
 void ChaingunnerUpdate( Entity* entity ) {
 	EntityAnimationUpdate(entity, dt);
+	entity->staggerNow -= entity->staggerDecay * dt;
+	if( entity->staggerNow < 0.0f )
+		entity->staggerNow = 0.0f;
 
 	switch (entity->state) {
 		case CG_IDLE: ChaingunnerIdle(entity); break;
@@ -169,7 +177,8 @@ void ChaingunnerOnHit(EntityHitInfo info) {
 		return;
 	chaingunner->health -= info.damage;
 	if (chaingunner->health > 0) {
-		ChaingunnerStaggerStart(chaingunner);
+		if ( EntityApplyStagger(chaingunner, info.damage) )
+			ChaingunnerStaggerStart( chaingunner );
 	}
 	else {
 		ChaingunnerDyingStart(chaingunner);

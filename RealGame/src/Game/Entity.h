@@ -102,6 +102,11 @@ public:
 	float animTimeScale;//how fast should the anims be
 	float lastAnimationTime;
 
+	float staggerAt;
+	float staggerNow;
+	float staggerPerDamage;
+	float staggerDecay;
+
 	u32 state;
 	u32 spawnFlags;
 
@@ -139,3 +144,5 @@ inline Vec3 EntityForward( Entity* entity ) {
 
 struct Model* DefLoadModel( const char* path, Parser* parser );
 void CreateDeadBody( RenderModel* model, SkeletonPose* pose, Vec3 pos, Quat rot, BoundsHalfWidth* bounds );
+//Applys stagger for the damage done and returns if this should trigger a full stagger
+bool EntityApplyStagger( Entity* entity, int damage );

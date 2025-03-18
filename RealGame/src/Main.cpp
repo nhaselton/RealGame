@@ -28,9 +28,6 @@
 	//Milestone 1
 	//		Gameplay (April 1st)
 	//===================
-	Balance enemy stagger
-		Could do float staggerPercent and make damage contribute to it  but have it decay over time so fast damage is required for bigger things
-	
 	RemoveBoid() is broken
 
 	2 KeyCards for gate
@@ -42,13 +39,6 @@
 		Large open fields for lots of enemies
 		4 way split at end to get 4 pieces to unlock exit?
 	
-	Triggers
-		Delay
-		Message that appears on screen
-		Sound
-
-*	Properly looping animataions
-*	Figure out where to store hud textures
 *	Add a default texture for failing to get them.
 		stop asserting and start warning
 
@@ -61,7 +51,7 @@
 *		Customizable Boid settings (avoidance, interest in target etc.)
 *			Combine this with AABB collisions and it should be swag
 
-	* Restart Button
+*	Restart Button
 	//====================
 	//  Milestone 2
 	//		Visuals
