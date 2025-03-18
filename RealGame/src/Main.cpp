@@ -28,15 +28,6 @@
 	//Milestone 1
 	//		Gameplay (April 1st)
 	//===================
-	Enemies (Types)
-		Done
-			Bull 
-				Polish all parts
-					Try Keeping velocity frame by frame and just capping magnitude
-					Would no longer need to check if running wrong way
-					Note: Would always try to run in ent->forward direction adn slowly turn
-
-	Balance enemy health values
 	Balance enemy stagger
 		Could do float staggerPercent and make damage contribute to it  but have it decay over time so fast damage is required for bigger things
 	
@@ -200,7 +191,7 @@ int main() {
 	console.Init();
 	CreateStackArena( &tempArena, TEMP_MEMORY, ScratchArenaAllocate( &globalArena, TEMP_MEMORY ), &globalArena, "Temp Arena" );
 
-	WindowInit( &window, 2560, 1440, "Game for real this time guys" );
+	WindowInit( &window, 1920, 1080, "Game for real this time guys" );
 	WindowAddKeySubscription( &window, &console.sub );
 
 	CreateModelManager( &modelManager,

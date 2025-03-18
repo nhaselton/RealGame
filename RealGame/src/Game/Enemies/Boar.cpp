@@ -59,45 +59,63 @@ void BoarStartCharge(Entity* entity ) {
 	boar->state = BOAR_CHARGE;
 	boar->startVel = entityManager.player->pos - entity->pos;
 	boar->startVel.y = 0;
+	boar->velocity = Vec3(0);
 }
 
 void BoarCharge(Entity* entity) {
 	Boar* boar = (Boar*)entity;
-	// Slowly Turns Towards Player
-	Vec3 dir = entityManager.player->pos - entity->pos;
-	dir.y = 0;  // Keep it horizontal, preventing unnecessary pitch rotation.
-	dir = glm::normalize(dir);  // Normalize the direction vector.
 
-	// Compute the target rotation quaternion to face the player.
-	Quat finalRot = glm::quatLookAt(-dir, Vec3(0, 1, 0));
+	Vec3 dirToPlayer = entityManager.player->pos - entity->pos;
+	dirToPlayer.y = 0;
+	float distToPlayer = glm::length( dirToPlayer );
+	dirToPlayer /= distToPlayer;
 
+	Quat finalRot = glm::quatLookAt( -dirToPlayer, Vec3( 0, 1, 0 ) );
 	// Get the angle between the current rotation and the target rotation
-	float angle = glm::angle(entity->rotation * glm::inverse(finalRot));
-	float rotationSpeed = 1.0f; 
+	float rotationSpeed = 1.0f;
+	float angle = glm::angle( entity->rotation * glm::inverse( finalRot ) );
+	
+	if( rotationSpeed > angle )
+		rotationSpeed = angle;
 	// Apply the rotation incrementally
-	if ( angle > 0)
-		entity->rotation = glm::slerp(entity->rotation, finalRot, (1.0f * dt) / angle);
+	if( angle > 0 )
+		entity->rotation = glm::slerp( entity->rotation, finalRot, ( rotationSpeed * dt ) / angle );
 
-	Vec3 forward = EntityForward(entity);
-	entity->pos = MoveAndSlide(entity->bounds, forward * 30.0f * dt, 3, true);
+	Vec3 forward = EntityForward( boar );
 
-	//
-	Vec3 fwCheck(forward.x, 0, forward.z);
-	if (glm::dot(fwCheck, boar->startVel) < 0.0f) {
-		boar->state = BOAR_STAGGER;
-		EntityStartAnimation(boar, BOAR_ANIM_IDLE);
+	Vec3 accel = forward * dt * 10.0f; // Half of accel
+	boar->velocity += accel;//Add first half before movement
+	boar->pos = MoveAndSlide( boar->bounds, boar->velocity * dt, 3, true );
+	float velLen = glm::length( boar->velocity );
+	float maxSpeed = 30.0f;
+
+	//Add second half after movement
+	boar->velocity += accel;
+
+	//Clamp velocity
+	if( velLen > maxSpeed ) {
+		boar->velocity /= velLen;
+		boar->velocity *= maxSpeed;
+		velLen = maxSpeed;
+	}
+
+	//correct velocity so that it points forward
+	boar->velocity = velLen * forward;
+
+	//Check if we run into a wall
+	SweepInfo info {};
+	if( PhysicsQuerySweepStatic( entity->pos + entity->bounds->bounds.center, glm::normalize( boar->velocity ) / 10.0f, entity->bounds->bounds.width, &info ) ) {
+		boar->state	 = BOAR_STAGGER;
+		EntityStartAnimation( boar, BOAR_ANIM_IDLE );
 		return;
 	}
 
-
-	//check if crashed into wall
-	SweepInfo info{};
-	if (PhysicsQuerySweepStatic(entity->pos + entity->bounds->bounds.center, forward / 10.0f, entity->bounds->bounds.width, &info)) {
+	//CHeck if the current velocity is the opposite direction of the starting forward
+	if( glm::dot( forward, boar->startVel ) < 0.0f ) {
 		boar->state = BOAR_STAGGER;
-		EntityStartAnimation(boar, BOAR_ANIM_IDLE);
+		EntityStartAnimation( boar, BOAR_ANIM_IDLE );
 		return;
 	}
-
 }
 
 void BoarHit(EntityHitInfo info) {

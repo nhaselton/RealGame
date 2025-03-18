@@ -23,6 +23,7 @@ public:
 	static Model* model;
 	static SkeletonPose* deadPose;
 	Vec3 startVel;
+	Vec3 velocity;
 };
 
 Boar* CreateBoar(Vec3 pos);

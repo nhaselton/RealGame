@@ -4,21 +4,21 @@
 }
 // entity 2
 {
-"classname" "info_wizard_start"
-"origin" "3399 249 51"
-}
-// entity 3
-{
 "classname" "light"
 "origin" "3652 244 580"
 "attenuation" "3250"
 "intensity" "2"
 }
-// entity 4
+// entity 3
 {
 "classname" "light"
 "origin" "2852 468 516"
 "intensity" "1"
 "attenuation" "3250"
 "_color" "1 1 1"
+}
+// entity 4
+{
+"classname" "info_boar_start"
+"origin" "1172 352 57"
 }
