@@ -5,6 +5,11 @@
 #include "Resources/SoundManager.h"
 #include "Game/Weapons.h"
 
+enum keyBits_t {
+	PLAYER_KEY_RED =  1,
+	PLAYER_KEY_BLUE = 2,
+};
+
 class Player : public Entity {
 public:
 	Camera camera;
@@ -16,6 +21,7 @@ public:
 
 	//bitset for unlocked weapons
 	u16 weapons;
+	u8 keys;
 
 	static Sound revolverFireSound;
 	static Sound revolverReloadSound;
@@ -35,4 +41,5 @@ void PlayerOnHit( EntityHitInfo info );
 void ConsoleToggleNoClip();
 void PlayerLoadKVP( void* player, char* key, char* value );
 void PlayerCheckPickups(Player* player);
-void PlayerPickupItem(Pickup* pickup, class Entity* entity);
+//Returns if item needs to disappear (Not everything can always be picked up)
+bool PlayerPickupItem(Pickup* pickup, class Entity* entity);

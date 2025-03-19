@@ -190,22 +190,33 @@ void PlayerLoadKVP(void* _player, char* key, char* value) {
 	}
 }
 
-void PlayerPickupItem(Pickup* pickup, class Entity* entity) {
+bool PlayerPickupItem(Pickup* pickup, class Entity* entity) {
 	Player* player = (Player*)entity;
 	switch (pickup->flags) {
 	case PICKUP_REVOLVER:
 		player->weapons |= WF_REVOLVER;
-		break;
+		return true;
 	case PICKUP_SHOTGUN:
 		player->weapons |= PICKUP_SHOTGUN;
-		break;
+		return true;
 	case PICKUP_PLASMA:
 		player->weapons |= WF_PLASMA;
-		break;
+		return true;
 	case PICKUP_RPG:
 		player->weapons |= WF_RPG;
-		break;
+		return true;
+	case PICKUP_KEY_BLUE:
+		player->keys |= PLAYER_KEY_BLUE;
+		return true;
+	case PICKUP_KEY_RED:
+		player->keys |= PLAYER_KEY_RED;
+		return true;
+	case PICKUP_PLACE_KEY_BLUE:
+		return ( player->keys & PICKUP_KEY_BLUE );
+	case PICKUP_PLACE_KEY_RED:
+		return ( player->keys & PICKUP_KEY_RED );
 	}
+	return false;
 }
 
 void PlayerCheckPickups(Player* player) {
@@ -224,9 +235,11 @@ void PlayerCheckPickups(Player* player) {
 		DebugDrawAABB(pickup->bounds.center, pickup->bounds.width);
 		DebugDrawAABB(pos, player->bounds->bounds.width);
 		if (FastAABB(playerBounds, pickupBounds)) {
-			PlayerPickupItem(pickup, player);
-			entityManager.pickups[i] = entityManager.pickups[--entityManager.numPickups];
-			i--;//Go back a slot so we can try the thing we just placed here
+			bool remove = PlayerPickupItem(pickup, player);
+			if( remove ) {
+				entityManager.pickups[i] = entityManager.pickups[--entityManager.numPickups];
+				i--;//Go back a slot so we can try the thing we just placed here
+			}
 		}
 	}
 }

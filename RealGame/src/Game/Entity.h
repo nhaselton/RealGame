@@ -11,7 +11,10 @@ enum pickupFlags_t : u64{
 	PICKUP_SHOTGUN = 2,
 	PICKUP_PLASMA = 3,
 	PICKUP_RPG = 4,
-
+	PICKUP_KEY_RED = 5,
+	PICKUP_PLACE_KEY_RED = 6,
+	PICKUP_KEY_BLUE = 7,
+	PICKUP_PLACE_KEY_BLUE = 8,
 };
 
 enum entityType_t {

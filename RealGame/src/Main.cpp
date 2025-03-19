@@ -28,16 +28,13 @@
 	//Milestone 1
 	//		Gameplay (April 1st)
 	//===================
+	Keycard_placed shader
+	Keycard_placed becomes actual key
+	Different color keys
 
-
-	Rewrite Projectile System but faster.
-		Make it require handles for stored references
-		Otherwise give an INT back
-		Array[0][index] = Index into ptr array
-		Array[1][array[0][index] = ptr
-
-	2 KeyCards for gate
+	Gate Doors
 	Gate open animation?
+		Lerp
 
 	Level:
 		10 Minutes long
@@ -45,17 +42,11 @@
 		Large open fields for lots of enemies
 		4 way split at end to get 4 pieces to unlock exit?
 	
-*	Add a default texture for failing to get them.
-		stop asserting and start warning
-
 	Actual Revolver Spread
 *		Look into exponational decay rate, linear to slow
 
 *	Physics:
-*		EntityColliders to be able to detect if they intersect each other
-*		Im fine if they clip each i think, i can have a collision resolve stage?
-*		Customizable Boid settings (avoidance, interest in target etc.)
-*			Combine this with AABB collisions and it should be swag
+*		Enemies will remove themselves from your AABB
 
 *	Restart Button
 	//====================
@@ -64,7 +55,7 @@
 	//====================
 	By May 9
 	Shadows
-		Either shadow map or do little shadows underneath
+		Either shadow map or do little shadows underneath (Drop shadow)
 			Could probably draw a sphere and if it intersects things it draws black
 	VFX
 	Enemy Spawn
@@ -221,6 +212,7 @@ int main() {
 	RegisterCvar( "killai", KillAI, CV_FUNC );
 	RegisterCvar( "noclip", ConsoleToggleNoClip, CV_FUNC );
 	RegisterCvar( "map", ConsoleChangeLevel, CV_FUNC );
+	RegisterCvar( "restart", RestartLevel, CV_FUNC );
 
 	LoadWavFile( &explosion, "res/sounds/Explosion.wav" );
 	LoadWavFile( &Player::revolverFireSound, "res/sounds/RevolverShoot.wav" );
@@ -355,10 +347,6 @@ int main() {
 #if 1
 
 #endif
-		if( entityManager.numEntities == 2 ) {
-			printf( "" );
-		}
-
 		for( int i = 0; i < entityManager.numEncounters; i++ ) {
 			Encounter& encounter = entityManager.encounters[i];
 			if( encounter.active )
@@ -377,7 +365,6 @@ int main() {
 			AnimateEntities();
 		}
 
-		printf( "%d\n", entityManager.numProjectiles );
 		char buffer[2048]{};
 		sprintf_s( buffer, 2048, "Player pos: %.2f %.2f %.2f\n", player->pos.x, player->pos.y, player->pos.z );
 		RenderDrawText( Vec2( 0, 360 ), 16, buffer );

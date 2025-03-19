@@ -691,8 +691,8 @@
 "target" "gatee1"
 "triggertype" "2"
 "bounds" "true"
-"boundsmin" "-23.50 -0.00 241.50"
-"boundsmax" "15.50 26.50 250.50"
+"boundsmin" "-23.00 -0.00 246.50"
+"boundsmax" "16.00 26.50 255.50"
 }
 {
 "classname" "spawn_zone"
@@ -704,19 +704,19 @@
 {
 "classname" "spawner"
 "origin" "-10200 8680 56"
-"target" "gateb0"
+"targetname" "gateb0"
 }
 // entity 113
 {
 "classname" "spawner"
 "origin" "-10184 9720 40"
-"target" "gateb1"
+"targetname" "gateb1"
 }
 // entity 114
 {
 "classname" "spawner"
 "origin" "-10488 9224 24"
-"target" "gateb2"
+"targetname" "gateb2"
 }
 // entity 115
 {
@@ -755,4 +755,32 @@
 {
 "classname" "info_player_start"
 "origin" "471 8279 99"
+}
+// entity 121
+{
+"classname" "pickup_key"
+"origin" "640 7680 128"
+"keyColor" "2"
+"type" "2"
+}
+// entity 122
+{
+"classname" "pickup_key"
+"origin" "-384 7680 128"
+"keyColor" "1"
+"type" "2"
+}
+// entity 123
+{
+"classname" "pickup_key"
+"origin" "-4032 3984 192"
+"keyColor" "1"
+"type" "1"
+}
+// entity 124
+{
+"classname" "pickup_key"
+"origin" "8048 4464 192"
+"keyColor" "2"
+"type" "1"
 }

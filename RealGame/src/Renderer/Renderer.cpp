@@ -35,9 +35,18 @@ void RenderCreateShaders( Renderer* renderer ) {
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_INT, "fullbright" );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD], "fullbright", renderer->fullBright );
 	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD], "albedo", S2D_ALBEDO );
-	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_INT, "lightmap" );
-	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD], "lightmap", S2D_LIGHTMAP );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_MAT4, "model" );
+
+	//Standard Geo (Lightmap)
+	renderer->shaders[SHADER_STANDARD_GEO] = ShaderManagerCreateShader( &shaderManager, "res/shaders/standardGeo/standardGeo.vert", "res/shaders/standardGeo/standardGeo.frag" );
+	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD_GEO] );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_GEO], SHADER_ARG_INT, "albedo" );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_GEO], SHADER_ARG_INT, "fullbright" );
+	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD_GEO], "fullbright", renderer->fullBright );
+	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD_GEO], "albedo", S2D_ALBEDO );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_GEO], SHADER_ARG_INT, "lightmap" );
+	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD_GEO], "lightmap", S2D_LIGHTMAP );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD_GEO], SHADER_ARG_MAT4, "model" );
 
 
 	//Standrard Skinned
@@ -343,11 +352,11 @@ void RenderDrawLevel( Renderer* renderer ) {
 	}
 
 	//Upload indices to GPU
-	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD] );
+	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD_GEO] );
 	nglBindVertexArray( renderer->levelInfo.buffer.vao );
 	nglBindBuffer( GL_ELEMENT_ARRAY_BUFFER, renderer->levelInfo.buffer.ebo );
 	nglBufferSubData( GL_ELEMENT_ARRAY_BUFFER, 0, totalIndices * sizeof( u32 ), indices );
-	ShaderSetMat4( renderer, renderer->shaders[SHADER_STANDARD], "model", Mat4( 1.0 ) );
+	ShaderSetMat4( renderer, renderer->shaders[SHADER_STANDARD_GEO], "model", Mat4( 1.0 ) );
 
 	offset = 0;
 	nglActiveTexture( GL_TEXTURE0 );
@@ -1077,7 +1086,7 @@ void RenderDrawAllPickups() {
 		if (!rm->model)
 			return;
 
-		Mat4 t = glm::translate(Mat4(1.0), rm->translation);
+		Mat4 t = glm::translate(Mat4(1.0), rm->translation+ entityManager.pickups[i].bounds.center);
 		Mat4 r = glm::toMat4(rm->rotation);
 		Mat4 s = glm::scale(Mat4(1.0), Vec3(rm->scale));
 		Mat4 trs = t * r * s;

@@ -56,6 +56,13 @@ void UnloadLevel( Level* level ) {
 	GameUnloadLevel();
 }
 
+void RestartLevel() {
+	char mapPath[MAX_PATH_LENGTH]{};
+	strcpy( mapPath, level.path );
+	UnloadLevel( &level );
+	LoadLevel( &level, mapPath );
+}
+
 extern Level level;
 void ConsoleChangeLevel() {
 	if( console.cvarArgc != 1 ) {

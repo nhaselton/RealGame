@@ -25,5 +25,5 @@ void CreateLevel( Level* level, void* memory, u32 size );
 //Others still have to adjust values to show they arent using any of the memory
 bool LoadLevel( Level* level, const char* path );
 void UnloadLevel(Level* level);
-void ChangeLevel();
 void ConsoleChangeLevel();
+void RestartLevel();

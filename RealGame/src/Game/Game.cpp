@@ -169,10 +169,38 @@ void GameLoadEntities( const char* path ) {
 		else if( !strcmp( className, "light" ) ) {
 			//Because static and dynamci lights go in differnt locations,
 			//This has to load as a temp light first then be placed in the correct array after
-			newEnt = TEMP_ALLOC(sizeof(Light));
 			EntKVP = LightLoadKVP;
 			//Hack
 			isLight = true;
+		}
+		else if( !strcmp( className, "pickup_key" ) ) {
+			char key[64];
+			char value[64];
+			Pickup* pickup = &entityManager.pickups[entityManager.numPickups++];
+			LoadKeyValue( &parser, key, value );
+			pickup->bounds.center = StringToVec3( value, true );
+			pickup->bounds.width = Vec3( 1.5, 2.5, 1.5 );
+
+			LoadKeyValue( &parser, key, value );
+			int keyColor = atoi( value );
+			LoadKeyValue( &parser, key, value );
+			int isPickup = atoi( value ) == 1;
+
+			if( isPickup )
+				if( keyColor == 1 )
+					pickup->flags = PICKUP_KEY_RED;
+				else
+					pickup->flags = PICKUP_KEY_BLUE;
+			else
+				if( keyColor == 1 )
+					pickup->flags = PICKUP_PLACE_KEY_RED;
+				else
+					pickup->flags = PICKUP_PLACE_KEY_BLUE;
+
+			pickup->renderModel.model = LoadModel( "res/models/key.glb" );
+			pickup->renderModel.scale = Vec3( 0.5f );
+			pickup->renderModel.rotation = Quat( 1, 0, 0, 0 );
+			pickup->renderModel.translation = Vec3( 0, 0, 0 );
 		}
 		else if (!strcmp(className, "pickup_weapon")) {
 			char key[64];
