@@ -28,13 +28,7 @@
 	//Milestone 1
 	//		Gameplay (April 1st)
 	//===================
-	Keycard_placed shader
-	Keycard_placed becomes actual key
-	Different color keys
-
-	Gate Doors
-	Gate open animation?
-		Lerp
+	Gate collision
 
 	Level:
 		10 Minutes long
@@ -47,8 +41,6 @@
 
 *	Physics:
 *		Enemies will remove themselves from your AABB
-
-*	Restart Button
 	//====================
 	//  Milestone 2
 	//		Visuals
@@ -166,14 +158,25 @@ bool paused = false;
 int maxFps;
 int sleepTime;
 
+
+//This is so bad
+Vec3 doorPos( 3.5, 13.25, 248.0 );
+Vec3 doorSize( 19.5, 13.25, 4.5 );
+
+
 void LoadDecls() {
 	Wizard::model = LoadModel("res/def/wizard.def");
 	Chaingunner::model = LoadModel("res/def/chaingunner.def");
 	Boar::model = LoadModel("res/models/boar.glb");
-
 }
 
 int main() {
+	Vec3 min( -23.00, -0.00, 243.50 );
+	Vec3 max( 16.00, 26.50, 252.50 );
+
+	Vec3 pos = ( max + min ) ;
+	Vec3 size = ( max - min ) * 32.0f / 2.0f;
+
 	CreateScratchArena( &globalArena, TOTAL_MEMORY, malloc( TOTAL_MEMORY ), NULL, "Global Arena" );
 	console.Init();
 	CreateStackArena( &tempArena, TEMP_MEMORY, ScratchArenaAllocate( &globalArena, TEMP_MEMORY ), &globalArena, "Temp Arena" );
@@ -284,7 +287,7 @@ int main() {
 	bool triggered = false;
 	maxFps = 250;
 	//Boar* boar = CreateBoar(Vec3(0, 1, 0));
-	while( !WindowShouldClose( &window ) ) {
+	while( !WindowShouldClose( &window ) ) {	
 		if( maxFps > 0 )
 			NSpinLock( maxFps );
 

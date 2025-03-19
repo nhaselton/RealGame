@@ -15,6 +15,8 @@ enum pickupFlags_t : u64{
 	PICKUP_PLACE_KEY_RED = 6,
 	PICKUP_KEY_BLUE = 7,
 	PICKUP_PLACE_KEY_BLUE = 8,
+	PICKUP_PLACE_KEY_RED_DONE,
+	PICKUP_PLACE_KEY_BLUE_DONE,
 };
 
 enum entityType_t {
@@ -150,3 +152,9 @@ struct Model* DefLoadModel( const char* path, Parser* parser );
 void CreateDeadBody( RenderModel* model, SkeletonPose* pose, Vec3 pos, Quat rot, BoundsHalfWidth* bounds );
 //Applys stagger for the damage done and returns if this should trigger a full stagger
 bool EntityApplyStagger( Entity* entity, int damage );
+
+//Temp leave it here
+class Door : public Entity{
+public:
+};
+void DoorLoadKVP( void* door, char* key, char* value );

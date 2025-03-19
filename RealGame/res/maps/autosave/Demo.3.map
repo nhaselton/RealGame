@@ -480,16 +480,13 @@
 }
 // entity 13
 {
-"classname" "info_goblin_start"
-"origin" "57 1001 32"
+"classname" "light"
+"origin" "356 -12 260"
+"_color" "1 1 1"
 }
 // entity 14
 {
-"classname" "info_goblin_start"
-"origin" "-167 887 32"
-}
-// entity 15
-{
-"classname" "info_goblin_start"
-"origin" "25 1209 32"
+"classname" "light"
+"origin" "60 1052 660"
+"_color" "1 1 1"
 }

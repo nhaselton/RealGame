@@ -37,6 +37,15 @@ void RenderCreateShaders( Renderer* renderer ) {
 	ShaderSetInt( renderer, renderer->shaders[SHADER_STANDARD], "albedo", S2D_ALBEDO );
 	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_STANDARD], SHADER_ARG_MAT4, "model" );
 
+	//Placement
+	renderer->shaders[SHADER_PLACE] = ShaderManagerCreateShader( &shaderManager, "res/shaders/place/place.vert", "res/shaders/place/place.frag" );
+	RenderSetShader( renderer, renderer->shaders[SHADER_PLACE] );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_PLACE], SHADER_ARG_INT, "albedo" );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_PLACE], SHADER_ARG_INT, "fullbright" );
+	ShaderSetInt( renderer, renderer->shaders[SHADER_PLACE], "fullbright", renderer->fullBright );
+	ShaderSetInt( renderer, renderer->shaders[SHADER_PLACE], "albedo", S2D_ALBEDO );
+	ShaderAddArg( &shaderManager, renderer->shaders[SHADER_PLACE], SHADER_ARG_MAT4, "model" );
+
 	//Standard Geo (Lightmap)
 	renderer->shaders[SHADER_STANDARD_GEO] = ShaderManagerCreateShader( &shaderManager, "res/shaders/standardGeo/standardGeo.vert", "res/shaders/standardGeo/standardGeo.frag" );
 	RenderSetShader( renderer, renderer->shaders[SHADER_STANDARD_GEO] );
@@ -436,6 +445,7 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 
 	renderer->worldView.projection = renderer->projection;
 	renderer->worldView.view = renderer->camera.GetViewMatrix();
+	renderer->worldView.gameTime = gameTime;
 	glBindBuffer( GL_SHADER_STORAGE_BUFFER, renderer->worldViewSSBO );
 	int worldViewSize = offsetof( WorldView, dynamicLights );//this is size before light[]
 	glBufferSubData( GL_SHADER_STORAGE_BUFFER, 0, worldViewSize + sizeof( Light ) * renderer->worldView.numDynamicLights, &renderer->worldView );
@@ -676,9 +686,14 @@ void RenderSetShader( Renderer* renderer, Shader* newShader ) {
 	renderer->currentShaderID = newShader->id;
 }
 
-void RenderDrawModel( Renderer* renderer, Model* model, Mat4 offset, SkeletonPose* pose ) {
+void RenderDrawModel( Renderer* renderer, Model* model, Mat4 offset, SkeletonPose* pose, Shader* shaderOverride ) {
 	//Shader* shader = (model->skeleton == 0) ? renderer->shaders[SHADER_STANDARD] : renderer->shaders[SHADER_STANDARD_SKINNED];
-	Shader* shader = (model->skeleton == 0) ? renderer->shaders[SHADER_STANDARD] : renderer->shaders[SHADER_CELL_SHADER_SKINNED];
+	Shader* shader = 0;
+	if( !shaderOverride )
+		shader = ( model->skeleton == 0 ) ? renderer->shaders[SHADER_STANDARD] : renderer->shaders[SHADER_CELL_SHADER_SKINNED];
+	else
+		shader = shaderOverride;
+
 	RenderSetShader( renderer, shader );
 
 	if (model->skeleton && pose) {
@@ -1082,15 +1097,26 @@ void RenderDrawGun() {
 
 void RenderDrawAllPickups() {
 	for (int i = 0; i < entityManager.numPickups; i++) {
-		RenderModel* rm = &entityManager.pickups[i].renderModel;
-		if (!rm->model)
-			return;
+		Pickup* pickup = &entityManager.pickups[i];
+		RenderModel* rm = &pickup->renderModel;
+		if( !rm->model )
+			continue;
 
-		Mat4 t = glm::translate(Mat4(1.0), rm->translation+ entityManager.pickups[i].bounds.center);
-		Mat4 r = glm::toMat4(rm->rotation);
-		Mat4 s = glm::scale(Mat4(1.0), Vec3(rm->scale));
+		Mat4 t = glm::translate( Mat4( 1.0 ), rm->translation + pickup->bounds.center );
+		Mat4 r = glm::toMat4( rm->rotation );
+		Mat4 s = glm::scale( Mat4( 1.0 ), Vec3( rm->scale ) );
 		Mat4 trs = t * r * s;
-		RenderDrawModel(&renderer, rm->model, trs);
+
+		Shader* shader = 0;//Shader override
+
+		glEnable( GL_BLEND );
+		switch( pickup->flags ) {
+			case PICKUP_PLACE_KEY_BLUE:
+			case PICKUP_PLACE_KEY_RED:
+				shader = renderer.shaders[SHADER_PLACE];
+		}
+		RenderDrawModel( &renderer, rm->model, trs, 0, shader );
+		glDisable( GL_BLEND );
 	}
 }
 

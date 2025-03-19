@@ -83,6 +83,7 @@ enum builtInShaderList {
 	SHADER_COMP_UPDATE_PARTICLES2,
 	SHADER_BILLBOARD,
 	SHADER_CELL_SHADER_SKINNED,
+	SHADER_PLACE,
 	SHADER_LAST,
 };
 
@@ -231,7 +232,8 @@ struct WorldView {
 
 	int numDynamicLights;
 	int numStaticLights;
-	int pad0, pad1;
+	float gameTime;
+	int pad0;
 	Light dynamicLights[MAX_STATIC_LIGHTS];
 	Light staticLights[MAX_DYNAMIC_LIGHTS];
 };
@@ -316,7 +318,7 @@ void RenderDrawFrame( Renderer* renderer, float dt );
 void RenderEndFrame( Renderer* renderer );
 
 void RenderSetShader( Renderer* renderer, class Shader* newShader );
-void RenderDrawModel(Renderer* renderer, class Model* model, Mat4 offset = Mat4(1.0), struct SkeletonPose* pose = 0 );
+void RenderDrawModel(Renderer* renderer, class Model* model, Mat4 offset = Mat4(1.0), struct SkeletonPose* pose = 0, Shader* shaderOverride = 0);
 void RenderDrawLevel( Renderer* renderer );
 
 void RenderDrawEntity( class Entity* entity );

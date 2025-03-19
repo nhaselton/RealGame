@@ -20,7 +20,7 @@ void PollAnimationEvents( Entity* entity ) {
 }
 
 void EntityAnimationUpdate( Entity* entity, float dt ) {
-	if ( !entity->currentAnimation ) {
+	if ( !entity->currentAnimation) {
 		AnimatePose( 0, 0, entity->renderModel->pose );
 		UpdatePose( entity->renderModel->pose->skeleton->root, Mat4( 1.0 ), entity->renderModel->pose );
 		return;
@@ -109,4 +109,19 @@ bool EntityApplyStagger( Entity* entity, int damage ) {
 		return true;
 	}
 	return false;
+}
+
+void DoorUpdate(Entity* entity ) {
+	if( entityManager.keysDown == 3 ) {
+		entity->pos -= Vec3( 0, 10 * dt, 0 );
+	}
+}
+
+void DoorLoadKVP( void* door, char* key, char* value ) {
+	TryEntityField( (Entity*) door, key, value );
+	Door* ddoor = (Door*) door;
+	ddoor->bounds->offset = ddoor->pos;
+	ddoor->bounds->bounds.center = Vec3( 0 );
+	ddoor->bounds->bounds.width = Vec3( 19.5,13.25,4.5 );
+	ddoor->Update = DoorUpdate;
 }

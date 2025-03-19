@@ -173,6 +173,18 @@ void GameLoadEntities( const char* path ) {
 			//Hack
 			isLight = true;
 		}
+		else if( !strcmp( className, "door" ) ) {
+			EntKVP = DoorLoadKVP;
+			newEnt = NewEntity();
+			{
+				Entity* e = (Entity*) newEnt;
+				e->renderModel = (RenderModel*) ScratchArenaAllocate( &globalArena, sizeof( RenderModel ) );
+				memset( e->renderModel, 0, sizeof( *e->renderModel ) );
+				e->renderModel->model = LoadModel( "res/models/door.glb" );
+				e->renderModel->scale = Vec3( 1 );
+
+			}
+		}
 		else if( !strcmp( className, "pickup_key" ) ) {
 			char key[64];
 			char value[64];
@@ -186,21 +198,40 @@ void GameLoadEntities( const char* path ) {
 			LoadKeyValue( &parser, key, value );
 			int isPickup = atoi( value ) == 1;
 
-			if( isPickup )
-				if( keyColor == 1 )
+			if( isPickup ) {
+
+				if( keyColor == 1 ) {
 					pickup->flags = PICKUP_KEY_RED;
-				else
+				}
+				else {
 					pickup->flags = PICKUP_KEY_BLUE;
-			else
+				}
+			}
+			else {
+				//pickup->renderModel.model = LoadModel( "res/models/gib.glb" );
+
 				if( keyColor == 1 )
 					pickup->flags = PICKUP_PLACE_KEY_RED;
 				else
 					pickup->flags = PICKUP_PLACE_KEY_BLUE;
+			}
 
-			pickup->renderModel.model = LoadModel( "res/models/key.glb" );
+			if ( keyColor == 1 )
+				pickup->renderModel.model = LoadModel( "res/models/keyred.glb" );
+			else
+				pickup->renderModel.model = LoadModel( "res/models/keyblue.glb" );
+
+			//if( keyColor == 1 )
+			//	pickup->renderModel.model = LoadModel( "res/models/keyblue.glb" );
+			//else
+			//	pickup->renderModel.model = LoadModel( "res/models/keyred.glb" );
+
+
 			pickup->renderModel.scale = Vec3( 0.5f );
 			pickup->renderModel.rotation = Quat( 1, 0, 0, 0 );
 			pickup->renderModel.translation = Vec3( 0, 0, 0 );
+			parser.ExpectedTokenTypePunctuation( '}' );
+			continue;
 		}
 		else if (!strcmp(className, "pickup_weapon")) {
 			char key[64];

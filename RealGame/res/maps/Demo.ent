@@ -691,8 +691,8 @@
 "target" "gatee1"
 "triggertype" "2"
 "bounds" "true"
-"boundsmin" "-23.00 -0.00 246.50"
-"boundsmax" "16.00 26.50 255.50"
+"boundsmin" "-23.00 -0.00 242.50"
+"boundsmax" "16.00 26.50 251.50"
 }
 {
 "classname" "spawn_zone"
@@ -783,4 +783,16 @@
 "origin" "8048 4464 192"
 "keyColor" "2"
 "type" "1"
+}
+// entity 125
+{
+"classname" "pickup_key"
+"origin" "-224 7552 32"
+"keyColor" "1"
+"type" "1"
+}
+// entity 126
+{
+"classname" "door"
+"origin" "160 7760 424"
 }

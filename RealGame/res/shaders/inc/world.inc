@@ -6,7 +6,8 @@ layout(std430, binding = 8 ) readonly buffer worldViewBuffer {
 	
 	int numDynamicLights;
 	int numStaticLights;
-	int pad0,pad1;
+	float gameTime;
+	int pad1;
 	
 	//Static comes first Then comes dynamic
 	Light dynamicLights[512];

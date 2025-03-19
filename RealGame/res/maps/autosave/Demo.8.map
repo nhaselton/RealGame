@@ -517,9 +517,10 @@
 // entity 13
 {
 "classname" "light"
-"origin" "356 -12 244"
+"origin" "356 -12 212"
 "_color" "1 1 1"
 "attenuation" "32"
+"intensity" "2"
 }
 // entity 14
 {
@@ -527,6 +528,7 @@
 "origin" "60 1052 660"
 "_color" "1 1 1"
 "attenuation" "100"
+"intensity" "5"
 }
 // entity 15
 {

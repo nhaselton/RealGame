@@ -56,6 +56,9 @@ public:
 	Pickup pickups[512];
 	int numPickups;
 
+	//Hack
+	u8 keysDown;
+
 	int projSparseList[MAX_PROJECTILES];
 	Projectile projectiles[MAX_PROJECTILES];
 

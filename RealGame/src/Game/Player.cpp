@@ -212,9 +212,17 @@ bool PlayerPickupItem(Pickup* pickup, class Entity* entity) {
 		player->keys |= PLAYER_KEY_RED;
 		return true;
 	case PICKUP_PLACE_KEY_BLUE:
-		return ( player->keys & PICKUP_KEY_BLUE );
+		if( player->keys & PLAYER_KEY_BLUE ) {
+			pickup->flags = PICKUP_PLACE_KEY_BLUE_DONE;
+			entityManager.keysDown |= 1;
+		}
+		return false;
 	case PICKUP_PLACE_KEY_RED:
-		return ( player->keys & PICKUP_KEY_RED );
+		if( player->keys & PLAYER_KEY_RED ) {
+			pickup->flags = PICKUP_PLACE_KEY_RED_DONE;
+			entityManager.keysDown |= 2;
+		}
+		return false;
 	}
 	return false;
 }

@@ -211,6 +211,9 @@ void EntityManagerCleanUp() {
 		int removeSparseIndex = entityManager.removeProjectiles[i];
 		int removeDenseIndex = entityManager.projSparseList[removeSparseIndex];
 
+		if( removeDenseIndex == -1 )
+			continue;
+
 		//if one last projectile, have to manually nuke it to keep it from copying
 		if( entityManager.numProjectiles == 1 ) {
 			entityManager.projSparseList[entityManager.projectiles[0].index] = -1;
@@ -262,7 +265,7 @@ void AnimateEntities() {
 		if( stored->state != ACTIVE_ACTIVE )
 			continue;
 
-		if( stored->entity.renderModel != 0 )
+		if( stored->entity.renderModel != 0 && stored->entity.renderModel->pose )
 			EntityAnimationUpdate( &stored->entity, dt );
 	}
 }
