@@ -57,6 +57,8 @@ public:
 	int numPickups;
 
 	//Hack
+	class Door* door;
+
 	u8 keysDown;
 
 	int projSparseList[MAX_PROJECTILES];

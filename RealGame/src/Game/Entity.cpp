@@ -122,6 +122,6 @@ void DoorLoadKVP( void* door, char* key, char* value ) {
 	Door* ddoor = (Door*) door;
 	ddoor->bounds->offset = ddoor->pos;
 	ddoor->bounds->bounds.center = Vec3( 0 );
-	ddoor->bounds->bounds.width = Vec3( 19.5,13.25,4.5 );
+	ddoor->bounds->bounds.width = Vec3( 19.5,13.25,2. );
 	ddoor->Update = DoorUpdate;
 }

@@ -20,8 +20,8 @@ Player* CreatePlayer( Vec3 pos ) {
 	player->bounds->bounds.width = Vec3( 1, 2, 1 );
 	player->renderModel = 0;
 
-	player->health = 4;
-	player->maxHealth = 4;
+	player->health = 100;
+	player->maxHealth = 100;
 
 	player->camera = Camera();
 	player->Update = UpdatePlayer;
@@ -159,14 +159,39 @@ void UpdatePlayer( Entity* entity ) {
 		RemoveLight( player->light );
 		player->light = 0;
 	}
+	//(Hack) Don't let player enter the gate
+	Entity* door = entityManager.door;
+	if( door ) {
+		Vec3 doorPos = door->pos;
+		Vec3 doorSize = door->bounds->bounds.width;
 
-	PlayerCheckPickups(player);
+		Vec3 playerPos = player->pos;
+		Vec3 playerSize = player->bounds->bounds.width;
+
+		Vec3 dmax = doorPos + doorSize;
+		Vec3 dmin = doorPos - doorSize;
+
+		Vec3 pmin = playerPos - playerSize;
+		Vec3 pmax = playerPos + playerSize;
+
+		BoundsMinMax doorb { dmin,dmax };
+		BoundsMinMax playerb {pmin,pmax};
+
+		PlayerCheckPickups( player );
+
+		DebugDrawCharacterCollider( door->bounds );
+		//If inside door, push player out
+		if( FastAABB( doorb, playerb ) ) {
+			Vec3 dir = player->pos - door->pos;
+			dir.y = 0;
+			player->pos += dir;
+			player->bounds->offset += dir;
+		}
+	}
 }
 
 void PlayerOnHit( EntityHitInfo info ) {
-	printf( "ouch!" );
-
-	info.victim->health--;
+	info.victim->health-=  info.damage;
 	if (info.victim->health <= 0) {
 		LOG_INFO ( LGS_GAME, "PLAYER DEAD!" );
 		//exit( 0 );
@@ -223,6 +248,18 @@ bool PlayerPickupItem(Pickup* pickup, class Entity* entity) {
 			entityManager.keysDown |= 2;
 		}
 		return false;
+	case PICKUP_MEDKIT:
+	{
+		if( player->health >= 100 )
+			return false;
+		else {
+			player->health += 25;
+			if( player->health > 100 )
+				player->health = 100;
+			return true;
+		}
+
+	}
 	}
 	return false;
 }

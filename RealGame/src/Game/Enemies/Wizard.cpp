@@ -251,7 +251,7 @@ void WizardBallCallback( class Projectile* projectile, class Entity* entity ) {
 		info.attacker = projectile->owner;
 		info.victim = entity;
 		info.projectile = projectile;
-		info.damage = 1;
+		info.damage = 15;
 		entity->OnHit( info );
 	}
 

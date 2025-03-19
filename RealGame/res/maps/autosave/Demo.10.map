@@ -242,7 +242,7 @@
 // brush 26
 {
 ( -1856 3024 -16 ) ( -1856 3025 -16 ) ( -1856 3024 -15 ) grass [ 0 -1 0 0 ] [ 0 0 -1 0 ] 0 48 48
-( 112 3024 -16 ) ( 112 3024 -15 ) ( 113 3024 -16 ) grass [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 48 48
+( 112 3008 -16 ) ( 112 3008 -15 ) ( 113 3008 -16 ) grass [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 48 48
 ( 112 3024 -16 ) ( 113 3024 -16 ) ( 112 3025 -16 ) grass [ -1 0 0 0 ] [ 0 -1 0 0 ] 0 48 48
 ( 176 3184 0 ) ( 176 3185 0 ) ( 177 3184 0 ) grass [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 48 48
 ( 176 7728 0 ) ( 177 7728 0 ) ( 176 7728 1 ) grass [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 48 48
@@ -367,21 +367,21 @@
 }
 // brush 40
 {
-( 672 2880 0 ) ( 672 2881 0 ) ( 672 2880 1 ) prototype/jpg128_brown_2 [ 0 -1 0 112 ] [ 0 0 -1 0 ] 0 1 1
-( 1232 2880 0 ) ( 1232 2880 1 ) ( 1233 2880 0 ) prototype/jpg128_brown_2 [ 1 0 0 -48 ] [ 0 0 -1 0 ] 0 1 1
-( 1232 2880 0 ) ( 1233 2880 0 ) ( 1232 2881 0 ) prototype/jpg128_brown_2 [ -1 0 0 48 ] [ 0 -1 0 112 ] 0 1 1
-( 2160 3056 352 ) ( 2160 3057 352 ) ( 2161 3056 352 ) prototype/jpg128_brown_2 [ 1 0 0 -48 ] [ 0 -1 0 112 ] 0 1 1
-( 2160 3024 16 ) ( 2161 3024 16 ) ( 2160 3024 17 ) prototype/jpg128_brown_2 [ -1 0 0 48 ] [ 0 0 -1 0 ] 0 1 1
-( 2464 3056 16 ) ( 2464 3056 17 ) ( 2464 3057 16 ) prototype/jpg128_brown_2 [ 0 1 0 -112 ] [ 0 0 -1 0 ] 0 1 1
-}
-// brush 41
-{
 ( -1856 2848 0 ) ( -1856 2849 0 ) ( -1856 2848 1 ) prototype/jpg128_brown_2 [ 0 -1 0 -48 ] [ 0 0 -1 0 ] 0 1 1
 ( -1296 2848 0 ) ( -1296 2848 1 ) ( -1295 2848 0 ) prototype/jpg128_brown_2 [ 1 0 0 48 ] [ 0 0 -1 0 ] 0 1 1
 ( -1296 2848 0 ) ( -1295 2848 0 ) ( -1296 2849 0 ) prototype/jpg128_brown_2 [ -1 0 0 -48 ] [ 0 -1 0 -48 ] 0 1 1
 ( -368 3024 384 ) ( -368 3025 384 ) ( -367 3024 384 ) prototype/jpg128_brown_2 [ 1 0 0 48 ] [ 0 -1 0 -48 ] 0 1 1
 ( -368 3024 16 ) ( -367 3024 16 ) ( -368 3024 17 ) prototype/jpg128_brown_2 [ -1 0 0 -48 ] [ 0 0 -1 0 ] 0 1 1
 ( -208 3024 16 ) ( -208 3024 17 ) ( -208 3025 16 ) prototype/jpg128_brown_2 [ 0 1 0 48 ] [ 0 0 -1 0 ] 0 1 1
+}
+// brush 41
+{
+( 672 2624 0 ) ( 672 2625 0 ) ( 672 2624 1 ) prototype/jpg128_blue_1 [ 0 -1 0 16 ] [ 0 0 -1 0 ] 0 1 1
+( 720 2624 0 ) ( 720 2624 1 ) ( 721 2624 0 ) prototype/jpg128_blue_1 [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 720 2624 0 ) ( 721 2624 0 ) ( 720 2625 0 ) prototype/jpg128_blue_1 [ -1 0 0 0 ] [ 0 -1 0 16 ] 0 1 1
+( 1968 3040 752 ) ( 1968 3041 752 ) ( 1969 3040 752 ) prototype/jpg128_blue_1 [ 1 0 0 0 ] [ 0 -1 0 16 ] 0 1 1
+( 1968 3020 16 ) ( 1969 3020 16 ) ( 1968 3020 17 ) prototype/jpg128_blue_1 [ -1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 2176 3040 16 ) ( 2176 3040 17 ) ( 2176 3041 16 ) prototype/jpg128_blue_1 [ 0 1 0 -16 ] [ 0 0 -1 0 ] 0 1 1
 }
 }
 // entity 1
@@ -512,34 +512,26 @@
 // entity 12
 {
 "classname" "light"
-"origin" "356 -12 212"
-"_color" "1 1 1"
-"attenuation" "32"
-"intensity" "2"
-}
-// entity 13
-{
-"classname" "light"
 "origin" "60 1052 660"
 "_color" "1 1 1"
 "attenuation" "100"
 "intensity" "5"
 }
-// entity 14
+// entity 13
 {
 "classname" "light"
 "origin" "716 4580 964"
 "intensity" "20"
 "attenuation" "325"
 }
-// entity 15
+// entity 14
 {
 "classname" "light"
 "origin" "716 7412 964"
 "intensity" "20"
 "attenuation" "325"
 }
-// entity 16
+// entity 15
 {
 "classname" "light"
 "origin" "772 1452 692"
@@ -549,7 +541,7 @@
 "direction" "0 -1 0"
 "radius" "0"
 }
-// entity 17
+// entity 16
 {
 "classname" "light"
 "origin" "788 1308 276"
@@ -558,7 +550,7 @@
 "intensity" "2"
 "attenuation" "65"
 }
-// entity 18
+// entity 17
 {
 "classname" "light"
 "origin" "-428 1308 276"
@@ -567,7 +559,7 @@
 "intensity" "2"
 "attenuation" "65"
 }
-// entity 19
+// entity 18
 {
 "classname" "light"
 "origin" "-428 1468 692"
@@ -576,23 +568,23 @@
 "intensity" "1"
 "direction" "0 -1 0"
 }
-// entity 20
+// entity 19
 {
 "classname" "info_player_start"
 "origin" "649 3929 51"
 }
-// entity 21
+// entity 20
 {
 "classname" "light"
 "origin" "52 2732 324"
 }
-// entity 22
+// entity 21
 {
 "classname" "light"
 "origin" "-956 3180 324"
 }
-// entity 23
+// entity 22
 {
 "classname" "light"
-"origin" "932 3220 324"
+"origin" "1308 3244 4"
 }

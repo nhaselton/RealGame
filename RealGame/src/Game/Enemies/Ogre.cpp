@@ -160,7 +160,7 @@ void OgreSwipe( Entity* entity ) {
 			info.attacker = entity;
 			info.victim = entityManager.player;
 			info.projectile = 0;
-			info.damage = 1;
+			info.damage = 10.0f;
 
 			entityManager.player->OnHit( info );
 		}

@@ -22,7 +22,10 @@ public:
 	float maxMuzzleFlashTime;
 	float spread;
 	float spreadDecayRate;
+
 	int ammo;
+	int maxAmmo;
+
 	int damage;
 
 	bool owned;

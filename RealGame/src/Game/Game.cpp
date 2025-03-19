@@ -182,7 +182,7 @@ void GameLoadEntities( const char* path ) {
 				memset( e->renderModel, 0, sizeof( *e->renderModel ) );
 				e->renderModel->model = LoadModel( "res/models/door.glb" );
 				e->renderModel->scale = Vec3( 1 );
-
+				entityManager.door = (Door*) e;
 			}
 		}
 		else if( !strcmp( className, "pickup_key" ) ) {
@@ -221,17 +221,22 @@ void GameLoadEntities( const char* path ) {
 			else
 				pickup->renderModel.model = LoadModel( "res/models/keyblue.glb" );
 
-			//if( keyColor == 1 )
-			//	pickup->renderModel.model = LoadModel( "res/models/keyblue.glb" );
-			//else
-			//	pickup->renderModel.model = LoadModel( "res/models/keyred.glb" );
-
-
 			pickup->renderModel.scale = Vec3( 0.5f );
 			pickup->renderModel.rotation = Quat( 1, 0, 0, 0 );
 			pickup->renderModel.translation = Vec3( 0, 0, 0 );
 			parser.ExpectedTokenTypePunctuation( '}' );
 			continue;
+		}
+		else if( !strcmp( className, "pickup_healthpack" ) ) {
+			char key[64];
+			char value[64];
+			Pickup* pickup = &entityManager.pickups[entityManager.numPickups++];
+			LoadKeyValue( &parser, key, value );
+			pickup->bounds.center = StringToVec3( value, true );
+			pickup->bounds.width = Vec3( 1, 0.5, 1 );
+			pickup->renderModel.model = LoadModel( "res/models/healthpack.glb" );
+			pickup->renderModel.scale = Vec3( 1,0.5,1 );
+			pickup->flags = PICKUP_MEDKIT;
 		}
 		else if (!strcmp(className, "pickup_weapon")) {
 			char key[64];
@@ -254,7 +259,7 @@ void GameLoadEntities( const char* path ) {
 			pickup->renderModel.scale = Vec3(1);
 			pickup->renderModel.rotation = Quat(1, 0, 0, 0);
 			pickup->renderModel.translation = Vec3(0, 1, 0);
-			pickup->renderModel.scale = Vec3(4.0f);
+			pickup->renderModel.scale = Vec3(2.0f);
 			
 			parser.ExpectedTokenTypePunctuation('}');
 			continue;//SKip rest of loop

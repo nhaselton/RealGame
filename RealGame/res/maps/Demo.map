@@ -2601,12 +2601,12 @@
 "triggertype" "2"
 // brush 0
 {
-( -512 7760 0 ) ( -512 7761 0 ) ( -512 7760 1 ) Util/Trigger [ 0 -1 0 32 ] [ 0 0 -1 0 ] 0 1 1
-( -512 7760 0 ) ( -512 7760 1 ) ( -511 7760 0 ) Util/Trigger [ 1 0 0 16 ] [ 0 0 -1 0 ] 0 1 1
-( -512 7760 0 ) ( -511 7760 0 ) ( -512 7761 0 ) Util/Trigger [ -1 0 0 -16 ] [ 0 -1 0 32 ] 0 1 1
-( 736 8048 848 ) ( 736 8049 848 ) ( 737 8048 848 ) Util/Trigger [ 1 0 0 16 ] [ 0 -1 0 32 ] 0 1 1
-( 736 8048 16 ) ( 737 8048 16 ) ( 736 8048 17 ) Util/Trigger [ -1 0 0 -16 ] [ 0 0 -1 0 ] 0 1 1
-( 736 8048 16 ) ( 736 8048 17 ) ( 736 8049 16 ) Util/Trigger [ 0 1 0 -32 ] [ 0 0 -1 0 ] 0 1 1
+( -544 7904 0 ) ( -544 7905 0 ) ( -544 7904 1 ) Util/Trigger [ 0 -1 0 48 ] [ 0 0 -1 0 ] 0 1 1
+( -544 7904 0 ) ( -544 7904 1 ) ( -543 7904 0 ) Util/Trigger [ 1 0 0 48 ] [ 0 0 -1 0 ] 0 1 1
+( -544 7904 0 ) ( -543 7904 0 ) ( -544 7905 0 ) Util/Trigger [ -1 0 0 -48 ] [ 0 -1 0 48 ] 0 1 1
+( 704 8192 848 ) ( 704 8193 848 ) ( 705 8192 848 ) Util/Trigger [ 1 0 0 48 ] [ 0 -1 0 48 ] 0 1 1
+( 704 8192 16 ) ( 705 8192 16 ) ( 704 8192 17 ) Util/Trigger [ -1 0 0 -48 ] [ 0 0 -1 0 ] 0 1 1
+( 704 8192 16 ) ( 704 8192 17 ) ( 704 8193 16 ) Util/Trigger [ 0 1 0 -48 ] [ 0 0 -1 0 ] 0 1 1
 }
 }
 // entity 111
@@ -2697,46 +2697,56 @@
 }
 // entity 120
 {
-"classname" "info_player_start"
-"origin" "471 8279 99"
-}
-// entity 121
-{
 "classname" "pickup_key"
 "origin" "640 7680 128"
 "keyColor" "2"
 "type" "2"
 }
-// entity 122
+// entity 121
 {
 "classname" "pickup_key"
 "origin" "-384 7680 128"
 "keyColor" "1"
 "type" "2"
 }
-// entity 123
+// entity 122
 {
 "classname" "pickup_key"
 "origin" "-4032 3984 192"
 "keyColor" "1"
 "type" "1"
 }
-// entity 124
+// entity 123
 {
 "classname" "pickup_key"
 "origin" "8048 4464 192"
 "keyColor" "2"
 "type" "1"
 }
-// entity 125
+// entity 124
 {
 "classname" "pickup_key"
 "origin" "-224 7552 32"
 "keyColor" "1"
 "type" "1"
 }
-// entity 126
+// entity 125
 {
 "classname" "door"
-"origin" "160 7760 424"
+"origin" "160 7824 424"
+}
+// entity 126
+{
+"classname" "pickup_healthpack"
+"origin" "352 2960 16"
+}
+// entity 127
+{
+"classname" "pickup_healthpack"
+"origin" "448 2960 16"
+}
+// entity 128
+{
+"classname" "info_player_start"
+"origin" "569 2633 51"
 }

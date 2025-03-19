@@ -486,13 +486,13 @@
 // entity 1
 {
 "classname" "spawner"
-"origin" "-424 1448 248"
+"origin" "-424 1448 296"
 "targetname" "pillar1"
 }
 // entity 2
 {
 "classname" "spawner"
-"origin" "744 1416 248"
+"origin" "744 1416 312"
 "targetname" "pillar2"
 }
 // entity 3
@@ -612,8 +612,8 @@
 {
 "classname" "light"
 "origin" "716 7412 964"
-"intensity" "40"
-"attenuation" "600"
+"intensity" "5"
+"attenuation" "3250"
 }
 // entity 13
 {
@@ -633,6 +633,7 @@
 "type" "2"
 "intensity" "1"
 "direction" "0 -1 0"
+"attenuation" "600"
 }
 // entity 15
 {
@@ -660,64 +661,55 @@
 }
 // entity 19
 {
-"classname" "light"
-"origin" "-428 1308 276"
-"_color" "1 1 1"
-"type" "2"
-"intensity" "2"
-"attenuation" "65"
-}
-// entity 20
-{
 "classname" "info_player_start"
 "origin" "341 -37 51"
 }
-// entity 21
+// entity 20
 {
 "classname" "light"
 "origin" "376 -28 216"
 }
-// entity 22
+// entity 21
 {
 "classname" "light"
 "origin" "160 2472 724"
 "intensity" "3"
 "attenuation" "50"
 }
-// entity 23
+// entity 22
 {
 "classname" "light"
 "origin" "-92 2520 400"
 "attenuation" "50"
 }
-// entity 24
+// entity 23
 {
 "classname" "light"
 "origin" "576 2468 416"
 "attenuation" "50"
 }
-// entity 25
+// entity 24
 {
 "classname" "light"
 "origin" "152 2180 464"
 "attenuation" "50"
 }
-// entity 26
+// entity 25
 {
 "classname" "light"
 "origin" "-516 2232 448"
 "attenuation" "50"
 }
-// entity 27
+// entity 26
 {
 "classname" "light"
 "origin" "-580 964 580"
 "_color" "1 1 1"
 "type" "2"
-"intensity" "2"
-"attenuation" "65"
+"intensity" "1"
+"attenuation" "600"
 }
-// entity 28
+// entity 27
 {
 "classname" "light"
 "origin" "1116 1620 444"

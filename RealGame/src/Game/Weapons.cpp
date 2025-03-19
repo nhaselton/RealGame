@@ -146,10 +146,12 @@ void CreateRevolver(Player* player) {
 	player->revolver.pos = player->revolver.baseOffset;
 	player->revolver.rotation = player->revolver.baseRotation;
 	player->revolver.ammo = 6;
+	player->revolver.maxAmmo = 999;
 	player->revolver.spreadDecayRate = 6.0f;
 
 	player->revolver.shootCooldown = .4f;
 	player->revolver.fastShootCooldown = .16f;
+
 
 	player->revolver.Equip = RevolverEquip;
 	player->revolver.Update = RevolverUpdate;
@@ -189,6 +191,7 @@ void ShotgunUpdate(Player* player, Weapon* weapon) {
 		if (shotgun->currentAnimationPercent == 1.0f) {
 			EntityStartAnimation(shotgun, SHOTGUN_ANIM_IDLE);
 			shotgun->state = SHOTGUN_IDLE;
+				shotgun->ammo -= ( 2 - shotgun->mag );
 			shotgun->mag = 2.0f;
 		}
 	}
@@ -240,7 +243,11 @@ void ShotgunAltShoot(Player* player, Weapon* weapon) {
 	if( shotgun->state == SHOTGUN_RELOAD || shotgun->state == SHOTGUN_EQUIPPING )
 		return;
 
+	if( shotgun->ammo <= 0 )
+		return;
+
 	shotgun->mag--;
+	shotgun->ammo--;
 
 	//Shoot center pellete
 	ShotgunShootPellet(player, shotgun, player->camera.Position, player->camera.Front, 0);
@@ -265,12 +272,15 @@ void ShotgunShoot(Player* player, Weapon* weapon) {
 	if( shotgun->state == SHOTGUN_RELOAD || shotgun->state == SHOTGUN_EQUIPPING )
 		return;
 
+	if( shotgun->ammo <= 0 )
+		return;
+
 	//do an alt fire if only 1 shot left
 	if (shotgun->mag == 1) {
 		ShotgunAltShoot(player, weapon);
 		return;
 	}
-
+	shotgun->ammo -= 2;
 	shotgun->state = SHOTGUN_RELOAD;
 	EntityStartAnimation(shotgun, SHOTGUN_ANIM_RELOAD);
 
@@ -310,13 +320,15 @@ void CreateShotgun(Player* player) {
 
 	player->shotgun.pos = player->shotgun.baseOffset;
 	player->shotgun.rotation = player->shotgun.baseRotation;
-	player->shotgun.ammo = 2;
+	player->shotgun.maxAmmo = 100;
+	player->shotgun.ammo = 40;
 	player->shotgun.mag = 2;
 	player->shotgun.spreadDecayRate = 6.0f;
 	player->shotgun.damage = 2;
 
 	player->shotgun.numPellets = 16;//Try to keep (count - 1) % 3 == 0 for secondary fire to have exactly 1/3rd the amount of pelettes
 	player->shotgun.spreadRadians = glm::radians(15.0f);
+
 
 	player->shotgun.Equip = ShotgunEquip;
 	player->shotgun.Update = ShotgunUpdate;
@@ -343,27 +355,28 @@ void PlasmaGunShoot(Player* player, Weapon* weapon) {
 	PlasmaGun* pg = (PlasmaGun*)weapon;
 	if( pg->state == PLASMA_EQUIPPING ) return;
 
-	if (gameTime - pg->currentCooldown >= 0) {
-		pg->currentCooldown = gameTime + pg->shotCooldown;
+	if( gameTime - pg->currentCooldown < 0 )
+		return;
 
-		Vec3 start = player->camera.Position;
-		start += Vec3(0, -.8, 0);
-		start += player->camera.Front * 2.5f;
-		start += player->camera.Right * 0.7f;
+	pg->currentCooldown = gameTime + pg->shotCooldown;
+	pg->ammo--;
+	Vec3 start = player->camera.Position;
+	start += Vec3( 0, -.8, 0 );
+	start += player->camera.Front * 2.5f;
+	start += player->camera.Right * 0.7f;
 
-		pg->pos += Vec3(0, .1, .1);
-		pg->rotation = glm::rotate(pg->rotation, glm::radians(2.0f), Vec3(0, 0, 1));
+	pg->pos += Vec3( 0, .1, .1 );
+	pg->rotation = glm::rotate( pg->rotation, glm::radians( 2.0f ), Vec3( 0, 0, 1 ) );
 
-		Projectile* orb = NewProjectile(start, player->camera.Front * 40.0f, Vec3(.5f), true);
-		if (orb) {
-			orb->collider.owner = player;
-			orb->model.model = Wizard::projectileModel;
-			orb->model.scale = Vec3(.5f);
-			orb->model.translation = Vec3(0);
-			orb->OnCollision = WizardBallCallback;
-			orb->damage = pg->damage;
-			//PlaySound( wizard->audioSource, &Wizard::shootSound );
-		}
+	Projectile* orb = NewProjectile( start, player->camera.Front * 40.0f, Vec3( .5f ), true );
+	if( orb ) {
+		orb->collider.owner = player;
+		orb->model.model = Wizard::projectileModel;
+		orb->model.scale = Vec3( .5f );
+		orb->model.translation = Vec3( 0 );
+		orb->OnCollision = WizardBallCallback;
+		orb->damage = pg->damage;
+		//PlaySound( wizard->audioSource, &Wizard::shootSound );
 	}
 }
 
@@ -402,6 +415,9 @@ void CreatePlasmaGun(class Player* player) {
 	player->plasmaGun.fullAuto = true;
 	player->plasmaGun.damage = 2;
 	
+	player->plasmaGun.ammo = 100;
+	player->plasmaGun.maxAmmo = 500;
+
 	player->plasmaGun.Equip = PlasmaGunEquip;
 	player->plasmaGun.Update = PlasmaGunUpdate;
 	player->plasmaGun.Shoot = PlasmaGunShoot;
@@ -443,12 +459,12 @@ void RocketLauncherUpdate( Player* player, Weapon* weapon){
 void RocketLauncherShoot( Player* player, Weapon* weapon){
 	RocketLauncher* rpg = (RocketLauncher*)weapon;
 
-	if (rpg->state != RL_READY)
+	if (rpg->state != RL_READY || rpg->ammo <= 0)
 		return;
 
+	rpg->ammo--;
 	rpg->state = RL_FIRE;
 	EntityStartAnimation(rpg, RL_ANIM_FIRE);
-
 
 	Vec3 start = player->camera.Position;
 	start += Vec3(0, -.8, 0);
@@ -492,6 +508,8 @@ void CreateRocketLauncher(class Player* player) {
 	player->rocketLauncher.rotation = player->plasmaGun.baseRotation;
 
 	player->rocketLauncher.damage = 40;
+	player->rocketLauncher.ammo = 20;
+	player->rocketLauncher.maxAmmo = 100;
 
 	player->rocketLauncher.state = RL_READY;
 	player->rocketLauncher.animTimeScale = 1.0f;
@@ -519,8 +537,9 @@ void RocketCallback(Projectile* projectile, Entity* entity) {
 			info.attacker = projectile->owner;
 			info.victim = list[i];
 			info.projectile = projectile;
-			info.damage = projectile->damage;
-			list[i]->OnHit(info);
+			float dist = glm::length( list[i]->pos - pos );
+			info.damage = 40.0f - ( dist * 2.0f );
+			list[i]->OnHit( info );
 		}
 	}
 

@@ -67,6 +67,7 @@ void ChaingunnerShootBullet( Entity* entity ) {
 
 		Projectile* orb = NewProjectile( orbPos, velocity, Vec3( .5f ), true );
 		if( orb ) {
+			orb->damage = 6.0f;
 			orb->collider.owner = entity;
 			orb->model.model = Wizard::projectileModel;
 			orb->model.scale = Vec3( .5f );

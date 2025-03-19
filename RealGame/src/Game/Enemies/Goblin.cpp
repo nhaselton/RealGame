@@ -61,7 +61,7 @@ void GoblinChase( Goblin* goblin ) {
 
 	Vec3 velocity = goblin->boidVelocity;
 	if ( glm::length2( velocity ) != 0 ) {
-		velocity = glm::normalize( velocity ) * 18.0f * dt;
+		velocity = glm::normalize( velocity ) * 15.0f * dt;
 		EntityMove( goblin, velocity );
 	}
 
@@ -101,7 +101,7 @@ void GoblinExplode(Goblin* goblin) {
 			EntityHitInfo info {};
 			info.attacker = goblin;
 			info.victim = other;
-			info.damage = 2.0f;
+			info.damage = ( 20.0f - dist * 2.0f );
 			other->OnHit( info );
 		}
 	}

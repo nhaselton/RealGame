@@ -17,6 +17,7 @@ enum pickupFlags_t : u64{
 	PICKUP_PLACE_KEY_BLUE = 8,
 	PICKUP_PLACE_KEY_RED_DONE,
 	PICKUP_PLACE_KEY_BLUE_DONE,
+	PICKUP_MEDKIT,
 };
 
 enum entityType_t {

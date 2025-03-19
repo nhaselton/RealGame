@@ -644,11 +644,13 @@ void RenderEndFrame( Renderer* renderer ) {
 
 	//Draw UI
 	Player* player = entityManager.player;
-	for (int i = 0; i < player->revolver.ammo; i++)
-		RenderDrawQuadColored( Vec2( 20 * i + 20, 640 ), Vec2( 10, 20 ), Vec3( 1, .97, .86 ) );
-
 	RenderDrawQuadTextured( Vec2( 16, 680 ), Vec2( 32 ), renderer->healthTex );
 	RenderDrawHealthBar( Vec2( 64, 680 ), Vec2( 120, 30 ), player->health, player->maxHealth );
+
+	memset( buffer, 0, 8192 );
+	sprintf_s( buffer, 8192, "%d / %d", player->currentWeapon->ammo, player->currentWeapon->maxAmmo );
+	RenderDrawText( Vec2( 8, 632 ), 32, buffer );
+
 
 	memset( buffer, 0, 8192 );
 	sprintf_s( buffer, 2048, "ms: %.2f\nfps: %.0f", dt * 1000.0f, 1.0f / dt );

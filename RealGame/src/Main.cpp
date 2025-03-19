@@ -28,7 +28,13 @@
 	//Milestone 1
 	//		Gameplay (April 1st)
 	//===================
-	Gate collision
+	Add ammo
+	Add ammo pickups
+		1 Pickup gives everything
+
+	Crosshair:
+		Plasma
+		Rockets
 
 	Level:
 		10 Minutes long
@@ -171,12 +177,7 @@ void LoadDecls() {
 }
 
 int main() {
-	Vec3 min( -23.00, -0.00, 243.50 );
-	Vec3 max( 16.00, 26.50, 252.50 );
-
-	Vec3 pos = ( max + min ) ;
-	Vec3 size = ( max - min ) * 32.0f / 2.0f;
-
+	Timer startup;
 	CreateScratchArena( &globalArena, TOTAL_MEMORY, malloc( TOTAL_MEMORY ), NULL, "Global Arena" );
 	console.Init();
 	CreateStackArena( &tempArena, TEMP_MEMORY, ScratchArenaAllocate( &globalArena, TEMP_MEMORY ), &globalArena, "Temp Arena" );
@@ -286,6 +287,9 @@ int main() {
 
 	bool triggered = false;
 	maxFps = 250;
+
+	startup.Tick();
+	printf( "Startup: %.2f\n", startup.GetTimeMiliSeconds() );
 	//Boar* boar = CreateBoar(Vec3(0, 1, 0));
 	while( !WindowShouldClose( &window ) ) {	
 		if( maxFps > 0 )
