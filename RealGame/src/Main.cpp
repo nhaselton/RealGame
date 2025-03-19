@@ -28,25 +28,11 @@
 	//Milestone 1
 	//		Gameplay (April 1st)
 	//===================
-	Add ammo
-	Add ammo pickups
-		1 Pickup gives everything
-
-	Crosshair:
-		Plasma
-		Rockets
-
 	Level:
 		10 Minutes long
 		Small Rooms to show off less enemies
 		Large open fields for lots of enemies
 		4 way split at end to get 4 pieces to unlock exit?
-	
-	Actual Revolver Spread
-*		Look into exponational decay rate, linear to slow
-
-*	Physics:
-*		Enemies will remove themselves from your AABB
 	//====================
 	//  Milestone 2
 	//		Visuals

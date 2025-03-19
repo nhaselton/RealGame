@@ -75,7 +75,13 @@ void RevolverShoot(Player* player, Weapon* weapon) {
 
 	EntityStartAnimation(revolver, REVOLVER_ANIM_SHOOT);
 	HitInfo info{};
-	if (PhysicsQueryRaycast(player->camera.Position, player->camera.Front * 100.0f, &info)) {
+	
+	float spread = (1.0f - revolver->spread) / 10.0f;
+	float x = -spread + (float) ( rand() ) / ( float( RAND_MAX / ( spread - -spread ) ) );
+	float y = -spread + (float) ( rand() ) / ( float( RAND_MAX / ( spread - -spread ) ) );
+	float z = -spread + (float) ( rand() ) / ( float( RAND_MAX / ( spread - -spread ) ) );
+
+	if( PhysicsQueryRaycast( player->camera.Position, ( player->camera.Front + Vec3(x,y,z) ) * 100.0f, &info ) ) {
 		if (info.entity != 0 && info.entity->OnHit != 0) {
 			EntityHitInfo attack{};
 			attack.attacker = player;
@@ -232,10 +238,6 @@ static inline void ShotgunShootPellet(Player* player, Shotgun* shotgun, Vec3 sta
 			info.entity->OnHit(attack);
 		}
 	}
-
-	//for (int i = 0; i < 100.0f; i++)
-	//	DebugDrawAABB(start + glm::normalize(dir) * .3f * (float)i, Vec3(.05f), 10.0f);
-	//DebugDrawLine(start, start + dir, GREEN, 1.0f, true, false, 10.0f);
 }
 
 void ShotgunAltShoot(Player* player, Weapon* weapon) {

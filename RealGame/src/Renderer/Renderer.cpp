@@ -663,6 +663,16 @@ void RenderEndFrame( Renderer* renderer ) {
 			RenderDrawQuadTextured(Vec2(640, 360) - spreadSize / 2.0f, spreadSize, renderer->crosshairTex);
 		}
 	}
+	else if( player->currentWeapon == &player->rocketLauncher ) {
+		if( player->rocketLauncher.state == RL_READY ) {
+			Vec2 spreadSize( 32 );
+			RenderDrawQuadTextured( Vec2( 640, 360 ) - spreadSize / 2.0f + 16.0f, spreadSize, renderer->crosshairTex );
+		}
+	}
+	else if( player->currentWeapon == &player->plasmaGun ) {
+		Vec2 spreadSize( 32 );
+		RenderDrawQuadTextured( Vec2( 640, 360 ) - spreadSize / 2.0f + 16.0f, spreadSize, renderer->crosshairTex );
+	}
 	else if (player->currentWeapon == &player->shotgun) {
 		Vec2 size(128, 64);
 		RenderDrawQuadTextured(Vec2(640, 360) - size / 2.0f, size, renderer->shotgunCrosshairTex);

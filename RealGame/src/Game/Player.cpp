@@ -179,7 +179,6 @@ void UpdatePlayer( Entity* entity ) {
 
 		PlayerCheckPickups( player );
 
-		DebugDrawCharacterCollider( door->bounds );
 		//If inside door, push player out
 		if( FastAABB( doorb, playerb ) ) {
 			Vec3 dir = player->pos - door->pos;
@@ -258,8 +257,18 @@ bool PlayerPickupItem(Pickup* pickup, class Entity* entity) {
 				player->health = 100;
 			return true;
 		}
+	}break;
+	case PICKUP_AMMOPACK:
+	{
+		player->plasmaGun.ammo += 150;
+		player->shotgun.ammo += 40;
+		player->rocketLauncher.ammo += 20;
 
-	}
+		player->shotgun.ammo = glm::clamp( player->shotgun.ammo, 0, player->shotgun.maxAmmo );
+		player->plasmaGun.ammo = glm::clamp( player->plasmaGun.ammo, 0, player->plasmaGun.maxAmmo );
+		player->rocketLauncher.ammo = glm::clamp( player->rocketLauncher.ammo, 0, player->rocketLauncher.maxAmmo );
+		return true;
+	}break;
 	}
 	return false;
 }
@@ -278,7 +287,6 @@ void PlayerCheckPickups(Player* player) {
 			pickup->bounds.center + pickup->bounds.width
 		};
 		DebugDrawAABB(pickup->bounds.center, pickup->bounds.width);
-		DebugDrawAABB(pos, player->bounds->bounds.width);
 		if (FastAABB(playerBounds, pickupBounds)) {
 			bool remove = PlayerPickupItem(pickup, player);
 			if( remove ) {

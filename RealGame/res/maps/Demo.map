@@ -2750,3 +2750,8 @@
 "classname" "info_player_start"
 "origin" "569 2633 51"
 }
+// entity 129
+{
+"classname" "pickup_ammopack"
+"origin" "560 2960 32"
+}

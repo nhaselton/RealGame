@@ -238,6 +238,17 @@ void GameLoadEntities( const char* path ) {
 			pickup->renderModel.scale = Vec3( 1,0.5,1 );
 			pickup->flags = PICKUP_MEDKIT;
 		}
+		else if( !strcmp( className, "pickup_ammopack" ) ) {
+			char key[64];
+			char value[64];
+			Pickup* pickup = &entityManager.pickups[entityManager.numPickups++];
+			LoadKeyValue( &parser, key, value );
+			pickup->bounds.center = StringToVec3( value, true );
+			pickup->bounds.width = Vec3( 1, 1, 1 );
+			pickup->renderModel.model = LoadModel( "res/models/ammopack.glb" );
+			pickup->renderModel.scale = Vec3( 1, 1, 1 );
+			pickup->flags = PICKUP_AMMOPACK;
+		}
 		else if (!strcmp(className, "pickup_weapon")) {
 			char key[64];
 			char value[64];
