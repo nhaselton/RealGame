@@ -781,132 +781,125 @@
 }
 // entity 124
 {
-"classname" "pickup_key"
-"origin" "-224 7552 32"
-"keyColor" "1"
-"type" "1"
-}
-// entity 125
-{
 "classname" "door"
 "origin" "160 7824 408"
 }
-// entity 126
+// entity 125
 {
 "classname" "pickup_healthpack"
 "origin" "352 2960 16"
 }
-// entity 127
+// entity 126
 {
 "classname" "pickup_healthpack"
 "origin" "448 2960 16"
 }
-// entity 128
+// entity 127
 {
 "classname" "pickup_ammopack"
 "origin" "560 2960 32"
 }
-// entity 129
+// entity 128
 {
 "classname" "pickup_ammopack"
 "origin" "2192 4672 32"
 }
-// entity 130
+// entity 129
 {
 "classname" "pickup_healthpack"
 "origin" "2192 4256 16"
 }
-// entity 131
+// entity 130
 {
 "classname" "pickup_healthpack"
 "origin" "-2448 5008 144"
 }
-// entity 132
+// entity 131
 {
 "classname" "pickup_healthpack"
 "origin" "-5136 6480 144"
 }
-// entity 133
+// entity 132
 {
 "classname" "pickup_healthpack"
 "origin" "-5136 6400 144"
 }
-// entity 134
+// entity 133
 {
 "classname" "pickup_ammopack"
 "origin" "-5136 6320 160"
 }
-// entity 135
+// entity 134
 {
 "classname" "pickup_healthpack"
 "origin" "-832 1936 16"
 }
-// entity 136
+// entity 135
 {
 "classname" "pickup_ammopack"
 "origin" "1152 1920 32"
 }
-// entity 137
+// entity 136
 {
 "classname" "pickup_healthpack"
 "origin" "8368 4512 32"
 }
-// entity 138
+// entity 137
 {
 "classname" "pickup_healthpack"
 "origin" "8368 4416 32"
 }
-// entity 139
+// entity 138
 {
 "classname" "pickup_ammopack"
 "origin" "8352 4592 48"
 }
-// entity 140
+// entity 139
 {
 "classname" "pickup_ammopack"
 "origin" "-1536 8352 32"
 }
-// entity 141
+// entity 140
 {
 "classname" "pickup_ammopack"
 "origin" "-1536 8432 32"
 }
-// entity 142
+// entity 141
 {
 "classname" "pickup_healthpack"
 "origin" "-1536 8592 16"
 }
-// entity 143
+// entity 142
 {
 "classname" "pickup_healthpack"
 "origin" "-1552 8704 16"
 }
-// entity 144
+// entity 143
 {
 "classname" "pickup_healthpack"
 "origin" "-11056 8368 16"
 }
-// entity 145
+// entity 144
 {
 "classname" "pickup_healthpack"
 "origin" "-11056 8464 16"
 }
-// entity 146
+// entity 145
 {
 "classname" "pickup_ammopack"
 "origin" "-11056 8560 32"
 }
-// entity 147
+// entity 146
 {
 "classname" "pickup_healthpack"
 "origin" "-5456 13824 16"
 }
-// entity 148
+// entity 147
 {
 "classname" "pickup_healthpack"
 "origin" "-5360 13824 16"
 }
-// entity 149
+// entity 148
 {
 "classname" "trigger_once"
 "triggertype" "2"

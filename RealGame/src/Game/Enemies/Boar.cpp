@@ -45,7 +45,6 @@ void BoarUpdate(Entity* entity) {
 		entity->staggerNow = 0.0f;
 
 	EntityAnimationUpdate(entity, dt);
-	DebugDrawCharacterCollider(entity->bounds);
 
 	switch (boar->state) {
 	case BOAR_IDLE: EntityLookAtPlayer(entity);  BoarStartCharge(entity); break;

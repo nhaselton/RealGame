@@ -23,31 +23,28 @@
 	//===============================
 			 Demo (Done By Doom)
 	//===============================
-
-	//====================
-	//Milestone 1
-	//		Gameplay (April 1st)
-	//===================
-	Level:
-		10 Minutes long
-		Small Rooms to show off less enemies
-		Large open fields for lots of enemies
-		4 way split at end to get 4 pieces to unlock exit?
 	//====================
 	//  Milestone 2
 	//		Visuals
 	//====================
 	By May 9
 	Shadows
-		Either shadow map or do little shadows underneath (Drop shadow)
-			Could probably draw a sphere and if it intersects things it draws black
+		Drop Shadows
 	VFX
-	Enemy Spawn
-		3D Model?
+		CPU Flipbooks
+			Explosion, etc
+				These are not particles but just a static image
 
-	CPU Flipbooks
-		Explosion, etc
-			These are not particles but just a static image
+	Weapons:
+		Rockets:	
+			Custom model
+				Explosion
+				Smoke Trail?
+		Plasma:
+			Light on bullets
+		Shotgun/Pistol:
+			Bullet trails?
+			Bullet particle effects?
 *
 	Graphics
 *		Map Renderering
@@ -55,31 +52,12 @@
 *				Can probably use the convex hucll BVH for this
 *				Dont worry about individual faces, quicker to just cull entire brushes
 
-	*	Light:
-	*		Have Game ignore static lights? Create staic option in TB
-	*		Type //Separate arrays? Can upload static once and dynamic per frame
-	*			Static
-	*			Dynamic
-	*		Calculate Radius
-	*			Solve quadratic for when light < .1f?
-	*		Shape
-	*			Point
-	*			Spot
-	*			Directional
-	*		Shadows: Can create when level loads if close enough to it? Unload when too far?
-	*			Static
-	*			All
-	*			None
-	*
-	*	Bound Lighting
-	*		Probably use sphere to make it little amount of extra data
-	*		If done on CPU with tiled rendering or something, then can try AABB
-	*		Can probably just solve for 0 using attenuation * intensity
-
 	*	Finish Paritcles
 	*		3) Indirect Drawing
 	*			Have particles write num particles alive to new buffer and draw indirect it
 	*		4) Fadeout over time
+	* 
+	* Static Objects in map?
 	* 
 	* 
 	//====================
@@ -168,7 +146,7 @@ int main() {
 	console.Init();
 	CreateStackArena( &tempArena, TEMP_MEMORY, ScratchArenaAllocate( &globalArena, TEMP_MEMORY ), &globalArena, "Temp Arena" );
 
-	WindowInit( &window, 2560, 1440, "Game for real this time guys" );
+	WindowInit( &window, 1920, 1080, "Game for real this time guys" );
 	WindowAddKeySubscription( &window, &console.sub );
 
 	CreateModelManager( &modelManager,

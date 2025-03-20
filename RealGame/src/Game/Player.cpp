@@ -286,7 +286,6 @@ void PlayerCheckPickups(Player* player) {
 			pickup->bounds.center - pickup->bounds.width,
 			pickup->bounds.center + pickup->bounds.width
 		};
-		DebugDrawAABB(pickup->bounds.center, pickup->bounds.width);
 		if (FastAABB(playerBounds, pickupBounds)) {
 			bool remove = PlayerPickupItem(pickup, player);
 			if( remove ) {

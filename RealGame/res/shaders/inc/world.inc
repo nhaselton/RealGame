@@ -9,7 +9,7 @@ layout(std430, binding = 8 ) readonly buffer worldViewBuffer {
 	float gameTime;
 	int pad1;
 	
-	//Static comes first Then comes dynamic
+	//Dynamic comes first so projection -> dynamicLights can be 1 buffersubdata call. Then comes dynamic
 	Light dynamicLights[512];
 	Light staticLights[512];
 };

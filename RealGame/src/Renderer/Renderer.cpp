@@ -154,6 +154,8 @@ void CreateRenderer( Renderer* renderer, void* memory, u32 size ) {
 	renderer->orthographic = glm::ortho( 0.0f, ( float )1280.0f, ( float )720.0f, 0.0f, -1.0f, 1.0f );
 	Vec4 color( 1, 0, 0, 1 );
 
+	renderer->drawTriggers = 0;
+
 	renderer->cube = ModelManagerAllocate( &modelManager, "res/models/cube.glb" );
 	renderer->sphere = ModelManagerAllocate( &modelManager, "res/models/sphere.glb" );
 	renderer->whiteNoiseTex = TextureManagerLoadTextureFromFile( "res/textures/whitenoise.png" );
@@ -440,9 +442,6 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 		renderer->levelInfo.textureChains[i].numTriangles = 0;
 	}
 
-	for (int i = 0; i < renderer->worldView.numStaticLights; i++)
-		DebugDrawAABB(renderer->worldView.staticLights[i].pos, Vec3(1));
-
 	renderer->worldView.projection = renderer->projection;
 	renderer->worldView.view = renderer->camera.GetViewMatrix();
 	renderer->worldView.gameTime = gameTime;
@@ -477,7 +476,7 @@ void RenderDrawFrame( Renderer* renderer, float dt ) {
 
 void RenderDrawTriggers() {
 	if( !renderer.drawTriggers ) {
-		//return;
+		return;
 	}
 
 	for( int i = 0; i < entityManager.numTriggers; i++ ) {

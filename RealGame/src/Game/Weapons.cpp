@@ -530,9 +530,6 @@ void RocketCallback(Projectile* projectile, Entity* entity) {
 	//Get last tick so out of wall
 	Vec3 pos = projectile->collider.offset - projectile->velocity * dt;
 	int numHit = PhysicsQueryExplosion(pos, 12.0f, list, 32);
-	DebugDrawSphere(pos, 12.0f,Vec3(1,0,0),true,1,1,1.0f);
-
-	DebugDrawAABB(pos, projectile->collider.bounds.width, 1000.0f);
 	for (int i = 0; i < numHit; i++) {
 		if (list[i]->OnHit) {
 			EntityHitInfo info{};
