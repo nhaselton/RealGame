@@ -110,6 +110,7 @@ void GameLoadEntities( const char* path ) {
 	//This is the entity's ReadKeyValue function
 	void (*EntKVP) (void* ent, char* key, char* value) = 0;
 
+	Entity tempEnt;
 
 	while( parser.GetCurrent().type != TT_EOF ) {
 		//Get Type of entity
@@ -122,6 +123,7 @@ void GameLoadEntities( const char* path ) {
 		bool isLight = false;
 		bool isSpawnZone = false;
 
+		int isTrigger = 0;
 		//TODO hash
 		if( !strcmp( className, "info_player_start" ) ) {
 			newEnt = CreatePlayer(Vec3(0));
@@ -151,6 +153,7 @@ void GameLoadEntities( const char* path ) {
 			newEnt = &entityManager.triggers[entityManager.numTriggers++];
 			EntKVP = TriggerLoadKVP;
 			memset(newEnt, 0, sizeof(Trigger));
+			isTrigger = 1;
 		}
 		else if( !strcmp( className, "spawner" ) ) {
 			newEnt = &entityManager.spawnTargets[entityManager.numSpawnTargets++];
@@ -169,6 +172,7 @@ void GameLoadEntities( const char* path ) {
 		else if( !strcmp( className, "light" ) ) {
 			//Because static and dynamci lights go in differnt locations,
 			//This has to load as a temp light first then be placed in the correct array after
+			newEnt = &tempEnt;
 			EntKVP = LightLoadKVP;
 			//Hack
 			isLight = true;
@@ -294,6 +298,13 @@ void GameLoadEntities( const char* path ) {
 			}
 		}
 		parser.ExpectedTokenTypePunctuation('}');
+
+		if( isTrigger ) {
+			Trigger* t = (Trigger*) newEnt;
+			if( !strcmp( t->willTrigger, "third" ) )
+				printf( "" );
+		}
+
 		//Hack for light
 		if (isLight) LightHack((Light*)newEnt);
 		//Hack for spawnZone

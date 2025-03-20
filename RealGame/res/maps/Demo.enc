@@ -402,6 +402,22 @@
 		"flags"		"1"
 	}
 	
+		
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"2"
+		"count"		"32"
+		target		"wzzone"
+	}
+	
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"2"
+		"count"		"32"
+		target		"gbzone"
+	}
+	
+	
 	{
 		"type"		"WAIT_FOR_SECONDS_BLOCK"
 		"waittime"	"2.0"
@@ -447,22 +463,56 @@
 		"ai"		"8"
 		target		"gate00"
 	}
-	
-	
-	{
-		"type" 		"SPAWN_MULTIPLE_AI"
-		"ai"		"2"
-		"count"		"32"
-		target		"wzzone"
-	}
+}
+
+{
+	"name"	"efinal"
 	
 	{
 		"type" 		"SPAWN_MULTIPLE_AI"
-		"ai"		"2"
+		"ai"		"1"
+		"target"	"szfinalgob"
 		"count"		"32"
-		target		"gbzone"
+	}	
+	
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"8"
+		"target"	"szfinalogre"
+		"count"		"3"
+	}	
+
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"2"
+		"target"	"szfinalwizard"
+		"count"		"32"
+	}	
+
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"4"
+		"target"	"szfinalchaingunner"
+		"count"		"12"
+	}	
+
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"16"
+		"target"	"szfinalboar"
+		"count"		"3"
+	}	
+	
+	{
+		"type" 		"WAIT_FOR_SECONDS_BLOCK"
+		"waittime"		"5"
 	}
-	
-	
+
+	{
+		"type" 		"SPAWN_MULTIPLE_AI"
+		"ai"		"2"
+		"target"	"szfinalwizardflank"
+		"count"		"22"
+	}	
 
 }

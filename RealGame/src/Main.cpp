@@ -168,7 +168,7 @@ int main() {
 	console.Init();
 	CreateStackArena( &tempArena, TEMP_MEMORY, ScratchArenaAllocate( &globalArena, TEMP_MEMORY ), &globalArena, "Temp Arena" );
 
-	WindowInit( &window, 1920, 1080, "Game for real this time guys" );
+	WindowInit( &window, 2560, 1440, "Game for real this time guys" );
 	WindowAddKeySubscription( &window, &console.sub );
 
 	CreateModelManager( &modelManager,

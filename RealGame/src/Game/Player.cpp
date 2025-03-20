@@ -27,7 +27,7 @@ Player* CreatePlayer( Vec3 pos ) {
 	player->Update = UpdatePlayer;
 
 	player->weapons = WF_REVOLVER;
-	player->weapons = 0xffff;
+	//player->weapons = 0xffff;
 
 	/* Create Revolver */
 	memset( &player->revolver, 0, sizeof( player->revolver ) );
