@@ -24,43 +24,6 @@
 			 Demo (Done By Doom)
 	//===============================
 	//====================
-	//  Milestone 2
-	//		Visuals
-	//====================
-	By May 9
-	Shadows
-		Drop Shadows
-	VFX
-		CPU Flipbooks
-			Explosion, etc
-				These are not particles but just a static image
-
-	Weapons:
-		Rockets:	
-			Custom model
-				Explosion
-				Smoke Trail?
-		Plasma:
-			Light on bullets
-		Shotgun/Pistol:
-			Bullet trails?
-			Bullet particle effects?
-*
-	Graphics
-*		Map Renderering
-*			Cull Brushes with AABB from camera
-*				Can probably use the convex hucll BVH for this
-*				Dont worry about individual faces, quicker to just cull entire brushes
-
-	*	Finish Paritcles
-	*		3) Indirect Drawing
-	*			Have particles write num particles alive to new buffer and draw indirect it
-	*		4) Fadeout over time
-	* 
-	* Static Objects in map?
-	* 
-	* 
-	//====================
 		Milestone 3 Polish
 	//====================
 	//Sounds
@@ -94,13 +57,6 @@
 
 
 */
-
-//Eventually
-//Todo STB_Malloc, Realloc, Free
-//Todo look into a precompiled header like doom 3 bfg's
-//Todo decide how to automate shader args
-//Fxi dead body not replacing perfectly
-
 
 Window window;
 ModelManager modelManager;

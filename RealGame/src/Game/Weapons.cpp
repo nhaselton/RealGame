@@ -541,6 +541,29 @@ void RocketCallback(Projectile* projectile, Entity* entity) {
 			list[i]->OnHit( info );
 		}
 	}
-
 	RemoveProjectile(projectile);
+	//Smoke Emitter
+#if 1
+	ParticleEmitter2* emitter = NewParticleEmitter();
+	emitter->pos = pos+ Vec3( 0, 1, 0 );
+	emitter->UV = Vec4( .03125, 0, .03125 + .03125, .03125 );
+	emitter->maxEmitterLifeTime = 1.0f;
+	emitter->maxParticles = 200;
+	emitter->spawnRate = 10;
+	emitter->scale = Vec2( 0.5f );
+	emitter->acceleration = Vec3( 0, 5, 0 );
+	emitter->radius = 6.0f;
+	emitter->emitterSpawnType = EMITTER_INSTANT;
+#endif	
+	//Explosion Emitter
+	ParticleEmitter2* emitter2 = NewParticleEmitter();
+	emitter2->pos = pos + Vec3( 0, 1, 0 );
+	emitter2->UV = Vec4( .03125 * 2, 0, .03125 * 3, .03125 );
+	emitter2->maxEmitterLifeTime = 3.0f;
+	emitter2->maxParticles = 60;
+	emitter2->spawnRate = 10;
+	emitter2->scale = Vec2( 2.5f );
+	emitter2->acceleration = Vec3( 0, -1, 0 );
+	emitter2->radius = 2.0f;
+	emitter2->emitterSpawnType = EMITTER_INSTANT;
 }

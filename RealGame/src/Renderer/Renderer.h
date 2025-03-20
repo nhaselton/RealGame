@@ -326,6 +326,7 @@ void RenderDrawAllPickups();
 void RenderDrawAllEntities();
 void RenderDrawAllProjectiles();
 void RenderDrawAllRigidBodies();
+void RenderDrawAllBillboards();
 void RenderDrawGun();
 void RenderUpdateAndDrawParticles();
 void RenderDrawTriggers();
